@@ -2,6 +2,7 @@ package providers
 
 import (
 	"context"
+	"path/filepath"
 	model "stonehenge/model"
 	"stonehenge/repository"
 
@@ -20,7 +21,12 @@ var (
 
 // Creates an object that allows clients to access the database
 func ConnectToDatabase(context context.Context) (*model.DataProvider, error) {
-	sa := option.WithCredentialsFile("/go/src/stonehenge/sa.json")
+	credentialsFile, err := filepath.Abs("sa.json")
+	if err != nil {
+		return nil, err
+	}
+
+	sa := option.WithCredentialsFile(credentialsFile)
 	app, err := firebase.NewApp(context, nil, sa)
 
 	if err != nil {
