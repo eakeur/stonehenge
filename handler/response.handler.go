@@ -5,16 +5,19 @@ import (
 	model "stonehenge/model"
 )
 
+// Writes the response body to the object passed in
 func SendResponse(response http.ResponseWriter, body []byte, status int) {
 	response.WriteHeader(status)
 	response.Write(body)
 }
 
+// Writes an error message to the response and sets the status code based on the very same error
 func SendErrorResponse(response http.ResponseWriter, body error) {
 	response.WriteHeader(GetStatusCodeByError(body))
 	response.Write([]byte(body.Error()))
 }
 
+// Gets the status code based on the error model passed as parameter
 func GetStatusCodeByError(err error) int {
 	switch err {
 	case model.ErrCreating:

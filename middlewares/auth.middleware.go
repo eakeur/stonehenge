@@ -9,6 +9,7 @@ import (
 	"strings"
 )
 
+// A middleware that listens to the JWT of the request and validates it
 func TokenValidatorMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(wr http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/accounts" && r.Method == http.MethodPost {
@@ -36,6 +37,7 @@ func TokenValidatorMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+// Returns the request token present in the request
 func GetRequestToken(r *http.Request) string {
 	jwtToken := r.Header.Get("Authorization")
 	if strings.Trim(jwtToken, " ") == "" {

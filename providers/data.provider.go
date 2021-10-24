@@ -18,6 +18,7 @@ var (
 	TransfersRepository *repository.TransfersRepositoryType
 )
 
+// Creates an object that allows clients to access the database
 func ConnectToDatabase(context context.Context) (*model.DataProvider, error) {
 	sa := option.WithCredentialsFile("/go/src/stonehenge/sa.json")
 	app, err := firebase.NewApp(context, nil, sa)

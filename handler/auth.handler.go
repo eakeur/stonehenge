@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+// Authenticates the user requesting access to the API. Verifies if the password is correct
+// and returns a token
 func Authenticate(rw http.ResponseWriter, r *http.Request) {
 	login := model.Login{}
 	err := json.NewDecoder(r.Body).Decode(&login)
