@@ -1,12 +1,1 @@
-/domain
-/go.mod
-/go.sum
-/handler
-/main.go
-/middlewares
-/model
-/providers
-/repository
-/routes.go
-/sa.json
-/shared
+
