@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"stonehenge/providers"
 )
@@ -23,4 +24,10 @@ func main() {
 	// Initializes all the repositories and injects the database provider reference
 	providers.InjectDependenciesInRepositories(provider)
 
+	port := os.Getenv("HTTP_PORT")
+	if port == "" {
+		port = "3000"
+	}
+
+	http.ListenAndServe(":"+port, InitializeServer())
 }
