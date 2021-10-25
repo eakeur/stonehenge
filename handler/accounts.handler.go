@@ -47,6 +47,8 @@ func GetAccountById(rw http.ResponseWriter, r *http.Request) {
 			return
 		}
 		SendResponse(rw, responseBody, http.StatusOK)
+	} else {
+		SendErrorResponse(rw, model.ErrForbidden)
 	}
 
 }
@@ -72,6 +74,8 @@ func GetAccountBalance(rw http.ResponseWriter, r *http.Request) {
 			return
 		}
 		SendResponse(rw, responseBody, http.StatusOK)
+	} else {
+		SendErrorResponse(rw, model.ErrForbidden)
 	}
 }
 

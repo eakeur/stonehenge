@@ -30,6 +30,12 @@ func (a *Account) HasBudget() bool {
 	return a.Balance > 0.00
 }
 
+func (acc *Account) RemoveSensitiveInformation() {
+	acc.Cpf = ""
+	acc.Secret = ""
+	acc.Balance = 0
+}
+
 // Withdraws a certain quantity from the balance of this account
 func (a *Account) Withdraw(quantity int64) (int64, error) {
 	if a.HasBudget() {
