@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"stonehenge/domain"
 	model "stonehenge/model"
+	"stonehenge/shared"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -30,7 +31,12 @@ func GetAllAcounts(rw http.ResponseWriter, r *http.Request) {
 func GetAccountById(rw http.ResponseWriter, r *http.Request) {
 	accountId := chi.URLParam(r, "accountId")
 
-	if len(accountId) > 0 {
+	if len(accountId) == 0 {
+		SendErrorResponse(rw, model.ErrAccountInvalid)
+		return
+	}
+
+	if accountId == r.Context().Value(shared.ContextAccount).(string) {
 		acc, err := domain.GetAccountById(accountId)
 		if err != nil {
 			SendErrorResponse(rw, err)
@@ -42,8 +48,6 @@ func GetAccountById(rw http.ResponseWriter, r *http.Request) {
 			return
 		}
 		SendResponse(rw, responseBody, http.StatusOK)
-	} else {
-		SendErrorResponse(rw, model.ErrAccountInvalid)
 	}
 
 }
@@ -52,7 +56,12 @@ func GetAccountById(rw http.ResponseWriter, r *http.Request) {
 func GetAccountBalance(rw http.ResponseWriter, r *http.Request) {
 	accountId := chi.URLParam(r, "accountId")
 
-	if len(accountId) > 0 {
+	if len(accountId) == 0 {
+		SendErrorResponse(rw, model.ErrAccountInvalid)
+		return
+	}
+
+	if accountId == r.Context().Value(shared.ContextAccount).(string) {
 		bal, err := domain.GetAccountBalance(accountId)
 		if err != nil {
 			SendErrorResponse(rw, err)
@@ -64,8 +73,6 @@ func GetAccountBalance(rw http.ResponseWriter, r *http.Request) {
 			return
 		}
 		SendResponse(rw, responseBody, http.StatusOK)
-	} else {
-		SendErrorResponse(rw, model.ErrAccountInvalid)
 	}
 }
 
