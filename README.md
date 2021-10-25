@@ -42,7 +42,7 @@ Request body:
 ```json
 { "cpf": "string", "secret": "string"}
 ```
-For you to authenticate to the API, you have to first access this endpoint with a json body containing your cpf and your password, like the above example. If you do not have an account yet, please refer to [this endpoint](#post-accounts). The response is empty, but has a Set-Cookie and an Authorization header member with the JWT token of your session
+For you to authenticate to the API, you have to first access this endpoint with a json body containing your cpf and your password, like the above example. If you do not have an account yet, please refer to [this endpoint](#post-accounts). The response is empty, but has a Set-Cookie and an Authorization header member with the JWT token of your session. To make your tests easier, there is an account that is already created with R$1.000.000,00. Its CPF is '12345678999' and its secret is '12345678' and you can use its budget to populate your own accounts.
 
 
 
