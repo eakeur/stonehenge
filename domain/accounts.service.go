@@ -45,11 +45,9 @@ func GetAllAccounts() ([]model.Account, error) {
 		return nil, err
 	}
 
-	for _, acc := range accounts {
-		acc.Cpf = ""
-		acc.Secret = ""
-		acc.Balance = 0
-
+	for i, acc := range accounts {
+		acc.RemoveSensitiveInformation()
+		accounts[i] = acc
 	}
 
 	return accounts, nil
