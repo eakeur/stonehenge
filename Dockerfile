@@ -1,9 +1,6 @@
 # syntax=docker/dockerfile:1
 
-##
-## Build
-##
-FROM golang:1.16-buster AS build
+FROM golang:1.16-alpine
 
 WORKDIR /app
 
@@ -11,23 +8,13 @@ COPY go.mod ./
 COPY go.sum ./
 RUN go mod download
 
-COPY sa.json ./
-
 COPY . ./
+COPY sa.json / 
 
 RUN go build -o /stonehenge
 
-##
-## Deploy
-##
-FROM gcr.io/distroless/base-debian10
-
-WORKDIR /
-
-COPY --from=build /stonehenge /stonehenge
+ENV HTTP_PORT=8080
 
 EXPOSE 8080
 
-USER nonroot:nonroot
-
-ENTRYPOINT ["/stonehenge"]
+CMD [ "/stonehenge" ]
