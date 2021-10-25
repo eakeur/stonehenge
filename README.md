@@ -33,12 +33,16 @@ This section has useful and relevant information on how to consume the API. Plea
 
 
 ## Authentication
-```json
+```
 PATH:   /login
 METHOD:   POST
-BODY: { "cpf": "string", "secret": "string"}
+BODY: 
 ```
-For you to authenticate to the API, you have to first access this endpoint with a json body containing you cpf and your password, like the above example. If you do not have an account yet, please refer to [this endpoint](#post-accounts). The response is empty, but has a Set-Cookie and an Authorization header member with the JWT token of your session
+Request body:
+```json
+{ "cpf": "string", "secret": "string"}
+```
+For you to authenticate to the API, you have to first access this endpoint with a json body containing your cpf and your password, like the above example. If you do not have an account yet, please refer to [this endpoint](#post-accounts). The response is empty, but has a Set-Cookie and an Authorization header member with the JWT token of your session
 
 
 
@@ -59,10 +63,13 @@ This section of the app has several endpoints. Many of them use the same respons
 
 
 ### POST Accounts
-```json
+```
 PATH:   /accounts
 METHOD:   POST
-BODY: { "cpf": "string", "secret": "string", "name": "string"}
+```
+Request body:
+```json
+{ "cpf": "string", "secret": "string", "name": "string"}
 ```
 This endpoint creates an account with the data in the request body and authenticates it. The expected body scheme is mentioned above in the BODY property.
 The cpf must be a string with 11 numbers. After created, the user receives R$ 500.00 as a starter budget. The response is empty, but has a Set-Cookie and an Authorization header member with the JWT token of your session
@@ -99,10 +106,13 @@ This endpoint returns the account's balance that corresponds to the accountId pa
 
 ## Transfers
 ### POST transfers
-```json
+```
 PATH:   /transfers
 METHOD:   POST
-BODY: { "destination_account_id": "string", "amount": "int" }
+```
+Request body:
+```json
+{ "destination_account_id": "string", "amount": "int" }
 ```
 This endpoint tells the server that a transfer must be made. The request body json must be like the one specified in the body property above
 **The amount of money must always be sent in cents**, otherwise the request will fail or consider the wrong amount of money. Please be sure that the destination id is correct, so that you don't make the transfer to the wrong account, as it can not be undone
