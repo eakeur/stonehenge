@@ -6,7 +6,7 @@ Stonehenge is a go app for you to send and receive money to and from your friend
 ## Usage
 For you to run the API on your computer, you've got to have Docker installed. On a terminal, use the command below
 ```bash
-docker pull 991409128/stonehenge
+docker pull eakeur/stonehenge
 ```
 After the image is completely pulled to your computer, create a container on it with this command (you can change the container name or the output port):
 ```bash
