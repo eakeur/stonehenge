@@ -14,7 +14,7 @@ docker run -d --name eakeur-stonehenge -p 3000:8080 eakeur/stonehenge:latest
 ```
 That's all! You can access localhost:[THE_PORT_YOU_CHOSE] and have access to the API
 
-## The endpoints
+## Endpoints
 
 
 
