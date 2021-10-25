@@ -40,7 +40,19 @@ func AddNewAccount(account model.Account) (*string, error) {
 
 // Gets all accounts existing - no specific rule
 func GetAllAccounts() ([]model.Account, error) {
-	return providers.AccountsRepository.GetAccounts(nil)
+	accounts, err := providers.AccountsRepository.GetAccounts(nil)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, acc := range accounts {
+		acc.Cpf = ""
+		acc.Secret = ""
+		acc.Balance = 0
+
+	}
+
+	return accounts, nil
 }
 
 // Gets the balance of the account of the id passed
