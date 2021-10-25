@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"stonehenge/domain"
 	model "stonehenge/model"
-	"stonehenge/shared"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -36,7 +35,7 @@ func GetAccountById(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if accountId == r.Context().Value(shared.ContextAccount).(string) {
+	if accountId == r.Context().Value(model.ContextAccount).(string) {
 		acc, err := domain.GetAccountById(accountId)
 		if err != nil {
 			SendErrorResponse(rw, err)
@@ -61,7 +60,7 @@ func GetAccountBalance(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if accountId == r.Context().Value(shared.ContextAccount).(string) {
+	if accountId == r.Context().Value(model.ContextAccount).(string) {
 		bal, err := domain.GetAccountBalance(accountId)
 		if err != nil {
 			SendErrorResponse(rw, err)

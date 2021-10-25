@@ -5,12 +5,11 @@ import (
 	"net/http"
 	"stonehenge/domain"
 	model "stonehenge/model"
-	"stonehenge/shared"
 )
 
 // Gets all transfers of this actual account
 func GetAllTransfers(rw http.ResponseWriter, r *http.Request) {
-	accountId := r.Context().Value(shared.ContextAccount).(string)
+	accountId := r.Context().Value(model.ContextAccount).(string)
 	//parameter that sets if the transfers being requested are the ones made to the applicant or by them
 	toMe := r.URL.Query().Get("toMe")
 
@@ -36,7 +35,7 @@ func RequestTransfer(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	transfer.AccountOriginId = r.Context().Value(shared.ContextAccount).(string)
+	transfer.AccountOriginId = r.Context().Value(model.ContextAccount).(string)
 	id, err := domain.TransferMoney(transfer)
 	if err != nil {
 		SendErrorResponse(rw, err)

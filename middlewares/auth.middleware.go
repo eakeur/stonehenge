@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"stonehenge/domain"
 	"stonehenge/model"
-	"stonehenge/shared"
 	"strings"
+	"time"
 )
 
 // A middleware that listens to the JWT of the request and validates it
@@ -16,29 +17,29 @@ func TokenValidatorMiddleware(next http.Handler) http.Handler {
 			next.ServeHTTP(wr, r)
 			return
 		}
-		token := GetRequestToken(r)
-		accountId, err := shared.GetAccountIdByToken(token)
+		token := getRequestToken(r)
+		accountId, err := domain.GetAccountIdByToken(token)
 		if err != nil {
 			wr.WriteHeader(http.StatusUnauthorized)
 			fmt.Fprint(wr, model.ErrUnauthorized.Error())
 			return
 		}
 
-		token, err = shared.CreateToken(*accountId)
+		token, err = domain.CreateToken(*accountId)
 		if err != nil {
 			wr.WriteHeader(http.StatusUnauthorized)
 			fmt.Fprint(wr, model.ErrUnauthorized.Error())
 			return
 		}
-		shared.AssignTokenToResponse(wr, token)
+		assignTokenToResponse(wr, token)
 
-		ctx := context.WithValue(r.Context(), shared.ContextAccount, *accountId)
+		ctx := context.WithValue(r.Context(), model.ContextAccount, *accountId)
 		next.ServeHTTP(wr, r.WithContext(ctx))
 	})
 }
 
 // Returns the request token present in the request
-func GetRequestToken(r *http.Request) string {
+func getRequestToken(r *http.Request) string {
 	jwtToken := r.Header.Get("Authorization")
 	if strings.Trim(jwtToken, " ") == "" {
 		cookies := r.Cookies()
@@ -51,4 +52,15 @@ func GetRequestToken(r *http.Request) string {
 	}
 
 	return jwtToken
+}
+
+// Assing the authorization a Set Cookie header to a response object
+func assignTokenToResponse(rw http.ResponseWriter, token string) {
+	rw.Header().Add("Authorization", "Bearer "+token)
+	http.SetCookie(rw, &http.Cookie{
+		Name:    "access_token",
+		Value:   token,
+		Path:    "/",
+		Expires: time.Now().Add(time.Minute * 15),
+	})
 }

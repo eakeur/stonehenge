@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	model "stonehenge/model"
 	"stonehenge/providers"
-	"stonehenge/shared"
+	"strconv"
 	"strings"
 )
 
@@ -15,7 +15,7 @@ const INITIAL_BUDGET int = 500
 // Adds a new account if there is not any other with the same CPF and increments its balance
 func AddNewAccount(account model.Account) (*string, error) {
 	account.Cpf = NormalizeCPF(account.Cpf)
-	if !shared.IsCPFValid(account.Cpf) {
+	if !IsCPFValid(account.Cpf) {
 		return nil, model.ErrCPFInvalid
 	}
 
@@ -71,11 +71,23 @@ func GetAccountById(id string) (*model.Account, error) {
 
 // Removes any special character from the CPF string
 func NormalizeCPF(cpf string) string {
-	return strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(cpf, ".", ""), "-", ""), "/", ""), ",", "")
+	return strings.Trim(strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(cpf, ".", ""), "-", ""), "/", ""), ",", ""), " ")
 }
 
 // Transforms a secret string into a MD5 hash
 func HashSecret(secret string) string {
 	hash := md5.Sum([]byte(secret))
 	return hex.EncodeToString(hash[:])
+}
+
+// This function validates if the CPF document is valid. On purpose it validates only its length, so that you, the tester, don't need to provide an
+// existing CPF
+func IsCPFValid(cpf string) bool {
+	for _, digit := range cpf {
+		_, err := strconv.Atoi(string(digit))
+		if err != nil {
+			return false
+		}
+	}
+	return len(cpf) == 11
 }
