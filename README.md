@@ -72,7 +72,7 @@ Request body:
 { "cpf": "string", "secret": "string", "name": "string"}
 ```
 This endpoint creates an account with the data in the request body and authenticates it. The expected body scheme is mentioned above in the BODY property.
-The cpf must be a string with 11 numbers. After created, the user receives R$ 500.00 as a starter budget. The response is empty, but has a Set-Cookie and an Authorization header member with the JWT token of your session
+The cpf must be a string with 11 numbers. After created, the user receives R$ 5.00 as a starter budget. The response is empty, but has a Set-Cookie and an Authorization header member with the JWT token of your session
 
 ### GET Accounts
 ```
