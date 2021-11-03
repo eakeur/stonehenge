@@ -22,6 +22,30 @@ type Transfer struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+// Tranfers money from an account to the other
+func (t *Transfer) TransferMoney(origin *Account, destination *Account) error {
+	t.AccountOriginId = origin.Id
+	t.AccountDestinationId = destination.Id
+
+	if t.Amount <= 0 {
+		return ErrAmountInvalid
+	}
+
+	if t.AccountDestinationId == t.AccountOriginId {
+		return ErrSameTransfer
+	}
+
+	// Tries to widthdraw the origin account's money, if there is any
+	_, withdrawalError := origin.Withdraw(t.Amount)
+	if withdrawalError != nil {
+		return withdrawalError
+	}
+	// Deposits the amount to the destination account
+	destination.Deposit(t.Amount)
+
+	return nil
+}
+
 // Returns a map of this transfer instance
 func (t *Transfer) ToMap() map[string]interface{} {
 	return map[string]interface{}{
