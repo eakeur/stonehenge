@@ -1,16 +1,26 @@
-package handler
+package controllers
 
 import (
 	"encoding/json"
 	"net/http"
-	"stonehenge/domain"
-	model "stonehenge/model"
+	"stonehenge/app"
+	"stonehenge/core/model"
 	"time"
 )
 
+type IdentityController struct {
+	logins app.IdentityApp
+}
+
+func NewIdentityController(logins *app.IdentityApp) IdentityController {
+	return IdentityController{
+		logins: *logins,
+	}
+}
+
 // Authenticates the user requesting access to the API. Verifies if the password is correct
 // and returns a token
-func Authenticate(rw http.ResponseWriter, r *http.Request) {
+func (lg *IdentityController) Authenticate(rw http.ResponseWriter, r *http.Request) {
 	login := model.Login{}
 	err := json.NewDecoder(r.Body).Decode(&login)
 	if err != nil {
@@ -18,7 +28,7 @@ func Authenticate(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := domain.Authenticate(login)
+	token, err := lg.logins.Authenticate(login.Identity)
 	if err != nil {
 		SendErrorResponse(rw, err)
 		return

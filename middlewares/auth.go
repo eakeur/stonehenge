@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"stonehenge/domain"
-	"stonehenge/model"
+	"stonehenge/core/model"
+	"stonehenge/infra/security"
 	"strings"
 	"time"
 )
@@ -18,22 +18,23 @@ func TokenValidatorMiddleware(next http.Handler) http.Handler {
 			return
 		}
 		token := getRequestToken(r)
-		accountId, err := domain.GetAccountIdByToken(token)
+		account, err := security.ExtractToken(token)
 		if err != nil {
 			wr.WriteHeader(http.StatusUnauthorized)
 			fmt.Fprint(wr, model.ErrUnauthorized.Error())
 			return
 		}
 
-		token, err = domain.CreateToken(*accountId)
+		token, err = security.CreateToken(*account.AccountId)
 		if err != nil {
 			wr.WriteHeader(http.StatusUnauthorized)
 			fmt.Fprint(wr, model.ErrUnauthorized.Error())
 			return
 		}
+
 		assignTokenToResponse(wr, token)
 
-		ctx := context.WithValue(r.Context(), model.ContextAccount, *accountId)
+		ctx := context.WithValue(r.Context(), security.ContextAccount, *account.AccountId)
 		next.ServeHTTP(wr, r.WithContext(ctx))
 	})
 }

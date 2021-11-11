@@ -1,18 +1,30 @@
-package handler
+package controllers
 
 import (
 	"encoding/json"
 	"net/http"
-	"stonehenge/domain"
-	model "stonehenge/model"
+	"stonehenge/app"
+	"stonehenge/core/model"
+	"stonehenge/infra/security"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 )
 
+type AccountController struct {
+	accounts app.AccountApp
+	logins   app.IdentityApp
+}
+
+func NewAccountController(accounts *app.AccountApp, logins *app.IdentityApp) AccountController {
+	return AccountController{
+		accounts: *accounts, logins: *logins,
+	}
+}
+
 // Gets all accounts existing
-func GetAllAcounts(rw http.ResponseWriter, r *http.Request) {
-	accounts, err := domain.GetAllAccounts()
+func (ac *AccountController) GetAllAcounts(rw http.ResponseWriter, r *http.Request) {
+	accounts, err := ac.accounts.GetAll()
 	if err != nil {
 		SendErrorResponse(rw, err)
 		return
@@ -27,7 +39,7 @@ func GetAllAcounts(rw http.ResponseWriter, r *http.Request) {
 }
 
 // Gets the account by id
-func GetAccountById(rw http.ResponseWriter, r *http.Request) {
+func (ac *AccountController) GetAccountById(rw http.ResponseWriter, r *http.Request) {
 	accountId := chi.URLParam(r, "accountId")
 
 	if len(accountId) == 0 {
@@ -35,8 +47,8 @@ func GetAccountById(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if accountId == r.Context().Value(model.ContextAccount).(string) {
-		acc, err := domain.GetAccountById(accountId)
+	if accountId == r.Context().Value(security.ContextAccount).(string) {
+		acc, err := ac.accounts.GetById(accountId)
 		if err != nil {
 			SendErrorResponse(rw, err)
 			return
@@ -54,7 +66,7 @@ func GetAccountById(rw http.ResponseWriter, r *http.Request) {
 }
 
 // Gets the balance of the account of the id passed
-func GetAccountBalance(rw http.ResponseWriter, r *http.Request) {
+func (ac *AccountController) GetAccountBalance(rw http.ResponseWriter, r *http.Request) {
 	accountId := chi.URLParam(r, "accountId")
 
 	if len(accountId) == 0 {
@@ -62,13 +74,13 @@ func GetAccountBalance(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if accountId == r.Context().Value(model.ContextAccount).(string) {
-		bal, err := domain.GetAccountBalance(accountId)
+	if accountId == r.Context().Value(security.ContextAccount).(string) {
+		bal, err := ac.accounts.GetBalanceById(accountId)
 		if err != nil {
 			SendErrorResponse(rw, err)
 			return
 		}
-		responseBody, err := json.Marshal(map[string]interface{}{"balance": bal})
+		responseBody, err := json.Marshal(bal)
 		if err != nil {
 			SendErrorResponse(rw, err)
 			return
@@ -80,7 +92,7 @@ func GetAccountBalance(rw http.ResponseWriter, r *http.Request) {
 }
 
 // Creates an account based on the data parsed
-func CreateAccount(rw http.ResponseWriter, r *http.Request) {
+func (ac *AccountController) CreateAccount(rw http.ResponseWriter, r *http.Request) {
 	account := model.Account{}
 	err := json.NewDecoder(r.Body).Decode(&account)
 	if err != nil {
@@ -88,25 +100,22 @@ func CreateAccount(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := domain.AddNewAccount(account)
+	res, err := ac.accounts.Add(&account)
 	if err != nil {
 		SendErrorResponse(rw, err)
 		return
 	}
 
 	rw.Header().Add("Location", r.URL.Path+"/"+*res)
-	token, err := domain.Authenticate(model.Login{
-		Cpf: account.Cpf, Secret: account.Secret,
-	})
+	token, err := security.CreateToken(*res)
 	if err != nil {
-		SendErrorResponse(rw, err)
-		return
+		SendErrorResponse(rw, model.ErrUnauthorized)
 	}
 
-	rw.Header().Add("Authorization", "Bearer "+*token)
+	rw.Header().Add("Authorization", "Bearer "+token)
 	http.SetCookie(rw, &http.Cookie{
 		Name:    "access_token",
-		Value:   *token,
+		Value:   token,
 		Path:    "/",
 		Expires: time.Now().Add(time.Minute * 15),
 	})
