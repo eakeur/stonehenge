@@ -3,6 +3,9 @@ package persistence
 import (
 	"database/sql"
 	m "stonehenge/core/model"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 type AccountRepository struct {
@@ -11,7 +14,7 @@ type AccountRepository struct {
 
 // Gets all accounts existing
 func (r *AccountRepository) GetAll() ([]m.Account, error) {
-	res, err := r.db.Query(MountSelect("accounts", "*", nil))
+	res, err := SelectMany(&r.db, "accounts", "*", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -32,26 +35,56 @@ func (r *AccountRepository) GetAll() ([]m.Account, error) {
 
 // Gets the account with the ID specified
 func (r *AccountRepository) GetById(id string) (*m.Account, error) {
-	res := r.db.QueryRow(MountSelect("accounts", "*", map[string]interface{}{
+	res := SelectOne(&r.db, "accounts", "*", map[string]interface{}{
 		"id": id,
-	}))
+	})
 	return r.parseRowToAccount(res)
+}
+
+// Gets the balance of the account with the ID specified
+func (r *AccountRepository) GetBalanceById(id string) (*int64, error) {
+	res := SelectOne(&r.db, "accounts", "balance", map[string]interface{}{
+		"id": id,
+	})
+	if err := res.Err(); err != nil {
+		return nil, err
+	}
+	var balance int64
+	res.Scan(&balance)
+	return &balance, nil
 }
 
 // Creates a new account
 func (r *AccountRepository) Add(account *m.Account) (*string, error) {
-	_, err := r.db.Exec(MountInsert("accounts", account.ToMap()))
+	if !account.IsCPFValid() {
+		return nil, m.ErrCPFInvalid
+	}
+
+	exists, err := r.Exists(account.Cpf)
 	if err != nil {
 		return nil, err
 	}
-	return nil, nil
+
+	if !exists {
+		account.Id = uuid.New().String()
+		account.CreatedAt = time.Now()
+		account.HashSecret()
+		account.SetInitialBudget()
+		_, err := Insert(&r.db, "accounts", account.ToMap())
+		if err != nil {
+			return nil, err
+		}
+
+		return &account.Id, nil
+	}
+	return nil, m.ErrAccountExists
 }
 
 // Checks if a CPF is registered to any account
 func (r *AccountRepository) Exists(cpf string) (bool, error) {
-	res := r.db.QueryRow(MountSelect("accounts", "count(*) as count", map[string]interface{}{
+	res := SelectOne(&r.db, "accounts", "count(*) as count", map[string]interface{}{
 		"cpf": cpf,
-	}))
+	})
 	var quantity int
 	err := res.Scan(&quantity)
 	if err != nil {
@@ -62,12 +95,14 @@ func (r *AccountRepository) Exists(cpf string) (bool, error) {
 
 // Gets the account with the ID specified
 func (r *AccountRepository) Update(id string, account *m.Account) error {
-	_, err := r.db.Exec(MountUpdate("accounts", map[string]interface{}{
+	_, err := Update(&r.db, "accounts", map[string]interface{}{
 		"name":    account.Name,
 		"cpf":     account.Cpf,
 		"secret":  account.Secret,
 		"balance": account.Balance,
-	}, account.ToMap()))
+	}, map[string]interface{}{
+		"id": id,
+	})
 
 	if err != nil {
 		return err
@@ -78,9 +113,9 @@ func (r *AccountRepository) Update(id string, account *m.Account) error {
 
 // Removes an account from the
 func (r *AccountRepository) Remove(id string) error {
-	_, err := r.db.Exec(MountDelete("accounts", map[string]interface{}{
+	_, err := Delete(&r.db, "accounts", map[string]interface{}{
 		"id": id,
-	}))
+	})
 	if err != nil {
 		return err
 	}
@@ -89,7 +124,7 @@ func (r *AccountRepository) Remove(id string) error {
 
 func (r *AccountRepository) parseRowToAccount(row Scanner) (*m.Account, error) {
 	acc := new(m.Account)
-	err := row.Scan(&acc.Id, &acc.Cpf, &acc.Name, &acc.Secret, &acc.Balance, &acc.CreatedAt)
+	err := row.Scan(&acc.Id, &acc.Name, &acc.Cpf, &acc.Balance, &acc.Secret, &acc.CreatedAt)
 	if err != nil {
 		return nil, err
 	}

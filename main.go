@@ -1,11 +1,10 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"os"
-	"stonehenge/providers"
+	"stonehenge/infra/persistence"
 )
 
 func main() {
@@ -15,19 +14,18 @@ func main() {
 	// to be shared within ALL the application
 
 	// Creates an object with access to the database provider
-	provider, dbErr := providers.ConnectToDatabase(context.Background())
+	wsp, dbErr := persistence.NewWorkspace("den1.mysql2.gear.host", "stonehenge", "Zg7J5_sm6fv?", "stonehenge")
 	if dbErr != nil {
 		fmt.Printf("An error occurred while attempting to create a connection to the Stonehenge database: %v\n", dbErr)
 		os.Exit(-1)
 	}
 
-	// Initializes all the repositories and injects the database provider reference
-	providers.InjectDependenciesInRepositories(provider)
+	server := NewStonehengeServer(wsp)
 
 	port := os.Getenv("HTTP_PORT")
 	if port == "" {
 		port = "3000"
 	}
 
-	http.ListenAndServe(":"+port, InitializeServer())
+	http.ListenAndServe(":"+port, server.MapControllers())
 }

@@ -15,5 +15,5 @@ type TransferRepository interface {
 	Add(transfer *m.Transfer) (*string, error)
 
 	// Creates a money transaction between two accounts and creates a new Transfer entity
-	UpdateAccountsInTransaction(transfer *m.Transfer, origin *m.Account, destination *m.Account) (*string, error)
+	Transact(transfer *m.Transfer) (*string, error)
 }

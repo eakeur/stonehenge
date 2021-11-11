@@ -12,6 +12,7 @@ import (
 type Workspace struct {
 	Accounts  repositories.AccountRepository
 	Transfers repositories.TransferRepository
+	Identity  repositories.IdentityRepository
 	db        *sql.DB
 }
 
@@ -20,7 +21,7 @@ func (s *Workspace) Close() error {
 }
 
 func NewWorkspace(host, user, pass, dbname string) (*Workspace, error) {
-	url := fmt.Sprintf("%v:%v@tcp(%v)/%v", user, pass, host, dbname)
+	url := fmt.Sprintf("%v:%v@tcp(%v)/%v?parseTime=true", user, pass, host, dbname)
 	db, err := sql.Open("mysql", url)
 	if err != nil {
 		return nil, err
@@ -35,6 +36,9 @@ func NewWorkspace(host, user, pass, dbname string) (*Workspace, error) {
 			*db,
 		},
 		Transfers: &TransferRepository{
+			*db,
+		},
+		Identity: &IdentityRepository{
 			*db,
 		},
 	}, nil

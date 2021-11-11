@@ -1,8 +1,8 @@
-package handler
+package controllers
 
 import (
 	"net/http"
-	model "stonehenge/model"
+	model "stonehenge/core/model"
 )
 
 // Writes the response body to the object passed in

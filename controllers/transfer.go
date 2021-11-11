@@ -1,19 +1,30 @@
-package handler
+package controllers
 
 import (
 	"encoding/json"
 	"net/http"
-	"stonehenge/domain"
-	model "stonehenge/model"
+	"stonehenge/app"
+	"stonehenge/core/model"
+	"stonehenge/infra/security"
 )
 
+type TransferController struct {
+	transfers app.TransferApp
+}
+
+func NewTransferController(transfers *app.TransferApp) TransferController {
+	return TransferController{
+		transfers: *transfers,
+	}
+}
+
 // Gets all transfers of this actual account
-func GetAllTransfers(rw http.ResponseWriter, r *http.Request) {
-	accountId := r.Context().Value(model.ContextAccount).(string)
+func (tc *TransferController) GetAllTransfers(rw http.ResponseWriter, r *http.Request) {
+	accountId := r.Context().Value(security.ContextAccount).(string)
 	//parameter that sets if the transfers being requested are the ones made to the applicant or by them
 	toMe := r.URL.Query().Get("toMe")
 
-	transfers, err := domain.GetAllTransfers(accountId, toMe == "true")
+	transfers, err := tc.transfers.GetAll(accountId, toMe == "true")
 	if err != nil {
 		SendErrorResponse(rw, err)
 		return
@@ -27,7 +38,7 @@ func GetAllTransfers(rw http.ResponseWriter, r *http.Request) {
 }
 
 // Transfers an amount of money from an account to another
-func RequestTransfer(rw http.ResponseWriter, r *http.Request) {
+func (tc *TransferController) RequestTransfer(rw http.ResponseWriter, r *http.Request) {
 	transfer := model.Transfer{}
 	err := json.NewDecoder(r.Body).Decode(&transfer)
 	if err != nil {
@@ -35,8 +46,8 @@ func RequestTransfer(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	transfer.AccountOriginId = r.Context().Value(model.ContextAccount).(string)
-	id, err := domain.TransferMoney(transfer)
+	transfer.AccountOriginId = r.Context().Value(security.ContextAccount).(string)
+	id, err := tc.transfers.Transact(&transfer)
 	if err != nil {
 		SendErrorResponse(rw, err)
 		return

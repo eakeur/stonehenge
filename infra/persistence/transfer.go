@@ -3,6 +3,9 @@ package persistence
 import (
 	"database/sql"
 	m "stonehenge/core/model"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 type TransferRepository struct {
@@ -12,7 +15,7 @@ type TransferRepository struct {
 // Gets all transfers made to or by the specified account in the ID parameter.
 // The toMe bool indicates if the id passed is the destination or the origin account.
 func (r *TransferRepository) GetAll(id string, toMe bool) ([]m.Transfer, error) {
-	res, err := r.db.Query(MountSelect("transfers", "*", nil))
+	res, err := SelectMany(&r.db, "transfers", "*", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -33,15 +36,17 @@ func (r *TransferRepository) GetAll(id string, toMe bool) ([]m.Transfer, error) 
 
 // Gets the account with the ID specified
 func (r *TransferRepository) GetById(id string) (*m.Transfer, error) {
-	res := r.db.QueryRow(MountSelect("transfers", "*", map[string]interface{}{
+	res := SelectOne(&r.db, "transfers", "*", map[string]interface{}{
 		"id": id,
-	}))
+	})
 	return r.parseRowToTransfer(res)
 }
 
 // Creates a new transfer
 func (r *TransferRepository) Add(transfer *m.Transfer) (*string, error) {
-	_, err := r.db.Exec(MountInsert("transfers", transfer.ToMap()))
+	transfer.Id = uuid.New().String()
+	transfer.CreatedAt = time.Now()
+	_, err := Insert(&r.db, "transfers", transfer.ToMap())
 	if err != nil {
 		return nil, err
 	}
@@ -49,32 +54,58 @@ func (r *TransferRepository) Add(transfer *m.Transfer) (*string, error) {
 }
 
 // Creates a money transaction between two accounts and creates a new Transfer entity
-func (r *TransferRepository) UpdateAccountsInTransaction(transfer *m.Transfer, origin *m.Account, destination *m.Account) (*string, error) {
+func (r *TransferRepository) Transact(transfer *m.Transfer) (*string, error) {
+	transfer.Id = uuid.New().String()
+	transfer.CreatedAt = time.Now()
+	origin, dest, err := r.getOriginAndDestinationAccount(transfer.AccountOriginId, transfer.AccountDestinationId)
+	if err != nil {
+		return nil, nil
+	}
+
+	transfer.TransferMoney(origin, dest)
 	tx, err := r.db.Begin()
 	if err != nil {
 		return nil, nil
 	}
 
-	_, err = tx.Exec(MountUpdate("accounts", map[string]interface{}{"balance": origin.Balance}, map[string]interface{}{"id": origin.Id}))
+	_, err = Update(tx, "accounts", map[string]interface{}{"balance": origin.Balance}, map[string]interface{}{"id": origin.Id})
 	if err != nil {
 		tx.Rollback()
 		return nil, nil
 	}
 
-	_, err = tx.Exec(MountUpdate("accounts", map[string]interface{}{"balance": destination.Balance}, map[string]interface{}{"id": destination.Id}))
+	_, err = Update(tx, "accounts", map[string]interface{}{"balance": dest.Balance}, map[string]interface{}{"id": dest.Id})
 	if err != nil {
 		tx.Rollback()
 		return nil, nil
 	}
 
-	_, err = tx.Exec(MountInsert("transfers", transfer.ToMap()))
+	_, err = Insert(tx, "transfers", transfer.ToMap())
 	if err != nil {
 		tx.Rollback()
 		return nil, err
 	}
 
 	tx.Commit()
-	return nil, nil
+	return &transfer.Id, nil
+}
+
+func (r *TransferRepository) getOriginAndDestinationAccount(originId, destId string) (*m.Account, *m.Account, error) {
+	ori := new(m.Account)
+	res := SelectOne(&r.db, "accounts", "id, balance", map[string]interface{}{"id": originId})
+	err := res.Scan(&ori.Id, &ori.Balance)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	dest := new(m.Account)
+	res = SelectOne(&r.db, "accounts", "id, balance", map[string]interface{}{"id": destId})
+	err = res.Scan(&dest.Id, &dest.Balance)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return ori, dest, nil
 }
 
 func (r *TransferRepository) parseRowToTransfer(row Scanner) (*m.Transfer, error) {

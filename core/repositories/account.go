@@ -10,6 +10,9 @@ type AccountRepository interface {
 	// Gets the account with the ID specified
 	GetById(id string) (*m.Account, error)
 
+	// Gets the balance of the account with the ID specified
+	GetBalanceById(id string) (*int64, error)
+
 	// Creates a new account
 	Add(account *m.Account) (*string, error)
 
