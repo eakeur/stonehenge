@@ -57,6 +57,17 @@ func (t *Transfer) ToMap() map[string]interface{} {
 	}
 }
 
+// Returns an array of this transfer instance
+func (t *Transfer) ToArray() []interface{} {
+	return []interface{}{
+		t.Id,
+		t.AccountOriginId,
+		t.AccountDestinationId,
+		t.Amount,
+		t.CreatedAt,
+	}
+}
+
 // Returns an instance of a transfer based on the data passed as parameter
 func TransferFromMap(mapInput map[string]interface{}) Transfer {
 	return Transfer{
