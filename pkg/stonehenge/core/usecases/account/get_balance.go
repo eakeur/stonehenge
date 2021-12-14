@@ -6,17 +6,12 @@ import (
 	"stonehenge/pkg/stonehenge/core/types/id"
 )
 
-type GetBalanceRequest struct {
-	Context context.Context
-	Id      string
-}
-
 type GetBalanceResponse struct {
 	Balance currency.Currency
 }
 
-func (u *useCase) GetBalance(request GetBalanceRequest) (*GetBalanceResponse, error) {
-	balance, err := u.ac.GetBalance(request.Context, id.ID(request.Id))
+func (u *useCase) GetBalance(ctx context.Context, id id.ID) (*GetBalanceResponse, error) {
+	balance, err := u.ac.GetBalance(ctx, id)
 	if err != nil {
 		return nil, err
 	}
