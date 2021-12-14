@@ -31,7 +31,4 @@ type Repository interface {
 
 	// UpdateBalance replaces the balance of the account with the id provided
 	UpdateBalance(ctx context.Context, id id.ID, balance currency.Currency) error
-
-	// Remove removes an account from the database
-	Remove(ctx context.Context, id id.ID) error
 }
