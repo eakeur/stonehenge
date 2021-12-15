@@ -1,4 +1,4 @@
-package transfer
+package transfers
 
 import (
 	"stonehenge/app/core/model/transfer"
