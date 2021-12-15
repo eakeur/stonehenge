@@ -16,5 +16,5 @@ type Repository interface {
 	Get(ctx context.Context, id id.ID) (*Transfer, error)
 
 	// Create creates a new transfer and returns its new id
-	Create(ctx context.Context, account *Transfer) (*id.ID, error)
+	Create(ctx context.Context, transfer *Transfer) (*id.ID, error)
 }
