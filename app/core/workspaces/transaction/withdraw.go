@@ -25,7 +25,7 @@ func (u *workspace) Withdraw(ctx context.Context, req WithdrawalRequest) (curren
 		return 0, account.ErrNoMoney
 	}
 	acc.Balance -= req.Amount
-	err = u.ac.Update(ctx, req.AccountId, acc)
+	err = u.ac.UpdateBalance(ctx, req.AccountId, acc.Balance)
 	if err != nil {
 		return 0, err
 	}

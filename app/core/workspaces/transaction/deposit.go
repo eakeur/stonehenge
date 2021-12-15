@@ -17,7 +17,7 @@ func (u *workspace) Deposit(ctx context.Context, req DepositRequest) (currency.C
 		return 0, err
 	}
 	acc.Balance = acc.Balance + req.Amount
-	err = u.ac.Update(ctx, req.AccountId, acc)
+	err = u.ac.UpdateBalance(ctx, req.AccountId, acc.Balance)
 	if err != nil {
 		return 0, err
 	}

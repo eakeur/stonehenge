@@ -26,9 +26,6 @@ type Repository interface {
 	// CheckExistence checks if a document is registered to any account and throws an error if it is
 	CheckExistence(ctx context.Context, document document.Document) error
 
-	// Update replaces the values of all fields of the account with the id provided
-	Update(ctx context.Context, id id.ID, account *Account) error
-
 	// UpdateBalance replaces the balance of the account with the id provided
 	UpdateBalance(ctx context.Context, id id.ID, balance currency.Currency) error
 }
