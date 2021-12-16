@@ -17,7 +17,18 @@ func (u *workspace) Deposit(ctx context.Context, req DepositRequest) (currency.C
 		return 0, err
 	}
 	acc.Balance = acc.Balance + req.Amount
+	ctx, err = u.ac.StartOperation(ctx)
+	if err != nil {
+		//TODO create could not start operation error
+		return 0, err
+	}
 	err = u.ac.UpdateBalance(ctx, req.AccountId, acc.Balance)
+	err = u.ac.FinishOperation(ctx)
+	if err != nil {
+		//TODO create could not finish operation error
+		return 0, err
+	}
+
 	if err != nil {
 		return 0, err
 	}

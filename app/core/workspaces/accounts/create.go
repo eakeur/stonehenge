@@ -39,10 +39,22 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (*CreateOutput,
 		Document: req.Document,
 	}
 
+	ctx, err = u.ac.StartOperation(ctx)
+	if err != nil {
+		//TODO create could not start operation error
+		return nil, err
+	}
+
 	accountId, err := u.ac.Create(ctx, &acc)
 	if err != nil {
 		return nil, err
 	}
+	u.ac.FinishOperation(ctx)
+	if err != nil {
+		//TODO create could not finish operation error
+		return nil, err
+	}
+
 	return &CreateOutput{
 		AccountID: *accountId,
 		CreatedAt: acc.CreatedAt,

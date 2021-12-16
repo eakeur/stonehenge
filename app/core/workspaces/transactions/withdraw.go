@@ -25,7 +25,17 @@ func (u *workspace) Withdraw(ctx context.Context, req WithdrawalRequest) (curren
 		return 0, account.ErrNoMoney
 	}
 	acc.Balance -= req.Amount
+	ctx, err = u.ac.StartOperation(ctx)
+	if err != nil {
+		//TODO create could not start operation error
+		return 0, err
+	}
 	err = u.ac.UpdateBalance(ctx, req.AccountId, acc.Balance)
+	err = u.ac.FinishOperation(ctx)
+	if err != nil {
+		//TODO create could not finish operation error
+		return 0, err
+	}
 	if err != nil {
 		return 0, err
 	}

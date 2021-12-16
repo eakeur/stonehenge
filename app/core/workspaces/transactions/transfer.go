@@ -52,6 +52,7 @@ func (u *workspace) Transfer(ctx context.Context, req TransferRequest) error {
 	ctx, err = u.ac.StartOperation(ctx)
 	if err != nil {
 		//TODO create could not start operation error
+		return err
 	}
 
 	// Updates the balance of the origin account after transaction
