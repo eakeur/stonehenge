@@ -28,4 +28,10 @@ type Repository interface {
 
 	// UpdateBalance replaces the balance of the account with the id provided
 	UpdateBalance(ctx context.Context, id id.ID, balance currency.Currency) error
+
+	// StartOperation creates a transaction in this context
+	StartOperation(ctx context.Context) (context.Context, error)
+
+	// FinishOperation finishes a transaction in this context
+	FinishOperation(ctx context.Context) error
 }

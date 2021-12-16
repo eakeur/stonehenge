@@ -49,6 +49,11 @@ func (u *workspace) Transfer(ctx context.Context, req TransferRequest) error {
 		return account.ErrNotFound
 	}
 
+	ctx, err = u.ac.StartOperation(ctx)
+	if err != nil {
+		//TODO create could not start operation error
+	}
+
 	// Updates the balance of the origin account after transaction
 	err = u.ac.UpdateBalance(ctx, req.OriginId, origin.Balance-req.Amount)
 	if err != nil {
@@ -64,6 +69,12 @@ func (u *workspace) Transfer(ctx context.Context, req TransferRequest) error {
 	t.EffectiveDate = time.Now()
 	_, err = u.tr.Create(ctx, t)
 	if err != nil {
+		return err
+	}
+
+	err = u.ac.FinishOperation(ctx)
+	if err != nil {
+		//TODO create could not finish operation error
 		return err
 	}
 
