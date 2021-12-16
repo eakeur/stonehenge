@@ -8,11 +8,6 @@ import (
 	"time"
 )
 
-type ListRequest struct {
-	Context context.Context
-	Filter  transfer.Filter
-}
-
 type Reference struct {
 	Id id.ID
 
@@ -25,8 +20,8 @@ type Reference struct {
 	EffectiveDate time.Time
 }
 
-func (u *workspace) List(request ListRequest) ([]Reference, error) {
-	list, err := u.tr.List(request.Context, request.Filter)
+func (u *workspace) List(ctx context.Context, filter transfer.Filter) ([]Reference, error) {
+	list, err := u.tr.List(ctx, filter)
 	if err != nil {
 		return nil, err
 	}

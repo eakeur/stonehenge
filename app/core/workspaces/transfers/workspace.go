@@ -1,13 +1,14 @@
 package transfers
 
 import (
+	"context"
 	"stonehenge/app/core/model/transfer"
 )
 
 //go:generate moq -fmt goimports -out usecase_mock.go . UseCase:UseCaseMock
 
 type Workspace interface {
-	ListTransfers(filter transfer.Filter) ([]transfer.Transfer, error)
+	List(ctx context.Context, filter transfer.Filter) ([]Reference, error)
 }
 
 type workspace struct {
