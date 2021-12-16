@@ -8,7 +8,7 @@ import (
 )
 
 type Workspace interface {
-	Transfer(ctx context.Context, req TransferRequest)
+	Transfer(ctx context.Context, req TransferRequest) error
 	Withdraw(ctx context.Context, req WithdrawalRequest) (currency.Currency, error)
 	Deposit(ctx context.Context, req DepositRequest) (currency.Currency, error)
 }
