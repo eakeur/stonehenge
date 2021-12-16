@@ -3,11 +3,15 @@ package accounts
 import (
 	"context"
 	"stonehenge/app/core/model/account"
+	"stonehenge/app/core/types/currency"
 	"stonehenge/app/core/types/document"
 	"stonehenge/app/core/types/id"
 	"stonehenge/app/core/types/password"
 	"time"
 )
+
+// initialBalance expressed in cents
+const initialBalance currency.Currency = 5000
 
 type CreateInput struct {
 	Document document.Document
@@ -37,6 +41,7 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (*CreateOutput,
 		Name:     req.Name,
 		Secret:   req.Secret.Hash(),
 		Document: req.Document,
+		Balance: initialBalance,
 	}
 
 	ctx, err = u.ac.StartOperation(ctx)
