@@ -20,15 +20,19 @@ func (t *accountRepo) StartOperation(ctx context.Context) (context.Context, erro
 	return t.tx.Begin(ctx)
 }
 
-func (t *accountRepo) FinishOperation(ctx context.Context) error {
+func (t *accountRepo) CommitOperation(ctx context.Context) error {
 	if err := t.tx.Commit(ctx); err != nil {
-		errRollback := t.tx.Rollback(ctx)
-		if errRollback != nil {
-			return errRollback
-		}
-		return nil
+		t.RollbackOperation(ctx)
+		return err
 	}
 	return nil
+}
+
+func (t *accountRepo) RollbackOperation(ctx context.Context) {
+	if err := t.tx.Rollback(ctx); err != nil {
+		return
+	}
+	return
 }
 
 func (t *accountRepo) List(ctx context.Context, filter account.Filter) ([]account.Account, error) {

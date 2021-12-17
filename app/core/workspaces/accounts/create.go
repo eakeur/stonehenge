@@ -52,9 +52,10 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (*CreateOutput,
 
 	accountId, err := u.ac.Create(ctx, &acc)
 	if err != nil {
+		u.ac.RollbackOperation(ctx)
 		return nil, err
 	}
-	u.ac.FinishOperation(ctx)
+	err = u.ac.CommitOperation(ctx)
 	if err != nil {
 		//TODO create could not finish operation error
 		return nil, err

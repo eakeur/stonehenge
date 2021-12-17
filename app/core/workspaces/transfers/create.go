@@ -65,23 +65,28 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (*CreateOutput,
 	remaining := origin.Balance-req.Amount
 	err = u.ac.UpdateBalance(ctx, req.OriginId, remaining)
 	if err != nil {
+		u.ac.RollbackOperation(ctx)
 		return nil, err
 	}
 
 	// Updates the balance of the destination account after transaction
 	err = u.ac.UpdateBalance(ctx, req.DestId, dest.Balance+req.Amount)
 	if err != nil {
+		u.ac.RollbackOperation(ctx)
 		return nil, err
 	}
 
+	// Creates a transfer register on storage
 	t.EffectiveDate = time.Now()
 	transferId, err := u.tr.Create(ctx, t)
 	if err != nil {
+		u.ac.RollbackOperation(ctx)
 		return nil, err
 	}
 
-	err = u.ac.FinishOperation(ctx)
+	err = u.ac.CommitOperation(ctx)
 	if err != nil {
+		u.ac.RollbackOperation(ctx)
 		//TODO create could not finish operation error
 		return nil, err
 	}

@@ -32,6 +32,10 @@ type Repository interface {
 	// StartOperation creates a transaction in this context
 	StartOperation(ctx context.Context) (context.Context, error)
 
-	// FinishOperation finishes a transaction in this context
-	FinishOperation(ctx context.Context) error
+	// CommitOperation finishes successfully a transaction in this context or rollbacks it
+	// in case of failing
+	CommitOperation(ctx context.Context) error
+
+	// RollbackOperation finishes unsuccessfully a transaction in this context
+	RollbackOperation(ctx context.Context)
 }
