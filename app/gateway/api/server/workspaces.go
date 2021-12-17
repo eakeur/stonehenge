@@ -1,8 +1,8 @@
 package server
 
 import (
-	"stonehenge/app/core/workspaces/accounts"
-	"stonehenge/app/core/workspaces/transfers"
+	"stonehenge/app/workspaces/accounts"
+	"stonehenge/app/workspaces/transfers"
 )
 
 type WorkspaceWrapper struct {

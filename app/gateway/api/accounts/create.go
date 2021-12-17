@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"stonehenge/app/core/types/document"
 	"stonehenge/app/core/types/password"
-	"stonehenge/app/core/workspaces/accounts"
+	"stonehenge/app/workspaces/accounts"
 )
 
 type PostRequestBody struct {

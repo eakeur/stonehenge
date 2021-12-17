@@ -41,7 +41,7 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (*CreateOutput,
 		Name:     req.Name,
 		Secret:   req.Secret.Hash(),
 		Document: req.Document,
-		Balance: initialBalance,
+		Balance:  initialBalance,
 	}
 
 	ctx, err = u.ac.StartOperation(ctx)

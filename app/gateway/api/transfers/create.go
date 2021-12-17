@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"stonehenge/app/core/types/currency"
 	"stonehenge/app/core/types/id"
-	"stonehenge/app/core/workspaces/transfers"
 	"stonehenge/app/gateway/http/common"
+	"stonehenge/app/workspaces/transfers"
 )
 
 type PostRequestBody struct {

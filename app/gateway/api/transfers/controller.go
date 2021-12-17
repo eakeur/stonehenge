@@ -1,7 +1,7 @@
 package transfers
 
 import (
-	"stonehenge/app/core/workspaces/transfers"
+	"stonehenge/app/workspaces/transfers"
 )
 
 type Controller struct {

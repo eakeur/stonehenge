@@ -1,7 +1,7 @@
 package accounts
 
 import (
-	"stonehenge/app/core/workspaces/accounts"
+	"stonehenge/app/workspaces/accounts"
 )
 
 type Controller struct {
