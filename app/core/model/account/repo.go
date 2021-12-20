@@ -17,6 +17,10 @@ type Repository interface {
 	// Get gets the account with the ID specified
 	Get(ctx context.Context, id id.ID) (*Account, error)
 
+	// GetWithCPF gets the account with the document specified
+	GetWithCPF(ctx context.Context, document document.Document) (*Account, error)
+
+
 	// GetBalance gets the balance with the ID specified
 	GetBalance(ctx context.Context, id id.ID) (*currency.Currency, error)
 

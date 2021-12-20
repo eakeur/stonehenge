@@ -16,6 +16,17 @@ type accountRepo struct {
 	db *pgxpool.Pool
 }
 
+func (t *accountRepo) GetWithCPF(ctx context.Context, document document.Document) (*account.Account, error) {
+	const query string = "select * from accounts where document = $1"
+	ret := t.db.QueryRow(ctx, query, document)
+	acc, err := parseAccount(ret)
+	if err != nil {
+		// TODO implement error
+		return nil, err
+	}
+	return acc, nil
+}
+
 func (t *accountRepo) StartOperation(ctx context.Context) (context.Context, error) {
 	return t.tx.Begin(ctx)
 }
