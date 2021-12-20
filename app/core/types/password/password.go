@@ -9,8 +9,8 @@ import (
 // other strings
 type Password string
 
-// CompareWithString compares a string input with a hashed string
-func (p *Password) CompareWithString(input string) error {
+// CompareWithString validates and compares a password with another one
+func (p *Password) CompareWithString(input Password) error {
 	if *p != Password(input) {
 		return ErrWrongPassword
 	}
