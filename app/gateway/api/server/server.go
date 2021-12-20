@@ -14,24 +14,25 @@ type Server struct {
 
 func New(workspaces *WorkspaceWrapper) *Server {
 	router := chi.NewRouter()
+	accountsController := accounts.New(workspaces.Accounts)
+
 	router.Route("/accounts", func(router chi.Router) {
-
-		controller := accounts.New(workspaces.Accounts)
-
 		router.Use(authorization.Middleware)
-		router.Get("/", controller.List)
-		router.Post("/", controller.Create)
+		router.Get("/", accountsController.List)
+		router.Post("/", accountsController.Create)
 		router.Route("/{accountId}", func(router chi.Router) {
-			router.Get("/balance", controller.GetBalance)
+			router.Get("/balance", accountsController.GetBalance)
 		})
 	})
 
+	router.Post("/login", accountsController.Authenticate)
+
 	router.Route("/transfers", func(router chi.Router) {
-		controller := transfers.New(workspaces.Transfers)
+		transfersController := transfers.New(workspaces.Transfers)
 
 		router.Use(authorization.Middleware)
-		router.Get("/", controller.List)
-		router.Post("/", controller.Create)
+		router.Get("/", transfersController.List)
+		router.Post("/", transfersController.Create)
 	})
 
 	return &Server{
