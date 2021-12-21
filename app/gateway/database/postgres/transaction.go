@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
@@ -41,7 +40,7 @@ func (t *transaction) From(ctx context.Context) (pgx.Tx, bool) {
 func (t *transaction) Begin(ctx context.Context) (context.Context, error) {
 	tx, err := t.db.Begin(ctx)
 	if err != nil {
-		return nil, err
+		return nil, ErrBeginTransaction
 	}
 	return context.WithValue(ctx, TXContextKey, tx), nil
 }
@@ -49,12 +48,10 @@ func (t *transaction) Begin(ctx context.Context) (context.Context, error) {
 func (t *transaction) Commit(ctx context.Context) error {
 	tx, ok := t.From(ctx)
 	if !ok {
-		// TODO Implement specific error
-		return nil
+		return ErrNoTransaction
 	}
 
 	if err := tx.Commit(ctx); err != nil {
-		// TODO Implement specific error over here too
 		return err
 	}
 
@@ -64,12 +61,10 @@ func (t *transaction) Commit(ctx context.Context) error {
 func (t *transaction) Rollback(ctx context.Context) error {
 	tx, ok := t.From(ctx)
 	if !ok {
-		// TODO Implement specific error
-		return nil
+		return ErrNoTransaction
 	}
 
 	if err := tx.Rollback(ctx); err != nil {
-		// TODO Implement specific error over here too
 		return err
 	}
 

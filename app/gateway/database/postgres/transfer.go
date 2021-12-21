@@ -35,8 +35,7 @@ func (t *transferRepo) List(ctx context.Context, filter transfer.Filter) ([]tran
 
 	ret, err := t.db.Query(ctx, query, args...)
 	if err != nil {
-		// TODO implement error
-		return nil, err
+		return nil, transfer.ErrNotFound
 	}
 	defer ret.Close()
 	transfers := make([]transfer.Transfer, 0)
@@ -44,8 +43,7 @@ func (t *transferRepo) List(ctx context.Context, filter transfer.Filter) ([]tran
 	for ret.Next() {
 		tr, err := parseTransfer(ret)
 		if err != nil {
-			// TODO implement error
-			return nil, err
+			continue
 		}
 		transfers = append(transfers, *tr)
 	}
@@ -57,17 +55,15 @@ func (t *transferRepo) Get(ctx context.Context, id id.ID) (*transfer.Transfer, e
 	ret := t.db.QueryRow(ctx, query, id)
 	tr, err := parseTransfer(ret)
 	if err != nil {
-		// TODO implement error
-		return nil, err
+		return nil, transfer.ErrNotFound
 	}
 	return tr, nil
 }
 
-func (t *transferRepo) Create(ctx context.Context, transfer *transfer.Transfer) (*id.ID, error) {
+func (t *transferRepo) Create(ctx context.Context, tran *transfer.Transfer) (*id.ID, error) {
 	db, found := t.tx.From(ctx)
 	if !found {
-		// TODO implement missing transactions
-		return nil, nil
+		return nil, transfer.ErrRegistering
 	}
 	const script string = `
 		insert into
@@ -77,18 +73,17 @@ func (t *transferRepo) Create(ctx context.Context, transfer *transfer.Transfer) 
 		returning 
 			created_at, updated_at
 	`
-	transfer.Id = id.ID(uuid.New().String())
-	row := db.QueryRow(ctx, script, transfer.Id, transfer.OriginId, transfer.DestinationId, transfer.Amount, transfer.EffectiveDate)
+	tran.Id = id.ID(uuid.New().String())
+	row := db.QueryRow(ctx, script, tran.Id, tran.OriginId, tran.DestinationId, tran.Amount, tran.EffectiveDate)
 	err := row.Scan(
-		&transfer.CreatedAt,
-		&transfer.UpdatedAt,
+		&tran.CreatedAt,
+		&tran.UpdatedAt,
 	)
 	if err != nil {
-		//TODO implement me
-		return nil, err
+		return nil, transfer.ErrRegistering
 	}
 
-	return &transfer.Id, nil
+	return &tran.Id, nil
 }
 
 func parseTransfer(row Scanner) (*transfer.Transfer, error) {
