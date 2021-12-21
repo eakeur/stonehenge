@@ -4,14 +4,14 @@ import (
 	"net/http"
 	"net/url"
 	"stonehenge/app/core/model/transfer"
-	"stonehenge/app/gateway/http/common"
+	"stonehenge/app/gateway/api/common"
 	"time"
 )
 
 // List gets all transfers of this actual account
 func (c *Controller) List(rw http.ResponseWriter, r *http.Request) {
 	filters := getFilter(r.URL.Query())
-	filters .OriginId = string(common.FetchContextUser(r.Context()))
+	filters.OriginId = string(common.FetchContextUser(r.Context()))
 	c.workspace.List(r.Context(), filters)
 }
 

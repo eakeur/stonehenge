@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"stonehenge/app/core/types/currency"
 	"stonehenge/app/core/types/id"
-	"stonehenge/app/gateway/http/common"
+	"stonehenge/app/gateway/api/common"
 	"stonehenge/app/workspaces/transfers"
 )
 
