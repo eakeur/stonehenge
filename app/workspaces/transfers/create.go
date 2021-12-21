@@ -57,8 +57,7 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (*CreateOutput,
 
 	ctx, err = u.ac.StartOperation(ctx)
 	if err != nil {
-		//TODO create could not start operation error
-		return nil, err
+		return nil, transfer.ErrRegistering
 	}
 
 	// Updates the balance of the origin account after transaction
@@ -66,14 +65,14 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (*CreateOutput,
 	err = u.ac.UpdateBalance(ctx, req.OriginId, remaining)
 	if err != nil {
 		u.ac.RollbackOperation(ctx)
-		return nil, err
+		return nil, transfer.ErrRegistering
 	}
 
 	// Updates the balance of the destination account after transaction
 	err = u.ac.UpdateBalance(ctx, req.DestId, dest.Balance+req.Amount)
 	if err != nil {
 		u.ac.RollbackOperation(ctx)
-		return nil, err
+		return nil, transfer.ErrRegistering
 	}
 
 	// Creates a transfer register on storage
@@ -81,14 +80,13 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (*CreateOutput,
 	transferId, err := u.tr.Create(ctx, t)
 	if err != nil {
 		u.ac.RollbackOperation(ctx)
-		return nil, err
+		return nil, transfer.ErrRegistering
 	}
 
 	err = u.ac.CommitOperation(ctx)
 	if err != nil {
 		u.ac.RollbackOperation(ctx)
-		//TODO create could not finish operation error
-		return nil, err
+		return nil, transfer.ErrRegistering
 	}
 
 	return &CreateOutput{

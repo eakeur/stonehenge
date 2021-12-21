@@ -46,19 +46,17 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (*CreateOutput,
 
 	ctx, err = u.ac.StartOperation(ctx)
 	if err != nil {
-		//TODO create could not start operation error
-		return nil, err
+		return nil, account.ErrCreating
 	}
 
 	accountId, err := u.ac.Create(ctx, &acc)
 	if err != nil {
 		u.ac.RollbackOperation(ctx)
-		return nil, err
+		return nil, account.ErrCreating
 	}
 	err = u.ac.CommitOperation(ctx)
 	if err != nil {
-		//TODO create could not finish operation error
-		return nil, err
+		return nil, account.ErrCreating
 	}
 
 	return &CreateOutput{
