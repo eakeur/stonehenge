@@ -12,4 +12,7 @@ var (
 
 	// ErrAmountInvalid throws when a transfer request is made with an invalid amount of money, which is equal or less than zero
 	ErrAmountInvalid = errors.New("the amount of money provided is not valid. please provide a value bigger than zero")
+
+	//ErrNotFound happens when no transfer is found
+	ErrNotFound = errors.New("could not find any transfers with the given filters")
 )
