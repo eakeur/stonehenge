@@ -4,8 +4,11 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"stonehenge/app/core/model/account"
 	"stonehenge/app/core/types/document"
 	"stonehenge/app/core/types/password"
+	"stonehenge/app/gateway/api/common"
+	"stonehenge/app/gateway/api/responses"
 	"stonehenge/app/workspaces/accounts"
 )
 
@@ -23,7 +26,26 @@ func (c *Controller) Create(rw http.ResponseWriter, r *http.Request) {
 		Secret:   password.Password(body.Secret),
 		Name:     body.Name,
 	}
-	c.workspace.Create(r.Context(), req)
+
+	create, err := c.workspace.Create(r.Context(), req)
+	if err != nil {
+		if err == account.ErrCreating || err == account.ErrExists {
+			responses.WriteErrorResponse(rw, http.StatusBadRequest, err)
+		}
+
+		responses.WriteErrorResponse(rw, http.StatusInternalServerError, err)
+		return
+	}
+
+	tok, err := common.CreateToken(create.AccountID)
+	if err != nil {
+		responses.WriteErrorResponse(rw, http.StatusInternalServerError, ErrTokenGeneration)
+		return
+	}
+
+	common.AssignToken(rw, tok)
+
+	rw.WriteHeader(http.StatusCreated)
 
 }
 

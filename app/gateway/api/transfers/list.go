@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"stonehenge/app/core/model/transfer"
 	"stonehenge/app/gateway/api/common"
+	"stonehenge/app/gateway/api/responses"
 	"time"
 )
 
@@ -12,7 +13,16 @@ import (
 func (c *Controller) List(rw http.ResponseWriter, r *http.Request) {
 	filters := getFilter(r.URL.Query())
 	filters.OriginId = string(common.FetchContextUser(r.Context()))
-	c.workspace.List(r.Context(), filters)
+	list, err := c.workspace.List(r.Context(), filters)
+	if err != nil {
+		responses.WriteErrorResponse(rw, http.StatusBadRequest, err)
+	}
+
+	err = responses.WriteSuccessfulJSON(rw, http.StatusOK, list)
+	if err != nil {
+		responses.WriteErrorResponse(rw, http.StatusInternalServerError, err)
+		return
+	}
 }
 
 func getFilter(values url.Values) transfer.Filter {

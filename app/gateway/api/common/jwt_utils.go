@@ -29,13 +29,11 @@ func ExtractToken(token string) (*TokenDetails, error) {
 		return []byte(JwtKey), nil
 	})
 	if err != nil {
-		//TODO Implement errors
-		return nil, nil
+		return nil, err
 	}
 
 	if parsed.Claims.Valid() != nil {
-		//TODO Implement errors
-		return nil, nil
+		return nil, err
 	}
 	claims := parsed.Claims.(*TokenDetails)
 	return claims, nil

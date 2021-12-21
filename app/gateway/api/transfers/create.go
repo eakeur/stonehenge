@@ -7,6 +7,7 @@ import (
 	"stonehenge/app/core/types/currency"
 	"stonehenge/app/core/types/id"
 	"stonehenge/app/gateway/api/common"
+	"stonehenge/app/gateway/api/responses"
 	"stonehenge/app/workspaces/transfers"
 )
 
@@ -25,7 +26,17 @@ func (c *Controller) Create(rw http.ResponseWriter, r *http.Request) {
 		DestId:   id.ID(body.DestinationId),
 		Amount:   currency.Currency(body.Amount),
 	}
-	c.workspace.Create(r.Context(), req)
+	create, err := c.workspace.Create(r.Context(), req)
+	if err != nil {
+		responses.WriteErrorResponse(rw, http.StatusBadRequest, err)
+		return
+	}
+
+	err = responses.WriteSuccessfulJSON(rw, http.StatusCreated, create)
+	if err != nil {
+		responses.WriteErrorResponse(rw, http.StatusInternalServerError, err)
+		return
+	}
 }
 
 func getBody(body io.ReadCloser) *PostRequestBody {
