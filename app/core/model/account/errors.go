@@ -7,8 +7,8 @@ var (
 	// ErrCreating occurs when an untracked error happens when creating a new account
 	ErrCreating = errors.New("an error occurred while creating this account")
 
-	// ErrInvalid throws when the identification provided is an invalid form of ID
-	ErrInvalid = errors.New("the account id provided is invalid. please, try again with a valid one")
+	// ErrInvalidID throws when the identification provided is an invalid form of ID
+	ErrInvalidID = errors.New("the account id provided is invalid. please, try again with a valid one")
 
 	// ErrNotFound expresses that the account with the identification provided does not exist, or, for some reason, could not be found
 	ErrNotFound = errors.New("the account requested could not be found or does not exist")
