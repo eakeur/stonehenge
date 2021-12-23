@@ -12,19 +12,19 @@ import (
 type Account struct {
 
 	// The unique identifier of this entity
-	ID id.ID `json:"id"`
+	ID id.ID
 
 	// The unique document that represents the user
-	Document document.Document `json:"cpf"`
+	Document document.Document
 
 	// A password defined by the owner
-	Secret password.Password `json:"secret"`
+	Secret password.Password
 
 	// The name of the account's owner
-	Name string `json:"name"`
+	Name string
 
 	// The actual balance of this account
-	Balance currency.Currency `json:"balance"`
+	Balance currency.Currency
 
 	audits.Audit
 }
