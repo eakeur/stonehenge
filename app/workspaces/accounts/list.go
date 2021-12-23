@@ -24,7 +24,7 @@ func (u *workspace) List(ctx context.Context, filter account.Filter) ([]Referenc
 	refs := make([]Reference, len(list))
 	for i, a := range list {
 		refs[i] = Reference{
-			Id:   a.Id,
+			Id:   a.ID,
 			Name: a.Name,
 		}
 	}

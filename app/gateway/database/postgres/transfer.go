@@ -73,8 +73,8 @@ func (t *transferRepo) Create(ctx context.Context, tran *transfer.Transfer) (*id
 		returning 
 			created_at, updated_at
 	`
-	tran.Id = id.ID(uuid.New().String())
-	row := db.QueryRow(ctx, script, tran.Id, tran.OriginId, tran.DestinationId, tran.Amount, tran.EffectiveDate)
+	tran.ID = id.ID(uuid.New().String())
+	row := db.QueryRow(ctx, script, tran.ID, tran.OriginID, tran.DestinationID, tran.Amount, tran.EffectiveDate)
 	err := row.Scan(
 		&tran.CreatedAt,
 		&tran.UpdatedAt,
@@ -83,12 +83,12 @@ func (t *transferRepo) Create(ctx context.Context, tran *transfer.Transfer) (*id
 		return nil, transfer.ErrRegistering
 	}
 
-	return &tran.Id, nil
+	return &tran.ID, nil
 }
 
 func parseTransfer(row Scanner) (*transfer.Transfer, error) {
 	tr := new(transfer.Transfer)
-	err := row.Scan(&tr.Id, &tr.OriginId, &tr.DestinationId, &tr.Amount, &tr.EffectiveDate, &tr.UpdatedAt, &tr.CreatedAt)
+	err := row.Scan(&tr.ID, &tr.OriginID, &tr.DestinationID, &tr.Amount, &tr.EffectiveDate, &tr.UpdatedAt, &tr.CreatedAt)
 	if err != nil {
 		return nil, err
 	}

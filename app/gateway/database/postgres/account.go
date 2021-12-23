@@ -105,8 +105,8 @@ func (t *accountRepo) Create(ctx context.Context, acc *account.Account) (*id.ID,
 			created_at, updated_at
 	`
 
-	acc.Id = id.ID(uuid.New().String())
-	row := db.QueryRow(ctx, script, acc.Id, acc.Document, acc.Secret, acc.Name, acc.Balance)
+	acc.ID = id.ID(uuid.New().String())
+	row := db.QueryRow(ctx, script, acc.ID, acc.Document, acc.Secret, acc.Name, acc.Balance)
 	err := row.Scan(
 		&acc.CreatedAt,
 		&acc.UpdatedAt,
@@ -115,7 +115,7 @@ func (t *accountRepo) Create(ctx context.Context, acc *account.Account) (*id.ID,
 		return nil, account.ErrCreating
 	}
 
-	return &acc.Id, nil
+	return &acc.ID, nil
 }
 
 func (t *accountRepo) CheckExistence(ctx context.Context, document document.Document) error {
@@ -155,7 +155,7 @@ func (t *accountRepo) UpdateBalance(ctx context.Context, id id.ID, balance curre
 
 func parseAccount(row Scanner) (*account.Account, error) {
 	acc := new(account.Account)
-	err := row.Scan(&acc.Id, &acc.Name, &acc.Document, &acc.Balance, &acc.Secret, &acc.UpdatedAt, &acc.CreatedAt)
+	err := row.Scan(&acc.ID, &acc.Name, &acc.Document, &acc.Balance, &acc.Secret, &acc.UpdatedAt, &acc.CreatedAt)
 	if err != nil {
 		return nil, err
 	}

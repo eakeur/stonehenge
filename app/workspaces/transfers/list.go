@@ -28,9 +28,9 @@ func (u *workspace) List(ctx context.Context, filter transfer.Filter) ([]Referen
 	refs := make([]Reference, len(list))
 	for i, a := range list {
 		refs[i] = Reference{
-			Id:            a.Id,
-			OriginId:      a.OriginId,
-			DestinationId: a.DestinationId,
+			Id:            a.ID,
+			OriginId:      a.OriginID,
+			DestinationId: a.DestinationID,
 			Amount:        a.Amount,
 			EffectiveDate: a.EffectiveDate,
 		}

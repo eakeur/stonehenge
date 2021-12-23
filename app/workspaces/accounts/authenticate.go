@@ -9,7 +9,7 @@ import (
 
 type AuthenticationRequest struct {
 	Document document.Document
-	Secret password.Password
+	Secret   password.Password
 }
 
 func (u *workspace) Authenticate(ctx context.Context, req AuthenticationRequest) (*id.ID, error) {
@@ -26,6 +26,6 @@ func (u *workspace) Authenticate(ctx context.Context, req AuthenticationRequest)
 		return nil, err
 	}
 
-	return &acc.Id, nil
+	return &acc.ID, nil
 
 }

@@ -17,14 +17,14 @@ type CreateInput struct {
 
 type CreateOutput struct {
 	RemainingBalance currency.Currency
-	TransferId id.ID
-	CreatedAt time.Time
+	TransferId       id.ID
+	CreatedAt        time.Time
 }
 
 func (u *workspace) Create(ctx context.Context, req CreateInput) (*CreateOutput, error) {
 	t := &transfer.Transfer{
-		OriginId:      req.OriginId,
-		DestinationId: req.DestId,
+		OriginID:      req.OriginId,
+		DestinationID: req.DestId,
 		Amount:        req.Amount,
 	}
 
@@ -34,7 +34,7 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (*CreateOutput,
 	}
 
 	// Checks if the origin and destination accounts are the same
-	if t.DestinationId == t.OriginId {
+	if t.DestinationID == t.OriginID {
 		return nil, transfer.ErrSameAccount
 	}
 
@@ -61,7 +61,7 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (*CreateOutput,
 	}
 
 	// Updates the balance of the origin account after transaction
-	remaining := origin.Balance-req.Amount
+	remaining := origin.Balance - req.Amount
 	err = u.ac.UpdateBalance(ctx, req.OriginId, remaining)
 	if err != nil {
 		u.ac.RollbackOperation(ctx)
@@ -91,7 +91,7 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (*CreateOutput,
 
 	return &CreateOutput{
 		RemainingBalance: remaining,
-		TransferId: *transferId,
-		CreatedAt: t.CreatedAt,
+		TransferId:       *transferId,
+		CreatedAt:        t.CreatedAt,
 	}, nil
 }
