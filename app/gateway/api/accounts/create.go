@@ -29,7 +29,7 @@ func (c *Controller) Create(rw http.ResponseWriter, r *http.Request) {
 
 	create, err := c.workspace.Create(r.Context(), req)
 	if err != nil {
-		if err == account.ErrCreating || err == account.ErrExists {
+		if err == account.ErrCreating || err == account.ErrAlreadyExist {
 			responses.WriteErrorResponse(rw, http.StatusBadRequest, err)
 		}
 

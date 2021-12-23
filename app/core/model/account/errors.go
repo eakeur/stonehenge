@@ -13,8 +13,8 @@ var (
 	// ErrNotFound expresses that the account with the identification provided does not exist, or, for some reason, could not be found
 	ErrNotFound = errors.New("the account requested could not be found or does not exist")
 
-	// ErrExists points out that an account with the CPF provided in the request, which is unique, already exists in the database
-	ErrExists = errors.New("an account with the document provided already exists")
+	// ErrAlreadyExist points out that an account with the CPF provided in the request, which is unique, already exists in the database
+	ErrAlreadyExist = errors.New("an account with the document provided already exists")
 
 	// ErrNoMoney expresses that the account requesting a financial operation does not have budget enough to do so
 	ErrNoMoney = errors.New("account does not have money enough for this operation")

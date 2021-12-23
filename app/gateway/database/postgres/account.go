@@ -126,7 +126,7 @@ func (t *accountRepo) CheckExistence(ctx context.Context, document document.Docu
 		return err
 	}
 	if quantity > 0 {
-		return account.ErrExists
+		return account.ErrAlreadyExist
 	}
 	return nil
 }
