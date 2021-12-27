@@ -18,7 +18,10 @@ type LoginRequestBody struct {
 
 // Authenticate logs an applicant in
 func (c *Controller) Authenticate(rw http.ResponseWriter, r *http.Request) {
-	body := getAuthBody(r.Body)
+	body, err := getLoginRequestBody(r.Body)
+	if err != nil {
+		responses.WriteErrorResponse(rw, http.StatusBadRequest, err)
+	}
 	ctx := r.Context()
 	req := accounts.AuthenticationRequest{
 		Document: body.Document,
@@ -42,17 +45,17 @@ func (c *Controller) Authenticate(rw http.ResponseWriter, r *http.Request) {
 
 }
 
-func getAuthBody(body io.ReadCloser) *LoginRequestBody {
+func getLoginRequestBody(body io.ReadCloser) (LoginRequestBody, error) {
 	defer body.Close()
 	req := LoginRequestBody{}
 	err := json.NewDecoder(body).Decode(&req)
 	if err != nil {
-		return nil
+		return req, err
 	}
 
 	if req.Document == "" || req.Secret == "" {
-		return nil
+		return req, err
 	}
 
-	return &req
+	return req, nil
 }

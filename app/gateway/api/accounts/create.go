@@ -20,7 +20,11 @@ type PostRequestBody struct {
 
 // Create creates a new account with the data passed in
 func (c *Controller) Create(rw http.ResponseWriter, r *http.Request) {
-	body := getBody(r.Body)
+	body, err := getPostRequestBody(r.Body)
+	if err != nil {
+		responses.WriteErrorResponse(rw, http.StatusBadRequest, err)
+		return
+	}
 	req := accounts.CreateInput{
 		Document: document.Document(body.Document),
 		Secret:   password.Password(body.Secret),
@@ -49,17 +53,17 @@ func (c *Controller) Create(rw http.ResponseWriter, r *http.Request) {
 
 }
 
-func getBody(body io.ReadCloser) *PostRequestBody {
+func getPostRequestBody(body io.ReadCloser) (PostRequestBody, error) {
 	defer body.Close()
 	req := PostRequestBody{}
 	err := json.NewDecoder(body).Decode(&req)
 	if err != nil {
-		return nil
+		return req, err
 	}
 
 	if req.Document == "" || req.Secret == "" || req.Name == "" {
-		return nil
+		return req, err
 	}
 
-	return &req
+	return req, err
 }

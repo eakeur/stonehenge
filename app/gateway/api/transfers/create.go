@@ -17,7 +17,10 @@ type PostRequestBody struct {
 }
 
 func (c *Controller) Create(rw http.ResponseWriter, r *http.Request) {
-	body := getBody(r.Body)
+	body, err := getPostRequestBody(r.Body)
+	if err != nil {
+		responses.WriteErrorResponse(rw, http.StatusBadRequest, err)
+	}
 
 	accountID := common.FetchContextUser(r.Context())
 
@@ -39,17 +42,17 @@ func (c *Controller) Create(rw http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getBody(body io.ReadCloser) *PostRequestBody {
+func getPostRequestBody(body io.ReadCloser) (PostRequestBody, error) {
 	defer body.Close()
 	req := PostRequestBody{}
 	err := json.NewDecoder(body).Decode(&req)
 	if err != nil {
-		return nil
+		return req, err
 	}
 
 	if req.DestinationId == "" || req.Amount == 0 {
-		return nil
+		return req, err
 	}
 
-	return &req
+	return req, nil
 }
