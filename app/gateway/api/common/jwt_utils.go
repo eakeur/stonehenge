@@ -47,7 +47,7 @@ func AssignToken(rw http.ResponseWriter, token string) {
 		Name:    "access_token",
 		Value:   token,
 		Path:    "/",
-		Expires: time.Now().Add(time.Minute * 15),
+		Expires: time.Now().Add(time.Minute * TokenValidMinutes),
 	})
 }
 
