@@ -13,7 +13,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Migrate - Write up the schema to a database
+// Migrate writes up the schema to a database
 func Migrate(db string, filesPath string) error {
 	path := fmt.Sprintf("file://%v", filesPath)
 	migration, err := migrate.New(path, db)
@@ -33,7 +33,7 @@ func Migrate(db string, filesPath string) error {
 	return nil
 }
 
-// NewConnection creates a connection object and runs a migration in this connection
+// NewConnection creates a connection object
 func NewConnection(ctx context.Context, url, migrationsPath string, log pgx.Logger, level pgx.LogLevel) (*pgxpool.Pool, error) {
 	pgxConfig, err := pgxpool.ParseConfig(url)
 	if err != nil {
@@ -45,11 +45,6 @@ func NewConnection(ctx context.Context, url, migrationsPath string, log pgx.Logg
 	//pgxConfig.ConnConfig.LogLevel = level
 
 	db, err := pgxpool.ConnectConfig(ctx, pgxConfig)
-	if err != nil {
-		return nil, err
-	}
-
-	err = Migrate(url, migrationsPath)
 	if err != nil {
 		return nil, err
 	}
