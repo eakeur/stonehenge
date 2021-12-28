@@ -5,7 +5,7 @@ import "github.com/google/uuid"
 type ExternalID string
 
 func New() ExternalID {
-	return ExternalID(uuid.New().String())
+	return ExternalID(uuid.NewString())
 }
 
 func From(id string) ExternalID {
