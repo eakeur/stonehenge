@@ -12,6 +12,9 @@ type Transfer struct {
 	// ID is the unique identifier of this entity
 	ID id.ID
 
+	// ExternalID is the public identifier of this entity
+	ExternalID id.ExternalID
+
 	// OriginID is the id of the account that will send money in this transfer
 	OriginID id.ID
 
