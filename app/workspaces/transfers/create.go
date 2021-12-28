@@ -10,69 +10,72 @@ import (
 )
 
 type CreateInput struct {
-	OriginId id.ID
-	DestId   id.ID
+	OriginId id.ExternalID
+	DestId   id.ExternalID
 	Amount   currency.Currency
 }
 
 type CreateOutput struct {
 	RemainingBalance currency.Currency
-	TransferId       id.ID
+	TransferId       id.ExternalID
 	CreatedAt        time.Time
 }
 
-func (u *workspace) Create(ctx context.Context, req CreateInput) (*CreateOutput, error) {
+func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, error) {
 	t := &transfer.Transfer{
-		OriginID:      req.OriginId,
-		DestinationID: req.DestId,
-		Amount:        req.Amount,
+		Amount: req.Amount,
 	}
+
+	response := CreateOutput{}
 
 	// Checks if the amount is valid (bigger than 0)
 	if t.Amount <= 0 {
-		return nil, transfer.ErrAmountInvalid
+		return response, transfer.ErrAmountInvalid
 	}
 
 	// Checks if the origin and destination accounts are the same
 	if t.DestinationID == t.OriginID {
-		return nil, transfer.ErrSameAccount
+		return response, transfer.ErrSameAccount
 	}
 
 	// Fetches the origin account and checks for errors
 	origin, err := u.ac.Get(ctx, req.OriginId)
 	if err != nil {
-		return nil, account.ErrNotFound
+		return response, account.ErrNotFound
 	}
 
 	// Validates if the balance of the origin is zero and if it's sufficient to accomplish the operation
 	if origin.Balance <= 0 || req.Amount > origin.Balance {
-		return nil, account.ErrNoMoney
+		return response, account.ErrNoMoney
 	}
 
 	// Fetches the origin account and checks for errors
 	dest, err := u.ac.Get(ctx, req.DestId)
 	if err != nil {
-		return nil, account.ErrNotFound
+		return response, account.ErrNotFound
 	}
 
 	ctx, err = u.ac.StartOperation(ctx)
 	if err != nil {
-		return nil, transfer.ErrRegistering
+		return response, transfer.ErrRegistering
 	}
+
+	t.OriginID = origin.ID
+	t.DestinationID = dest.ID
 
 	// Updates the balance of the origin account after transaction
 	remaining := origin.Balance - req.Amount
 	err = u.ac.UpdateBalance(ctx, req.OriginId, remaining)
 	if err != nil {
 		u.ac.RollbackOperation(ctx)
-		return nil, transfer.ErrRegistering
+		return response, transfer.ErrRegistering
 	}
 
 	// Updates the balance of the destination account after transaction
 	err = u.ac.UpdateBalance(ctx, req.DestId, dest.Balance+req.Amount)
 	if err != nil {
 		u.ac.RollbackOperation(ctx)
-		return nil, transfer.ErrRegistering
+		return response, transfer.ErrRegistering
 	}
 
 	// Creates a transfer register on storage
@@ -80,18 +83,17 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (*CreateOutput,
 	transferId, err := u.tr.Create(ctx, t)
 	if err != nil {
 		u.ac.RollbackOperation(ctx)
-		return nil, transfer.ErrRegistering
+		return response, transfer.ErrRegistering
 	}
 
 	err = u.ac.CommitOperation(ctx)
 	if err != nil {
 		u.ac.RollbackOperation(ctx)
-		return nil, transfer.ErrRegistering
+		return response, transfer.ErrRegistering
 	}
 
-	return &CreateOutput{
-		RemainingBalance: remaining,
-		TransferId:       *transferId,
-		CreatedAt:        t.CreatedAt,
-	}, nil
+	response.RemainingBalance = remaining
+	response.TransferId = transferId
+	response.CreatedAt = t.CreatedAt
+	return response, nil
 }
