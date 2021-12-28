@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"github.com/google/uuid"
 	"stonehenge/app/core/model/account"
 	"stonehenge/app/core/types/currency"
 	"stonehenge/app/core/types/document"
@@ -16,12 +15,13 @@ type accountRepo struct {
 	db *pgxpool.Pool
 }
 
-func (t *accountRepo) GetWithCPF(ctx context.Context, document document.Document) (*account.Account, error) {
+func (t *accountRepo) GetWithCPF(ctx context.Context, document document.Document) (account.Account, error) {
 	const query string = "select * from accounts where document = $1"
 	ret := t.db.QueryRow(ctx, query, document)
-	acc, err := parseAccount(ret)
+	acc := account.Account{}
+	acc, err := parseAccount(ret, acc)
 	if err != nil {
-		return nil, account.ErrNotFound
+		return acc, account.ErrNotFound
 	}
 	return acc, nil
 }
@@ -61,39 +61,41 @@ func (t *accountRepo) List(ctx context.Context, filter account.Filter) ([]accoun
 	accounts := make([]account.Account, 0)
 
 	for ret.Next() {
-		acc, err := parseAccount(ret)
+		acc := account.Account{}
+		acc, err := parseAccount(ret, acc)
 		if err != nil {
 			continue
 		}
-		accounts = append(accounts, *acc)
+		accounts = append(accounts, acc)
 	}
 	return accounts, nil
 }
 
-func (t *accountRepo) Get(ctx context.Context, id id.ID) (*account.Account, error) {
-	const query string = "select * from accounts where id = $1"
+func (t *accountRepo) Get(ctx context.Context, id id.ExternalID) (account.Account, error) {
+	const query string = "select * from accounts where external_id = $1"
+	acc := account.Account{}
 	ret := t.db.QueryRow(ctx, query, id)
-	acc, err := parseAccount(ret)
+	acc, err := parseAccount(ret, acc)
 	if err != nil {
-		return nil, account.ErrNotFound
+		return acc, account.ErrNotFound
 	}
 	return acc, nil
 }
 
-func (t *accountRepo) GetBalance(ctx context.Context, id id.ID) (*currency.Currency, error) {
-	const query string = "select balance from accounts where id = $1"
+func (t *accountRepo) GetBalance(ctx context.Context, id id.ExternalID) (currency.Currency, error) {
+	const query string = "select balance from accounts where external_id = $1"
 	ret := t.db.QueryRow(ctx, query, id)
 	var balance currency.Currency
 	if err := ret.Scan(&balance); err != nil {
-		return nil, account.ErrNotFound
+		return 0, account.ErrNotFound
 	}
-	return &balance, nil
+	return balance, nil
 }
 
-func (t *accountRepo) Create(ctx context.Context, acc *account.Account) (*id.ID, error) {
+func (t *accountRepo) Create(ctx context.Context, acc *account.Account) (id.ExternalID, error) {
 	db, found := t.tx.From(ctx)
 	if !found {
-		return nil, account.ErrCreating
+		return id.New(), account.ErrCreating
 	}
 
 	const script string = `
@@ -102,20 +104,21 @@ func (t *accountRepo) Create(ctx context.Context, acc *account.Account) (*id.ID,
 		values 
 			($1, $2, $3, $4, $5)
 		returning 
-			created_at, updated_at
+			id, external_id, created_at, updated_at
 	`
 
-	acc.ID = id.ID(uuid.New().String())
 	row := db.QueryRow(ctx, script, acc.ID, acc.Document, acc.Secret, acc.Name, acc.Balance)
 	err := row.Scan(
+		&acc.ID,
+		&acc.ExternalID,
 		&acc.CreatedAt,
 		&acc.UpdatedAt,
 	)
 	if err != nil {
-		return nil, account.ErrCreating
+		return id.New(), account.ErrCreating
 	}
 
-	return &acc.ID, nil
+	return acc.ExternalID, nil
 }
 
 func (t *accountRepo) CheckExistence(ctx context.Context, document document.Document) error {
@@ -131,7 +134,7 @@ func (t *accountRepo) CheckExistence(ctx context.Context, document document.Docu
 	return nil
 }
 
-func (t *accountRepo) UpdateBalance(ctx context.Context, id id.ID, balance currency.Currency) error {
+func (t *accountRepo) UpdateBalance(ctx context.Context, id id.ExternalID, balance currency.Currency) error {
 	db, found := t.tx.From(ctx)
 	if !found {
 		return account.ErrCreating
@@ -153,11 +156,10 @@ func (t *accountRepo) UpdateBalance(ctx context.Context, id id.ID, balance curre
 	return nil
 }
 
-func parseAccount(row Scanner) (*account.Account, error) {
-	acc := new(account.Account)
+func parseAccount(row Scanner, acc account.Account) (account.Account, error) {
 	err := row.Scan(&acc.ID, &acc.Name, &acc.Document, &acc.Balance, &acc.Secret, &acc.UpdatedAt, &acc.CreatedAt)
 	if err != nil {
-		return nil, err
+		return acc, err
 	}
 	return acc, nil
 }
