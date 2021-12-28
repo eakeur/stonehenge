@@ -10,8 +10,8 @@ import (
 )
 
 type CreateInput struct {
-	OriginId id.ExternalID
-	DestId   id.ExternalID
+	OriginID id.ExternalID
+	DestID   id.ExternalID
 	Amount   currency.Currency
 }
 
@@ -39,7 +39,7 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, 
 	}
 
 	// Fetches the origin account and checks for errors
-	origin, err := u.ac.Get(ctx, req.OriginId)
+	origin, err := u.ac.Get(ctx, req.OriginID)
 	if err != nil {
 		return response, account.ErrNotFound
 	}
@@ -50,7 +50,7 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, 
 	}
 
 	// Fetches the origin account and checks for errors
-	dest, err := u.ac.Get(ctx, req.DestId)
+	dest, err := u.ac.Get(ctx, req.DestID)
 	if err != nil {
 		return response, account.ErrNotFound
 	}
@@ -65,14 +65,14 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, 
 
 	// Updates the balance of the origin account after transaction
 	remaining := origin.Balance - req.Amount
-	err = u.ac.UpdateBalance(ctx, req.OriginId, remaining)
+	err = u.ac.UpdateBalance(ctx, req.OriginID, remaining)
 	if err != nil {
 		u.ac.RollbackOperation(ctx)
 		return response, transfer.ErrRegistering
 	}
 
 	// Updates the balance of the destination account after transaction
-	err = u.ac.UpdateBalance(ctx, req.DestId, dest.Balance+req.Amount)
+	err = u.ac.UpdateBalance(ctx, req.DestID, dest.Balance+req.Amount)
 	if err != nil {
 		u.ac.RollbackOperation(ctx)
 		return response, transfer.ErrRegistering

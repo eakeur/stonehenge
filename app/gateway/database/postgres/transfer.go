@@ -16,14 +16,14 @@ type transferRepo struct {
 func (t *transferRepo) List(ctx context.Context, filter transfer.Filter) ([]transfer.Transfer, error) {
 	query := "select * from transfers"
 	args := make([]interface{}, 0)
-	if filter.OriginId != "" {
+	if filter.OriginID != "" {
 		query = AppendCondition(query, "and", "account_origin_id = ?")
-		args = append(args, filter.OriginId)
+		args = append(args, filter.OriginID)
 	}
 
-	if filter.DestinationId != "" {
+	if filter.DestinationID != "" {
 		query = AppendCondition(query, "and", "account_destination_id = ?")
-		args = append(args, filter.DestinationId)
+		args = append(args, filter.DestinationID)
 	}
 
 	if !filter.InitialDate.IsZero() && !filter.FinalDate.IsZero() {

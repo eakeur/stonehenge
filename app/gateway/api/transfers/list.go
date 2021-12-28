@@ -12,7 +12,7 @@ import (
 // List gets all transfers of this actual account
 func (c *Controller) List(rw http.ResponseWriter, r *http.Request) {
 	filters := getFilter(r.URL.Query())
-	filters.OriginId = string(common.FetchContextUser(r.Context()))
+	filters.OriginID = string(common.FetchContextUser(r.Context()))
 	list, err := c.workspace.List(r.Context(), filters)
 	if err != nil {
 		responses.WriteErrorResponse(rw, http.StatusBadRequest, err)
@@ -29,11 +29,11 @@ func getFilter(values url.Values) transfer.Filter {
 	filter := transfer.Filter{}
 
 	if ori := values.Get("origin"); ori != "" {
-		filter.OriginId = ori
+		filter.OriginID = ori
 	}
 
 	if dest := values.Get("destination"); dest != "" {
-		filter.OriginId = dest
+		filter.OriginID = dest
 	}
 
 	if ini := values.Get("made_since"); ini != "" {

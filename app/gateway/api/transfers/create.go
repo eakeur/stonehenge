@@ -12,7 +12,7 @@ import (
 )
 
 type PostRequestBody struct {
-	DestinationId id.ExternalID
+	DestinationID id.ExternalID
 	Amount        int
 }
 
@@ -25,8 +25,8 @@ func (c *Controller) Create(rw http.ResponseWriter, r *http.Request) {
 	accountID := common.FetchContextUser(r.Context())
 
 	req := transfers.CreateInput{
-		OriginId: accountID,
-		DestId:   body.DestinationId,
+		OriginID: accountID,
+		DestID:   body.DestinationID,
 		Amount:   currency.Currency(body.Amount),
 	}
 	create, err := c.workspace.Create(r.Context(), req)
@@ -50,7 +50,7 @@ func getPostRequestBody(body io.ReadCloser) (PostRequestBody, error) {
 		return req, err
 	}
 
-	if req.DestinationId == "" || req.Amount == 0 {
+	if req.DestinationID == "" || req.Amount == 0 {
 		return req, err
 	}
 
