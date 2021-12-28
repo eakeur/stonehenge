@@ -12,20 +12,20 @@ type AuthenticationRequest struct {
 	Secret   password.Password
 }
 
-func (u *workspace) Authenticate(ctx context.Context, req AuthenticationRequest) (*id.ID, error) {
+func (u *workspace) Authenticate(ctx context.Context, req AuthenticationRequest) (id.ExternalID, error) {
 	if err := req.Document.Validate(); err != nil {
-		return nil, err
+		return "", err
 	}
 
 	acc, err := u.ac.GetWithCPF(ctx, req.Document)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	if err := acc.Secret.CompareWithString(req.Secret.Hash()); err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return &acc.ID, nil
+	return acc.ExternalID, nil
 
 }

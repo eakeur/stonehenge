@@ -12,7 +12,7 @@ import (
 
 // GetBalance gets the balance of the account specified
 func (c *Controller) GetBalance(rw http.ResponseWriter, r *http.Request) {
-	accountID := id.ID(chi.URLParam(r, "id"))
+	accountID := id.From(chi.URLParam(r, "id"))
 	ctx := r.Context()
 	if accountID != common.FetchContextUser(ctx) {
 		responses.WriteErrorResponse(rw, http.StatusForbidden, errors.New("you do not have access to this resource"))

@@ -10,7 +10,7 @@ import (
 
 type Workspace interface {
 	List(ctx context.Context, filter transfer.Filter) ([]Reference, error)
-	Create(ctx context.Context, req CreateInput) (*CreateOutput, error)
+	Create(ctx context.Context, req CreateInput) (CreateOutput, error)
 }
 
 type workspace struct {

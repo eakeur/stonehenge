@@ -20,21 +20,23 @@ type CreateInput struct {
 }
 
 type CreateOutput struct {
-	AccountID id.ID
+	AccountID id.ExternalID
 	CreatedAt time.Time
 }
 
-func (u *workspace) Create(ctx context.Context, req CreateInput) (*CreateOutput, error) {
+func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, error) {
+
+	response := CreateOutput{}
 
 	// Checks document's consistency
 	if err := req.Document.Validate(); err != nil {
-		return nil, err
+		return response, err
 	}
 
 	//Checks document uniqueness
 	err := u.ac.CheckExistence(ctx, req.Document)
 	if err != nil {
-		return nil, err
+		return response, err
 	}
 
 	acc := account.Account{
@@ -46,21 +48,21 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (*CreateOutput,
 
 	ctx, err = u.ac.StartOperation(ctx)
 	if err != nil {
-		return nil, account.ErrCreating
+		return response, account.ErrCreating
 	}
 
 	accountId, err := u.ac.Create(ctx, &acc)
 	if err != nil {
 		u.ac.RollbackOperation(ctx)
-		return nil, account.ErrCreating
+		return response, account.ErrCreating
 	}
 	err = u.ac.CommitOperation(ctx)
 	if err != nil {
-		return nil, account.ErrCreating
+		return response, account.ErrCreating
 	}
 
-	return &CreateOutput{
-		AccountID: *accountId,
-		CreatedAt: acc.CreatedAt,
-	}, nil
+	response.AccountID = accountId
+	response.CreatedAt = acc.CreatedAt
+
+	return response, nil
 }

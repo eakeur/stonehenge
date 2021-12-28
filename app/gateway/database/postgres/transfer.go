@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"github.com/google/uuid"
 	"stonehenge/app/core/model/transfer"
 	"stonehenge/app/core/types/id"
 
@@ -17,14 +16,14 @@ type transferRepo struct {
 func (t *transferRepo) List(ctx context.Context, filter transfer.Filter) ([]transfer.Transfer, error) {
 	query := "select * from transfers"
 	args := make([]interface{}, 0)
-	if filter.OriginId != "" {
+	if filter.OriginID != "" {
 		query = AppendCondition(query, "and", "account_origin_id = ?")
-		args = append(args, filter.OriginId)
+		args = append(args, filter.OriginID)
 	}
 
-	if filter.DestinationId != "" {
+	if filter.DestinationID != "" {
 		query = AppendCondition(query, "and", "account_destination_id = ?")
-		args = append(args, filter.DestinationId)
+		args = append(args, filter.DestinationID)
 	}
 
 	if !filter.InitialDate.IsZero() && !filter.FinalDate.IsZero() {
@@ -41,29 +40,31 @@ func (t *transferRepo) List(ctx context.Context, filter transfer.Filter) ([]tran
 	transfers := make([]transfer.Transfer, 0)
 
 	for ret.Next() {
-		tr, err := parseTransfer(ret)
+		tr := transfer.Transfer{}
+		tr, err := parseTransfer(ret, tr)
 		if err != nil {
 			continue
 		}
-		transfers = append(transfers, *tr)
+		transfers = append(transfers, tr)
 	}
 	return transfers, nil
 }
 
-func (t *transferRepo) Get(ctx context.Context, id id.ID) (*transfer.Transfer, error) {
+func (t *transferRepo) Get(ctx context.Context, id id.ExternalID) (transfer.Transfer, error) {
 	const query string = "select * from transfers where id = $1"
 	ret := t.db.QueryRow(ctx, query, id)
-	tr, err := parseTransfer(ret)
+	tr := transfer.Transfer{}
+	tr, err := parseTransfer(ret, tr)
 	if err != nil {
-		return nil, transfer.ErrNotFound
+		return tr, transfer.ErrNotFound
 	}
 	return tr, nil
 }
 
-func (t *transferRepo) Create(ctx context.Context, tran *transfer.Transfer) (*id.ID, error) {
+func (t *transferRepo) Create(ctx context.Context, tran *transfer.Transfer) (id.ExternalID, error) {
 	db, found := t.tx.From(ctx)
 	if !found {
-		return nil, transfer.ErrRegistering
+		return id.New(), transfer.ErrRegistering
 	}
 	const script string = `
 		insert into
@@ -71,26 +72,26 @@ func (t *transferRepo) Create(ctx context.Context, tran *transfer.Transfer) (*id
 		values 
 			($1, $2, $3, $4, $5)
 		returning 
-			created_at, updated_at
+			id, external_id, created_at, updated_at
 	`
-	tran.ID = id.ID(uuid.New().String())
 	row := db.QueryRow(ctx, script, tran.ID, tran.OriginID, tran.DestinationID, tran.Amount, tran.EffectiveDate)
 	err := row.Scan(
+		&tran.ID,
+		&tran.ExternalID,
 		&tran.CreatedAt,
 		&tran.UpdatedAt,
 	)
 	if err != nil {
-		return nil, transfer.ErrRegistering
+		return id.New(), transfer.ErrRegistering
 	}
 
-	return &tran.ID, nil
+	return tran.ExternalID, nil
 }
 
-func parseTransfer(row Scanner) (*transfer.Transfer, error) {
-	tr := new(transfer.Transfer)
+func parseTransfer(row Scanner, tr transfer.Transfer) (transfer.Transfer, error) {
 	err := row.Scan(&tr.ID, &tr.OriginID, &tr.DestinationID, &tr.Amount, &tr.EffectiveDate, &tr.UpdatedAt, &tr.CreatedAt)
 	if err != nil {
-		return nil, err
+		return tr, err
 	}
 	return tr, nil
 }

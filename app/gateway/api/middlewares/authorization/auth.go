@@ -12,14 +12,12 @@ var Middleware = func(next http.Handler) http.Handler {
 		account, err := common.ExtractToken(token)
 		if err != nil {
 			wr.WriteHeader(http.StatusUnauthorized)
-			//fmt.Fprint(wr, erring.ErrUnauthorized.Error())
 			return
 		}
 
 		token, err = common.CreateToken(*account.AccountId)
 		if err != nil {
 			wr.WriteHeader(http.StatusUnauthorized)
-			//fmt.Fprint(wr, erring.ErrUnauthorized.Error())
 			return
 		}
 

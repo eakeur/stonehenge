@@ -33,7 +33,7 @@ func (c *Controller) Authenticate(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tok, err := common.CreateToken(*id)
+	tok, err := common.CreateToken(id)
 	if err != nil {
 		responses.WriteErrorResponse(rw, http.StatusInternalServerError, ErrTokenGeneration)
 		return
