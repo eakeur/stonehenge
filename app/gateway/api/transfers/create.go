@@ -12,7 +12,7 @@ import (
 )
 
 type PostRequestBody struct {
-	DestinationId string
+	DestinationId id.ExternalID
 	Amount        int
 }
 
@@ -26,7 +26,7 @@ func (c *Controller) Create(rw http.ResponseWriter, r *http.Request) {
 
 	req := transfers.CreateInput{
 		OriginId: accountID,
-		DestId:   id.ID(body.DestinationId),
+		DestId:   body.DestinationId,
 		Amount:   currency.Currency(body.Amount),
 	}
 	create, err := c.workspace.Create(r.Context(), req)
