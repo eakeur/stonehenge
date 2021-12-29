@@ -121,19 +121,6 @@ func (t *accountRepo) Create(ctx context.Context, acc *account.Account) (id.Exte
 	return acc.ExternalID, nil
 }
 
-func (t *accountRepo) CheckExistence(ctx context.Context, document document.Document) error {
-	const query string = "select count(*) as quantity from accounts where document = $1"
-	ret := t.db.QueryRow(ctx, query, document)
-	var quantity int
-	if err := ret.Scan(&quantity); err != nil {
-		return err
-	}
-	if quantity > 0 {
-		return account.ErrAlreadyExist
-	}
-	return nil
-}
-
 func (t *accountRepo) UpdateBalance(ctx context.Context, id id.ExternalID, balance currency.Currency) error {
 	db, found := t.tx.From(ctx)
 	if !found {
