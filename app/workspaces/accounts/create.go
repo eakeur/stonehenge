@@ -34,9 +34,12 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, 
 	}
 
 	//Checks document uniqueness
-	err := u.ac.CheckExistence(ctx, req.Document)
-	if err != nil {
+	res, err := u.ac.GetWithCPF(ctx, req.Document)
+	if err != nil && err != account.ErrNotFound {
 		return response, err
+	}
+	if res.Document != "" {
+		return response, account.ErrAlreadyExist
 	}
 
 	acc := account.Account{

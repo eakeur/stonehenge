@@ -26,9 +26,6 @@ type Repository interface {
 	// Create creates a new account and returns its new id
 	Create(ctx context.Context, account *Account) (id.ExternalID, error)
 
-	// CheckExistence checks if a document is registered to any account and throws an error if it is
-	CheckExistence(ctx context.Context, document document.Document) error
-
 	// UpdateBalance replaces the balance of the account with the id provided
 	UpdateBalance(ctx context.Context, id id.ExternalID, balance currency.Currency) error
 
