@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-var Middleware = func(next http.Handler) http.Handler {
+func Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(wr http.ResponseWriter, r *http.Request) {
 		token := getToken(r)
 		account, err := common.ExtractToken(token)
