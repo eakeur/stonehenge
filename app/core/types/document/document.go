@@ -1,37 +1,30 @@
 package document
 
 import (
-	"errors"
-	"strconv"
-	"strings"
+	"regexp"
 )
 
-// Document is an implementation of a string that has other functions to allow validation
+var (
+	exp = regexp.MustCompile("([^0-9])+")
+)
+
+// Document is an implementation of a CPF
+// string that has functions to validate CPFs
 type Document string
 
 // Validate validates a document
-func (d *Document) Validate() error {
-	for _, digit := range *d {
-		_, err := strconv.Atoi(string(digit))
-		if err != nil {
-			return errors.New("")
-		}
+func (d Document) Validate() error {
+	if len(d) != 11 {
+		return ErrInvalidDocument
 	}
-	if len(*d) != 11 {
-		return errors.New("")
+
+	if exp.Match([]byte(d)) {
+		return ErrInvalidDocument
 	}
 	return nil
 }
 
 // Normalize removes all special characters from a document string
 func Normalize(document string) string {
-	return strings.Trim(
-		strings.ReplaceAll(
-			strings.ReplaceAll(
-				strings.ReplaceAll(
-					strings.ReplaceAll(document, ".", ""),
-					"-", ""),
-				"/", ""),
-			",", ""),
-		" ")
+	return exp.ReplaceAllString(document, "")
 }
