@@ -50,7 +50,7 @@ func getPostRequestBody(body io.ReadCloser) (PostRequestBody, error) {
 		return req, err
 	}
 
-	if req.DestinationID == "" || req.Amount == 0 {
+	if req.DestinationID == id.ZeroValue || req.Amount == 0 {
 		return req, err
 	}
 

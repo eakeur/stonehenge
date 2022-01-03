@@ -14,16 +14,16 @@ type AuthenticationRequest struct {
 
 func (u *workspace) Authenticate(ctx context.Context, req AuthenticationRequest) (id.ExternalID, error) {
 	if err := req.Document.Validate(); err != nil {
-		return "", err
+		return id.ZeroValue, err
 	}
 
 	acc, err := u.ac.GetWithCPF(ctx, req.Document)
 	if err != nil {
-		return "", err
+		return id.ZeroValue, err
 	}
 
 	if err := acc.Secret.CompareWithString(req.Secret.Hash()); err != nil {
-		return "", err
+		return id.ZeroValue, err
 	}
 
 	return acc.ExternalID, nil

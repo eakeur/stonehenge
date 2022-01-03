@@ -15,7 +15,7 @@ const (
 func FetchContextUser(ctx context.Context) id.ExternalID {
 	acc, found := ctx.Value(accountContextId).(id.ExternalID)
 	if !found {
-		return ""
+		return id.ZeroValue
 	}
 	return acc
 }
