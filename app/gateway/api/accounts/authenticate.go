@@ -5,7 +5,6 @@ import (
 	"io"
 	"net/http"
 	"stonehenge/app/core/types/document"
-	"stonehenge/app/core/types/password"
 	"stonehenge/app/gateway/api/common"
 	"stonehenge/app/gateway/api/responses"
 	"stonehenge/app/workspaces/accounts"
@@ -13,7 +12,7 @@ import (
 
 type LoginRequestBody struct {
 	Document document.Document
-	Secret   password.Password
+	Secret   string
 }
 
 // Authenticate logs an applicant in
