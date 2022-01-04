@@ -1,24 +1,24 @@
 package password
 
 import (
-	"crypto/md5"
-	"encoding/hex"
+	"golang.org/x/crypto/bcrypt"
 )
 
-// Password is an implementation of a string that automatically hashes its content and allows you to compare with
-// other strings
-type Password string
+// Password is an implementation of a hash and allows you to compare with
+// other passwords
+type Password []byte
 
-// CompareWithString validates and compares a password with another one
-func (p *Password) CompareWithString(input Password) error {
-	if *p != Password(input) {
-		return ErrWrongPassword
-	}
-	return nil
+func From(input string) Password {
+	h, _ := bcrypt.GenerateFromPassword([]byte(input), bcrypt.MinCost)
+	return h
 }
 
-// Hash receives a string and returns a Hash of it
-func (p *Password) Hash() Password {
-	hash := md5.Sum([]byte(*p))
-	return Password(hex.EncodeToString(hash[:]))
+// Compare validates and compares a password with another one
+func (p Password) Compare(input string) error {
+	err := bcrypt.CompareHashAndPassword(p, []byte(input))
+	if err != nil {
+		return ErrWrongPassword
+	}
+
+	return nil
 }
