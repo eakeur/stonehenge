@@ -44,7 +44,7 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, 
 
 	acc := account.Account{
 		Name:     req.Name,
-		Secret:   req.Secret.Hash(),
+		Secret:   req.Secret,
 		Document: req.Document,
 		Balance:  initialBalance,
 	}

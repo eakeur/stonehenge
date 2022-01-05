@@ -4,12 +4,11 @@ import (
 	"context"
 	"stonehenge/app/core/types/document"
 	"stonehenge/app/core/types/id"
-	"stonehenge/app/core/types/password"
 )
 
 type AuthenticationRequest struct {
 	Document document.Document
-	Secret   password.Password
+	Secret   string
 }
 
 func (u *workspace) Authenticate(ctx context.Context, req AuthenticationRequest) (id.ExternalID, error) {
@@ -22,7 +21,7 @@ func (u *workspace) Authenticate(ctx context.Context, req AuthenticationRequest)
 		return id.ZeroValue, err
 	}
 
-	if err := acc.Secret.CompareWithString(req.Secret.Hash()); err != nil {
+	if err := acc.Secret.Compare(req.Secret); err != nil {
 		return id.ZeroValue, err
 	}
 
