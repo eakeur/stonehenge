@@ -1,6 +1,7 @@
 package password_test
 
 import (
+	"github.com/stretchr/testify/assert"
 	"stonehenge/app/core/types/password"
 	"testing"
 )
@@ -10,20 +11,35 @@ const (
 	wrong   = "Aws@@Aws2021"
 )
 
-var pass = password.From(example)
-
-func TestSuccessfulPasswordComparison(t *testing.T) {
-	err := pass.Compare(example)
-	if err != nil {
-		t.Error("Expected successful password comparison")
+var (
+	pass  = password.From(example)
+	cases = []TestCase{
+		{
+			"matching passwords",
+			example,
+			nil,
+		},
+		{
+			"different passwords",
+			wrong,
+			password.ErrWrongPassword,
+		},
 	}
+)
 
+type TestCase struct {
+	description    string
+	passwordToTest string
+	expectedError  error
 }
 
-func TestFailingPasswordComparison(t *testing.T) {
-	err := pass.Compare(wrong)
-	if err == nil {
-		t.Error("Expected password comparison to throw an ErrWrongPassword")
+func TestPasswordComparison(t *testing.T) {
+	for _, cs := range cases {
+		t.Run(cs.description, func(t *testing.T) {
+			err := pass.Compare(cs.passwordToTest)
+			assert.Equal(t, cs.expectedError, err)
+		})
 	}
-
 }
+
+
