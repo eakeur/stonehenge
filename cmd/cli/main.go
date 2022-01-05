@@ -5,9 +5,8 @@ import (
 	"log"
 	"stonehenge/app/gateway/api/server"
 	"stonehenge/app/gateway/database/postgres"
+	"stonehenge/app/gateway/database/postgres/transaction"
 )
-
-
 
 func main() {
 
@@ -20,7 +19,7 @@ func main() {
 
 	connection.Query(ctx, "select * from accounts")
 
-	adapter := postgres.NewTransactionAdapter(connection)
+	adapter := transaction.NewTransactionAdapter(connection)
 
 	repos := server.NewPostgresRepositoryWrapper(connection, adapter)
 

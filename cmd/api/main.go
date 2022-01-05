@@ -5,6 +5,7 @@ import (
 	"log"
 	"stonehenge/app/gateway/api/server"
 	"stonehenge/app/gateway/database/postgres"
+	"stonehenge/app/gateway/database/postgres/transaction"
 )
 
 func main() {
@@ -16,7 +17,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	adapter := postgres.NewTransactionAdapter(connection)
+	adapter := transaction.NewTransactionAdapter(connection)
 
 	repos := server.NewPostgresRepositoryWrapper(connection, adapter)
 
