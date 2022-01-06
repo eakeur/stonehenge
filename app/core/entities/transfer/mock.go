@@ -6,7 +6,7 @@ import (
 )
 
 func NewRepositoryMock() Repository {
-	return repositoryMock{}
+	return &repositoryMock{}
 }
 
 type repositoryMock struct {
@@ -22,7 +22,7 @@ type repositoryMock struct {
 	}
 }
 
-func (r repositoryMock) List(ctx context.Context, filter Filter) ([]Transfer, error) {
+func (r *repositoryMock) List(ctx context.Context, filter Filter) ([]Transfer, error) {
 	r.calls.List = append(r.calls.List, listCall{
 		Ctx:    ctx,
 		Filter: filter,
@@ -30,7 +30,7 @@ func (r repositoryMock) List(ctx context.Context, filter Filter) ([]Transfer, er
 	return r.ListFunc(ctx, filter)
 }
 
-func (r repositoryMock) Get(ctx context.Context, id id.ExternalID) (Transfer, error) {
+func (r *repositoryMock) Get(ctx context.Context, id id.ExternalID) (Transfer, error) {
 	r.calls.Get = append(r.calls.Get, getCall{
 		Ctx: ctx,
 		ID:  id,
@@ -38,7 +38,7 @@ func (r repositoryMock) Get(ctx context.Context, id id.ExternalID) (Transfer, er
 	return r.GetFunc(ctx, id)
 }
 
-func (r repositoryMock) Create(ctx context.Context, transfer *Transfer) (id.ExternalID, error) {
+func (r *repositoryMock) Create(ctx context.Context, transfer *Transfer) (id.ExternalID, error) {
 	r.calls.Create = append(r.calls.Create, createCall{
 		Ctx:      ctx,
 		Transfer: transfer,

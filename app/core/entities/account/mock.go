@@ -8,7 +8,7 @@ import (
 )
 
 func NewRepositoryMock() Repository {
-	return repositoryMock{}
+	return &repositoryMock{}
 }
 
 type repositoryMock struct {
@@ -27,7 +27,7 @@ type repositoryMock struct {
 	}
 }
 
-func (r repositoryMock) List(ctx context.Context, filter Filter) ([]Account, error) {
+func (r *repositoryMock) List(ctx context.Context, filter Filter) ([]Account, error) {
 	r.calls.List = append(r.calls.List, listCall{
 		Ctx:    ctx,
 		Filter: filter,
@@ -35,7 +35,7 @@ func (r repositoryMock) List(ctx context.Context, filter Filter) ([]Account, err
 	return r.ListFunc(ctx, filter)
 }
 
-func (r repositoryMock) Get(ctx context.Context, id id.ExternalID) (Account, error) {
+func (r *repositoryMock) Get(ctx context.Context, id id.ExternalID) (Account, error) {
 	r.calls.Get = append(r.calls.Get, getCall{
 		Ctx: ctx,
 		ID:  id,
@@ -43,7 +43,7 @@ func (r repositoryMock) Get(ctx context.Context, id id.ExternalID) (Account, err
 	return r.GetFunc(ctx, id)
 }
 
-func (r repositoryMock) GetWithCPF(ctx context.Context, document document.Document) (Account, error) {
+func (r *repositoryMock) GetWithCPF(ctx context.Context, document document.Document) (Account, error) {
 	r.calls.GetWithCPF = append(r.calls.GetWithCPF, getWithCPFCall{
 		Ctx: ctx,
 		Document:  document,
@@ -51,7 +51,7 @@ func (r repositoryMock) GetWithCPF(ctx context.Context, document document.Docume
 	return r.GetWithCPFFunc(ctx, document)
 }
 
-func (r repositoryMock) GetBalance(ctx context.Context, id id.ExternalID) (currency.Currency, error) {
+func (r *repositoryMock) GetBalance(ctx context.Context, id id.ExternalID) (currency.Currency, error) {
 	r.calls.GetBalance = append(r.calls.GetBalance, getCall{
 		Ctx: ctx,
 		ID:  id,
@@ -59,7 +59,7 @@ func (r repositoryMock) GetBalance(ctx context.Context, id id.ExternalID) (curre
 	return r.GetBalanceFunc(ctx, id)
 }
 
-func (r repositoryMock) Create(ctx context.Context, account *Account) (id.ExternalID, error) {
+func (r *repositoryMock) Create(ctx context.Context, account *Account) (id.ExternalID, error) {
 	r.calls.Create = append(r.calls.Create, createCall{
 		Ctx:    ctx,
 		Account: account,
@@ -67,7 +67,7 @@ func (r repositoryMock) Create(ctx context.Context, account *Account) (id.Extern
 	return r.CreateFunc(ctx, account)
 }
 
-func (r repositoryMock) UpdateBalance(ctx context.Context, id id.ExternalID, balance currency.Currency) error {
+func (r *repositoryMock) UpdateBalance(ctx context.Context, id id.ExternalID, balance currency.Currency) error {
 	r.calls.UpdateBalance = append(r.calls.UpdateBalance, updateBalanceCall{
 		Ctx:    ctx,
 		ID: id,
