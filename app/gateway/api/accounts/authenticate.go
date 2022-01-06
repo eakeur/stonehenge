@@ -7,7 +7,7 @@ import (
 	"stonehenge/app/core/types/document"
 	"stonehenge/app/gateway/api/common"
 	"stonehenge/app/gateway/api/responses"
-	"stonehenge/app/workspaces/accounts"
+	"stonehenge/app/workspaces/account"
 )
 
 type LoginRequestBody struct {
@@ -22,7 +22,7 @@ func (c *Controller) Authenticate(rw http.ResponseWriter, r *http.Request) {
 		responses.WriteErrorResponse(rw, http.StatusBadRequest, err)
 	}
 	ctx := r.Context()
-	req := accounts.AuthenticationRequest{
+	req := account.AuthenticationRequest{
 		Document: body.Document,
 		Secret:   body.Secret,
 	}

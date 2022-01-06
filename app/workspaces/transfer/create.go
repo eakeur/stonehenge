@@ -1,9 +1,9 @@
-package transfers
+package transfer
 
 import (
 	"context"
-	"stonehenge/app/core/model/account"
-	"stonehenge/app/core/model/transfer"
+	"stonehenge/app/core/entities/account"
+	"stonehenge/app/core/entities/transfer"
 	"stonehenge/app/core/types/currency"
 	"stonehenge/app/core/types/id"
 	"time"
@@ -55,7 +55,7 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, 
 		return response, account.ErrNotFound
 	}
 
-	ctx, err = u.ac.StartOperation(ctx)
+	ctx, err = u.tx.Begin(ctx)
 	if err != nil {
 		return response, transfer.ErrRegistering
 	}
@@ -67,14 +67,14 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, 
 	remaining := origin.Balance - req.Amount
 	err = u.ac.UpdateBalance(ctx, req.OriginID, remaining)
 	if err != nil {
-		u.ac.RollbackOperation(ctx)
+		u.tx.Rollback(ctx)
 		return response, transfer.ErrRegistering
 	}
 
 	// Updates the balance of the destination account after transaction
 	err = u.ac.UpdateBalance(ctx, req.DestID, dest.Balance+req.Amount)
 	if err != nil {
-		u.ac.RollbackOperation(ctx)
+		u.tx.Rollback(ctx)
 		return response, transfer.ErrRegistering
 	}
 
@@ -82,13 +82,13 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, 
 	t.EffectiveDate = time.Now()
 	transferId, err := u.tr.Create(ctx, t)
 	if err != nil {
-		u.ac.RollbackOperation(ctx)
+		u.tx.Rollback(ctx)
 		return response, transfer.ErrRegistering
 	}
 
-	err = u.ac.CommitOperation(ctx)
+	err = u.tx.Commit(ctx)
 	if err != nil {
-		u.ac.RollbackOperation(ctx)
+		u.tx.Rollback(ctx)
 		return response, transfer.ErrRegistering
 	}
 

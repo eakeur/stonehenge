@@ -1,18 +1,19 @@
 package server
 
 import (
-	"stonehenge/app/workspaces/accounts"
-	"stonehenge/app/workspaces/transfers"
+	"stonehenge/app/core/entities/transaction"
+	"stonehenge/app/workspaces/account"
+	"stonehenge/app/workspaces/transfer"
 )
 
 type WorkspaceWrapper struct {
-	Accounts  accounts.Workspace
-	Transfers transfers.Workspace
+	Accounts  account.Workspace
+	Transfers transfer.Workspace
 }
 
-func NewWorkspaceWrapper(wrapper *RepositoryWrapper) *WorkspaceWrapper {
+func NewWorkspaceWrapper(wrapper *RepositoryWrapper, helper transaction.Transaction) *WorkspaceWrapper {
 	return &WorkspaceWrapper{
-		Accounts:  accounts.New(wrapper.Account),
-		Transfers: transfers.New(wrapper.Account, wrapper.Transfer),
+		Accounts:  account.New(wrapper.Account, helper),
+		Transfers: transfer.New(wrapper.Account, wrapper.Transfer, helper),
 	}
 }

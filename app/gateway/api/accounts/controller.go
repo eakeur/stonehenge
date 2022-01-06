@@ -1,14 +1,14 @@
 package accounts
 
 import (
-	"stonehenge/app/workspaces/accounts"
+	"stonehenge/app/workspaces/account"
 )
 
 type Controller struct {
-	workspace accounts.Workspace
+	workspace account.Workspace
 }
 
-func New(workspace accounts.Workspace) Controller {
+func New(workspace account.Workspace) Controller {
 	return Controller{
 		workspace: workspace,
 	}

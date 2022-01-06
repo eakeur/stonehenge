@@ -1,9 +1,10 @@
-package transfers
+package transfer
 
 import (
 	"context"
-	"stonehenge/app/core/model/account"
-	"stonehenge/app/core/model/transfer"
+	"stonehenge/app/core/entities/account"
+	"stonehenge/app/core/entities/transaction"
+	"stonehenge/app/core/entities/transfer"
 )
 
 //go:generate moq -fmt goimports -out usecase_mock.go . UseCase:UseCaseMock
@@ -16,11 +17,13 @@ type Workspace interface {
 type workspace struct {
 	ac account.Repository
 	tr transfer.Repository
+	tx transaction.Transaction
 }
 
-func New(ac account.Repository, tr transfer.Repository) *workspace {
+func New(ac account.Repository, tr transfer.Repository, tx transaction.Transaction) *workspace {
 	return &workspace{
 		ac: ac,
 		tr: tr,
+		tx: tx,
 	}
 }

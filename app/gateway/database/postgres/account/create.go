@@ -2,12 +2,13 @@ package account
 
 import (
 	"context"
-	"stonehenge/app/core/model/account"
+	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/types/id"
+	"stonehenge/app/gateway/database/postgres/common"
 )
 
 func (r *repository) Create(ctx context.Context, acc *account.Account) (id.ExternalID, error) {
-	db, found := r.tx.From(ctx)
+	db, found := common.TransactionFrom(ctx)
 	if !found {
 		return id.New(), account.ErrCreating
 	}

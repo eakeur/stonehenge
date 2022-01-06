@@ -17,11 +17,11 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	adapter := transaction.NewTransactionAdapter(connection)
+	helper := transaction.NewTransaction(connection)
 
-	repos := server.NewPostgresRepositoryWrapper(connection, adapter)
+	repos := server.NewPostgresRepositoryWrapper(connection)
 
-	workspaces := server.NewWorkspaceWrapper(repos)
+	workspaces := server.NewWorkspaceWrapper(repos, helper)
 
 	server.New(workspaces)
 }

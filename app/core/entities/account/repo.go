@@ -28,14 +28,4 @@ type Repository interface {
 
 	// UpdateBalance replaces the balance of the account with the id provided
 	UpdateBalance(ctx context.Context, id id.ExternalID, balance currency.Currency) error
-
-	// StartOperation creates a transaction in this context
-	StartOperation(ctx context.Context) (context.Context, error)
-
-	// CommitOperation finishes successfully a transaction in this context or rollbacks it
-	// in case of failing
-	CommitOperation(ctx context.Context) error
-
-	// RollbackOperation finishes unsuccessfully a transaction in this context
-	RollbackOperation(ctx context.Context)
 }

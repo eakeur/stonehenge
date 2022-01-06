@@ -19,9 +19,9 @@ func main() {
 
 	connection.Query(ctx, "select * from accounts")
 
-	adapter := transaction.NewTransactionAdapter(connection)
+	helper := transaction.NewTransaction(connection)
 
-	repos := server.NewPostgresRepositoryWrapper(connection, adapter)
+	repos := server.NewPostgresRepositoryWrapper(connection)
 
-	server.NewWorkspaceWrapper(repos)
+	server.NewWorkspaceWrapper(repos, helper)
 }

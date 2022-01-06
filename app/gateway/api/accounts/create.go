@@ -4,12 +4,11 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-	"stonehenge/app/core/model/account"
 	"stonehenge/app/core/types/document"
 	"stonehenge/app/core/types/password"
 	"stonehenge/app/gateway/api/common"
 	"stonehenge/app/gateway/api/responses"
-	"stonehenge/app/workspaces/accounts"
+	"stonehenge/app/workspaces/account"
 )
 
 type PostRequestBody struct {
@@ -25,7 +24,7 @@ func (c *Controller) Create(rw http.ResponseWriter, r *http.Request) {
 		responses.WriteErrorResponse(rw, http.StatusBadRequest, err)
 		return
 	}
-	req := accounts.CreateInput{
+	req := account.CreateInput{
 		Document: document.Document(body.Document),
 		Secret:   password.Password(body.Secret),
 		Name:     body.Name,
@@ -33,11 +32,8 @@ func (c *Controller) Create(rw http.ResponseWriter, r *http.Request) {
 
 	create, err := c.workspace.Create(r.Context(), req)
 	if err != nil {
-		if err == account.ErrCreating || err == account.ErrAlreadyExist {
-			responses.WriteErrorResponse(rw, http.StatusBadRequest, err)
-		}
 
-		responses.WriteErrorResponse(rw, http.StatusInternalServerError, err)
+		responses.WriteErrorResponse(rw, http.StatusBadRequest, err)
 		return
 	}
 

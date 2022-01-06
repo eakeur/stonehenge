@@ -1,15 +1,13 @@
 package transfer
 
 import (
-	"stonehenge/app/core/model/transfer"
+	"stonehenge/app/core/entities/transfer"
 	"stonehenge/app/gateway/database/postgres/common"
-	"stonehenge/app/gateway/database/postgres/transaction"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type repository struct {
-	tx transaction.Transaction
 	db *pgxpool.Pool
 }
 
@@ -21,8 +19,8 @@ func parse(row common.Scanner, tr transfer.Transfer) (transfer.Transfer, error) 
 	return tr, nil
 }
 
-func NewRepository(db *pgxpool.Pool, tx transaction.Transaction) transfer.Repository {
+func NewRepository(db *pgxpool.Pool) transfer.Repository {
 	return &repository{
-		tx, db,
+		db: db,
 	}
 }

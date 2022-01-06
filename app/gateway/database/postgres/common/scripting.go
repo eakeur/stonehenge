@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// Scanner is meant to standardize both sql.Row and sql.Rows objects that have the Scan method
+// Scanner is meant to standardize both sql.Row and sql.Row objects that have the Scan method
 type Scanner interface {
 	Scan(dest ...interface{}) error
 }

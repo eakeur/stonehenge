@@ -2,12 +2,13 @@ package transfer
 
 import (
 	"context"
-	"stonehenge/app/core/model/transfer"
+	"stonehenge/app/core/entities/transfer"
 	"stonehenge/app/core/types/id"
+	"stonehenge/app/gateway/database/postgres/common"
 )
 
 func (r *repository) Create(ctx context.Context, tran *transfer.Transfer) (id.ExternalID, error) {
-	db, found := r.tx.From(ctx)
+	db, found := common.TransactionFrom(ctx)
 	if !found {
 		return id.New(), transfer.ErrRegistering
 	}

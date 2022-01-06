@@ -2,7 +2,7 @@ package transfer
 
 import (
 	"context"
-	"stonehenge/app/core/model/transfer"
+	"stonehenge/app/core/entities/transfer"
 	"stonehenge/app/core/types/id"
 )
 

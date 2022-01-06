@@ -2,13 +2,14 @@ package account
 
 import (
 	"context"
-	"stonehenge/app/core/model/account"
+	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/types/currency"
 	"stonehenge/app/core/types/id"
+	"stonehenge/app/gateway/database/postgres/common"
 )
 
 func (r *repository) UpdateBalance(ctx context.Context, id id.ExternalID, balance currency.Currency) error {
-	db, found := r.tx.From(ctx)
+	db, found := common.TransactionFrom(ctx)
 	if !found {
 		return account.ErrCreating
 	}

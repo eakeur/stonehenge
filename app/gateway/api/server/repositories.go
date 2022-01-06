@@ -1,10 +1,9 @@
 package server
 
 import (
-	"stonehenge/app/core/model/account"
-	"stonehenge/app/core/model/transfer"
+	"stonehenge/app/core/entities/account"
+	"stonehenge/app/core/entities/transfer"
 	account_repo "stonehenge/app/gateway/database/postgres/account"
-	"stonehenge/app/gateway/database/postgres/transaction"
 	transfer_repo "stonehenge/app/gateway/database/postgres/transfer"
 
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -15,9 +14,9 @@ type RepositoryWrapper struct {
 	Transfer transfer.Repository
 }
 
-func NewPostgresRepositoryWrapper(db *pgxpool.Pool, tx transaction.Transaction) *RepositoryWrapper {
+func NewPostgresRepositoryWrapper(db *pgxpool.Pool) *RepositoryWrapper {
 	return &RepositoryWrapper{
-		Account:  account_repo.NewRepository(db, tx),
-		Transfer: transfer_repo.NewRepository(db, tx),
+		Account:  account_repo.NewRepository(db),
+		Transfer: transfer_repo.NewRepository(db),
 	}
 }

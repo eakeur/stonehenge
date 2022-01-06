@@ -8,7 +8,7 @@ import (
 	"stonehenge/app/core/types/id"
 	"stonehenge/app/gateway/api/common"
 	"stonehenge/app/gateway/api/responses"
-	"stonehenge/app/workspaces/transfers"
+	"stonehenge/app/workspaces/transfer"
 )
 
 type PostRequestBody struct {
@@ -24,7 +24,7 @@ func (c *Controller) Create(rw http.ResponseWriter, r *http.Request) {
 
 	accountID := common.FetchContextUser(r.Context())
 
-	req := transfers.CreateInput{
+	req := transfer.CreateInput{
 		OriginID: accountID,
 		DestID:   body.DestinationID,
 		Amount:   currency.Currency(body.Amount),

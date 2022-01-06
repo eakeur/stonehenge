@@ -2,7 +2,7 @@ package account
 
 import (
 	"context"
-	"stonehenge/app/core/model/account"
+	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/types/id"
 )
 
@@ -16,4 +16,3 @@ func (r *repository) Get(ctx context.Context, id id.ExternalID) (account.Account
 	}
 	return acc, nil
 }
-

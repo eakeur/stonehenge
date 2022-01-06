@@ -1,8 +1,8 @@
-package accounts
+package account
 
 import (
 	"context"
-	"stonehenge/app/core/model/account"
+	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/types/currency"
 	"stonehenge/app/core/types/document"
 	"stonehenge/app/core/types/id"
@@ -49,17 +49,17 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, 
 		Balance:  initialBalance,
 	}
 
-	ctx, err = u.ac.StartOperation(ctx)
+	ctx, err = u.tx.Begin(ctx)
 	if err != nil {
 		return response, account.ErrCreating
 	}
 
 	accountId, err := u.ac.Create(ctx, &acc)
 	if err != nil {
-		u.ac.RollbackOperation(ctx)
+		u.tx.Rollback(ctx)
 		return response, account.ErrCreating
 	}
-	err = u.ac.CommitOperation(ctx)
+	err = u.tx.Commit(ctx)
 	if err != nil {
 		return response, account.ErrCreating
 	}

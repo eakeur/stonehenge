@@ -1,14 +1,14 @@
 package transfers
 
 import (
-	"stonehenge/app/workspaces/transfers"
+	"stonehenge/app/workspaces/transfer"
 )
 
 type Controller struct {
-	workspace transfers.Workspace
+	workspace transfer.Workspace
 }
 
-func New(workspace transfers.Workspace) Controller {
+func New(workspace transfer.Workspace) Controller {
 	return Controller{
 		workspace: workspace,
 	}

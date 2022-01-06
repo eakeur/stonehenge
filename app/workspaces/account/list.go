@@ -1,8 +1,8 @@
-package accounts
+package account
 
 import (
 	"context"
-	"stonehenge/app/core/model/account"
+	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/types/id"
 )
 

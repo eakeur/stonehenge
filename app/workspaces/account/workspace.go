@@ -1,8 +1,9 @@
-package accounts
+package account
 
 import (
 	"context"
-	"stonehenge/app/core/model/account"
+	"stonehenge/app/core/entities/account"
+	"stonehenge/app/core/entities/transaction"
 	"stonehenge/app/core/types/id"
 )
 
@@ -22,10 +23,12 @@ type Workspace interface {
 
 type workspace struct {
 	ac account.Repository
+	tx transaction.Transaction
 }
 
-func New(ac account.Repository) *workspace {
+func New(ac account.Repository, tx transaction.Transaction) *workspace {
 	return &workspace{
 		ac: ac,
+		tx: tx,
 	}
 }

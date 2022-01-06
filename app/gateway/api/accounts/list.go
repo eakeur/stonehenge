@@ -3,7 +3,7 @@ package accounts
 import (
 	"net/http"
 	"net/url"
-	"stonehenge/app/core/model/account"
+	"stonehenge/app/core/entities/account"
 	"stonehenge/app/gateway/api/responses"
 )
 
