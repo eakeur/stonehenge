@@ -5,11 +5,7 @@ import (
 	"stonehenge/app/core/types/id"
 )
 
-func NewRepositoryMock() Repository {
-	return &repositoryMock{}
-}
-
-type repositoryMock struct {
+type RepositoryMock struct {
 	ListFunc   func(context.Context, Filter) ([]Transfer, error)
 	GetFunc    func(ctx context.Context, id id.ExternalID) (Transfer, error)
 	CreateFunc func(ctx context.Context, transfer *Transfer) (id.ExternalID, error)
@@ -22,7 +18,7 @@ type repositoryMock struct {
 	}
 }
 
-func (r *repositoryMock) List(ctx context.Context, filter Filter) ([]Transfer, error) {
+func (r *RepositoryMock) List(ctx context.Context, filter Filter) ([]Transfer, error) {
 	r.calls.List = append(r.calls.List, listCall{
 		Ctx:    ctx,
 		Filter: filter,
@@ -30,7 +26,7 @@ func (r *repositoryMock) List(ctx context.Context, filter Filter) ([]Transfer, e
 	return r.ListFunc(ctx, filter)
 }
 
-func (r *repositoryMock) Get(ctx context.Context, id id.ExternalID) (Transfer, error) {
+func (r *RepositoryMock) Get(ctx context.Context, id id.ExternalID) (Transfer, error) {
 	r.calls.Get = append(r.calls.Get, getCall{
 		Ctx: ctx,
 		ID:  id,
@@ -38,7 +34,7 @@ func (r *repositoryMock) Get(ctx context.Context, id id.ExternalID) (Transfer, e
 	return r.GetFunc(ctx, id)
 }
 
-func (r *repositoryMock) Create(ctx context.Context, transfer *Transfer) (id.ExternalID, error) {
+func (r *RepositoryMock) Create(ctx context.Context, transfer *Transfer) (id.ExternalID, error) {
 	r.calls.Create = append(r.calls.Create, createCall{
 		Ctx:      ctx,
 		Transfer: transfer,

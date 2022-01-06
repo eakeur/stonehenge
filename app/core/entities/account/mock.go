@@ -7,11 +7,8 @@ import (
 	"stonehenge/app/core/types/id"
 )
 
-func NewRepositoryMock() Repository {
-	return &repositoryMock{}
-}
 
-type repositoryMock struct {
+type RepositoryMock struct {
 	ListFunc       func(context.Context, Filter) ([]Account, error)
 	GetFunc        func(ctx context.Context, id id.ExternalID) (Account, error)
 	GetWithCPFFunc func(ctx context.Context, document document.Document) (Account, error)
@@ -27,7 +24,7 @@ type repositoryMock struct {
 	}
 }
 
-func (r *repositoryMock) List(ctx context.Context, filter Filter) ([]Account, error) {
+func (r *RepositoryMock) List(ctx context.Context, filter Filter) ([]Account, error) {
 	r.calls.List = append(r.calls.List, listCall{
 		Ctx:    ctx,
 		Filter: filter,
@@ -35,7 +32,7 @@ func (r *repositoryMock) List(ctx context.Context, filter Filter) ([]Account, er
 	return r.ListFunc(ctx, filter)
 }
 
-func (r *repositoryMock) Get(ctx context.Context, id id.ExternalID) (Account, error) {
+func (r *RepositoryMock) Get(ctx context.Context, id id.ExternalID) (Account, error) {
 	r.calls.Get = append(r.calls.Get, getCall{
 		Ctx: ctx,
 		ID:  id,
@@ -43,7 +40,7 @@ func (r *repositoryMock) Get(ctx context.Context, id id.ExternalID) (Account, er
 	return r.GetFunc(ctx, id)
 }
 
-func (r *repositoryMock) GetWithCPF(ctx context.Context, document document.Document) (Account, error) {
+func (r *RepositoryMock) GetWithCPF(ctx context.Context, document document.Document) (Account, error) {
 	r.calls.GetWithCPF = append(r.calls.GetWithCPF, getWithCPFCall{
 		Ctx: ctx,
 		Document:  document,
@@ -51,7 +48,7 @@ func (r *repositoryMock) GetWithCPF(ctx context.Context, document document.Docum
 	return r.GetWithCPFFunc(ctx, document)
 }
 
-func (r *repositoryMock) GetBalance(ctx context.Context, id id.ExternalID) (currency.Currency, error) {
+func (r *RepositoryMock) GetBalance(ctx context.Context, id id.ExternalID) (currency.Currency, error) {
 	r.calls.GetBalance = append(r.calls.GetBalance, getCall{
 		Ctx: ctx,
 		ID:  id,
@@ -59,7 +56,7 @@ func (r *repositoryMock) GetBalance(ctx context.Context, id id.ExternalID) (curr
 	return r.GetBalanceFunc(ctx, id)
 }
 
-func (r *repositoryMock) Create(ctx context.Context, account *Account) (id.ExternalID, error) {
+func (r *RepositoryMock) Create(ctx context.Context, account *Account) (id.ExternalID, error) {
 	r.calls.Create = append(r.calls.Create, createCall{
 		Ctx:    ctx,
 		Account: account,
@@ -67,7 +64,7 @@ func (r *repositoryMock) Create(ctx context.Context, account *Account) (id.Exter
 	return r.CreateFunc(ctx, account)
 }
 
-func (r *repositoryMock) UpdateBalance(ctx context.Context, id id.ExternalID, balance currency.Currency) error {
+func (r *RepositoryMock) UpdateBalance(ctx context.Context, id id.ExternalID, balance currency.Currency) error {
 	r.calls.UpdateBalance = append(r.calls.UpdateBalance, updateBalanceCall{
 		Ctx:    ctx,
 		ID: id,
