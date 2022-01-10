@@ -8,12 +8,13 @@ import (
 )
 
 type RepositoryMock struct {
-	ListFunc       func(context.Context, Filter) ([]Account, error)
-	GetFunc        func(ctx context.Context, id id.ExternalID) (Account, error)
-	GetWithCPFFunc func(ctx context.Context, document document.Document) (Account, error)
-	GetBalanceFunc func(ctx context.Context, id id.ExternalID) (currency.Currency, error)
-	CreateFunc     func(ctx context.Context, account *Account) (id.ExternalID, error)
-	calls          struct {
+	ListFunc          func(context.Context, Filter) ([]Account, error)
+	GetFunc           func(ctx context.Context, id id.ExternalID) (Account, error)
+	GetWithCPFFunc    func(ctx context.Context, document document.Document) (Account, error)
+	GetBalanceFunc    func(ctx context.Context, id id.ExternalID) (currency.Currency, error)
+	CreateFunc        func(ctx context.Context, account *Account) (id.ExternalID, error)
+	UpdateBalanceFunc func(ctx context.Context, id id.ExternalID, balance currency.Currency) error
+	calls             struct {
 		List          []listCall
 		Get           []getCall
 		GetWithCPF    []getWithCPFCall
@@ -69,7 +70,7 @@ func (r *RepositoryMock) UpdateBalance(ctx context.Context, id id.ExternalID, ba
 		ID:      id,
 		Balance: balance,
 	})
-	return r.UpdateBalance(ctx, id, balance)
+	return r.UpdateBalanceFunc(ctx, id, balance)
 }
 
 type listCall struct {
