@@ -7,7 +7,19 @@ import (
 )
 
 func (r *repository) Get(ctx context.Context, id id.ExternalID) (account.Account, error) {
-	const query string = "select * from accounts where external_id = $1"
+	const query string = `select 
+		id, 
+		external_id, 
+		name, 
+		document, 
+		balance, 
+		secret, 
+		updated_at, 
+		created_at 
+	from 
+		accounts
+	where external_id = $1`
+
 	acc := account.Account{}
 	ret := r.db.QueryRow(ctx, query, id)
 	acc, err := parse(ret, acc)

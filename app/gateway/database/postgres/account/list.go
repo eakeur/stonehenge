@@ -7,7 +7,17 @@ import (
 )
 
 func (r *repository) List(ctx context.Context, filter account.Filter) ([]account.Account, error) {
-	query := "select * from accounts"
+	query := `select 
+		id, 
+		external_id, 
+		name, 
+		document, 
+		balance, 
+		secret, 
+		updated_at, 
+		created_at 
+	from 
+		accounts`
 	args := make([]interface{}, 0)
 	if filter.Name != "" {
 		query = common.AppendCondition(query, "and", "name like ?")
