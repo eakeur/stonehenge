@@ -103,7 +103,7 @@ func TestList(t *testing.T) {
 				ctx:    context.Background(),
 				filter: account.Filter{Name: "Raising"},
 			},
-			want: nil,
+			want:    nil,
 			wantErr: account.ErrNotFound,
 		},
 	}

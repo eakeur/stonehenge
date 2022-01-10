@@ -13,8 +13,8 @@ import (
 func TestGetBalance(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx   context.Context
-		id 	  id.ExternalID
+		ctx context.Context
+		id  id.ExternalID
 	}
 
 	type fields struct {
@@ -43,7 +43,7 @@ func TestGetBalance(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				id: id.New(),
+				id:  id.New(),
 			},
 			want: GetBalanceResponse{Balance: 5000},
 		},
@@ -59,13 +59,12 @@ func TestGetBalance(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				id: id.New(),
+				id:  id.New(),
 			},
-			want: GetBalanceResponse{},
+			want:    GetBalanceResponse{},
 			wantErr: account.ErrNotFound,
 		},
 	}
-
 
 	for _, test := range tests {
 		test := test

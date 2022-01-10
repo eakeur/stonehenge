@@ -14,8 +14,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-
-
 func TestAccountCreation(t *testing.T) {
 	t.Parallel()
 	type args struct {
@@ -235,7 +233,6 @@ func TestAccountCreation(t *testing.T) {
 		},
 	}
 
-
 	for _, test := range tests {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
@@ -248,5 +245,3 @@ func TestAccountCreation(t *testing.T) {
 	}
 
 }
-
-
