@@ -1,7 +1,6 @@
 package transaction
 
 import (
-
 	"github.com/jackc/pgx/v4/pgxpool"
 	"stonehenge/app/core/entities/transaction"
 )

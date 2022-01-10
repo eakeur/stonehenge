@@ -4,11 +4,9 @@ import (
 	"context"
 )
 
-
-
 type RepositoryMock struct {
-	BeginFunc func(ctx context.Context) (context.Context, error)
-	CommitFunc func(ctx context.Context) error
+	BeginFunc    func(ctx context.Context) (context.Context, error)
+	CommitFunc   func(ctx context.Context) error
 	RollbackFunc func(ctx context.Context) error
 }
 
@@ -23,4 +21,3 @@ func (r *RepositoryMock) Commit(ctx context.Context) error {
 func (r *RepositoryMock) Rollback(ctx context.Context) error {
 	return r.RollbackFunc(ctx)
 }
-

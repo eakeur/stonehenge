@@ -36,6 +36,6 @@ func New(workspaces *WorkspaceWrapper) *Server {
 	})
 
 	return &Server{
-		Router:    router,
+		Router: router,
 	}
 }

@@ -41,5 +41,3 @@ func TestPasswordComparison(t *testing.T) {
 		})
 	}
 }
-
-
