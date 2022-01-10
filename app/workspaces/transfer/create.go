@@ -34,7 +34,7 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, 
 	}
 
 	// Checks if the origin and destination accounts are the same
-	if t.DestinationID == t.OriginID {
+	if req.DestID == req.OriginID {
 		return response, transfer.ErrSameAccount
 	}
 
