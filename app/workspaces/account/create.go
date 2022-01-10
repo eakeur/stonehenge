@@ -36,7 +36,7 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, 
 	//Checks document uniqueness
 	res, err := u.ac.GetWithCPF(ctx, req.Document)
 	if err != nil && err != account.ErrNotFound {
-		return response, err
+		return response, account.ErrCreating
 	}
 	if res.Document != "" {
 		return response, account.ErrAlreadyExist
@@ -53,10 +53,10 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, 
 	if err != nil {
 		return response, account.ErrCreating
 	}
+	defer u.tx.Rollback(ctx)
 
 	accountId, err := u.ac.Create(ctx, &acc)
 	if err != nil {
-		u.tx.Rollback(ctx)
 		return response, account.ErrCreating
 	}
 	err = u.tx.Commit(ctx)

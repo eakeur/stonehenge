@@ -2,19 +2,16 @@ package transaction
 
 import (
 	"context"
-	"stonehenge/app/core/entities/transaction"
 	"stonehenge/app/gateway/database/postgres/common"
 )
 
-func (t *pgxTransaction) Rollback(ctx context.Context) error {
+func (t *pgxTransaction) Rollback(ctx context.Context) {
 	tx, ok := common.TransactionFrom(ctx)
 	if !ok {
-		return transaction.ErrNoTransaction
+		return
 	}
 
 	if err := tx.Rollback(ctx); err != nil {
-		return err
+		return
 	}
-
-	return nil
 }

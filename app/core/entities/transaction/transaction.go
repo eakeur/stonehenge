@@ -11,5 +11,5 @@ type Transaction interface {
 	Commit(ctx context.Context) error
 
 	// Rollback rollbacks a transaction in this context
-	Rollback(ctx context.Context) error
+	Rollback(ctx context.Context)
 }

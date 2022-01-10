@@ -2,13 +2,14 @@ package transfer
 
 import (
 	"context"
-	"github.com/golang-migrate/migrate/v4/database/pgx"
 	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/entities/transaction"
 	"stonehenge/app/core/entities/transfer"
 	"stonehenge/app/core/types/currency"
 	"stonehenge/app/core/types/id"
 	"testing"
+
+	"github.com/golang-migrate/migrate/v4/database/pgx"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -36,11 +37,10 @@ func TestCreate(t *testing.T) {
 	}
 
 	const (
-	 	idOrigin string = "d0052623-0695-4a3a-abf6-887f613dda8e"
-	 	idDestination string = "17edb329-4b65-41ba-bb26-5060a1e157ab"
-	 	idTransfer string = "b8d11928-3eab-45a8-8be3-31411bd120f2"
+		idOrigin      string = "d0052623-0695-4a3a-abf6-887f613dda8e"
+		idDestination string = "17edb329-4b65-41ba-bb26-5060a1e157ab"
+		idTransfer    string = "b8d11928-3eab-45a8-8be3-31411bd120f2"
 	)
-
 
 	tests := []test{
 
@@ -76,9 +76,7 @@ func TestCreate(t *testing.T) {
 					CommitFunc: func(ctx context.Context) error {
 						return nil
 					},
-					RollbackFunc: func(ctx context.Context) error {
-						return nil
-					},
+					RollbackFunc: func(ctx context.Context) {},
 				},
 			},
 			args: args{
@@ -288,9 +286,7 @@ func TestCreate(t *testing.T) {
 					BeginFunc: func(ctx context.Context) (context.Context, error) {
 						return ctx, nil
 					},
-					RollbackFunc: func(ctx context.Context) error {
-						return nil
-					},
+					RollbackFunc: func(ctx context.Context) {},
 				},
 			},
 			args: args{
@@ -321,7 +317,7 @@ func TestCreate(t *testing.T) {
 						}, nil
 					},
 					UpdateBalanceFunc: func(ctx context.Context, ext id.ExternalID, balance currency.Currency) error {
-						if ext == id.From(idOrigin){
+						if ext == id.From(idOrigin) {
 							return nil
 						}
 						return pgx.ErrNoSchema
@@ -332,9 +328,7 @@ func TestCreate(t *testing.T) {
 					BeginFunc: func(ctx context.Context) (context.Context, error) {
 						return ctx, nil
 					},
-					RollbackFunc: func(ctx context.Context) error {
-						return nil
-					},
+					RollbackFunc: func(ctx context.Context) {},
 				},
 			},
 			args: args{
@@ -377,9 +371,7 @@ func TestCreate(t *testing.T) {
 					BeginFunc: func(ctx context.Context) (context.Context, error) {
 						return ctx, nil
 					},
-					RollbackFunc: func(ctx context.Context) error {
-						return nil
-					},
+					RollbackFunc: func(ctx context.Context) {},
 				},
 			},
 			args: args{
@@ -425,9 +417,7 @@ func TestCreate(t *testing.T) {
 					BeginFunc: func(ctx context.Context) (context.Context, error) {
 						return ctx, nil
 					},
-					RollbackFunc: func(ctx context.Context) error {
-						return nil
-					},
+					RollbackFunc: func(ctx context.Context) {},
 				},
 			},
 			args: args{

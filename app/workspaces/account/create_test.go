@@ -54,9 +54,7 @@ func TestAccountCreation(t *testing.T) {
 					CommitFunc: func(ctx context.Context) error {
 						return nil
 					},
-					RollbackFunc: func(ctx context.Context) error {
-						return nil
-					},
+					RollbackFunc: func(ctx context.Context) {},
 				},
 			},
 			args: args{
@@ -160,9 +158,7 @@ func TestAccountCreation(t *testing.T) {
 					CommitFunc: func(ctx context.Context) error {
 						return pgx.ErrTxCommitRollback
 					},
-					RollbackFunc: func(ctx context.Context) error {
-						return nil
-					},
+					RollbackFunc: func(ctx context.Context) {},
 				},
 			},
 			args: args{
@@ -194,9 +190,7 @@ func TestAccountCreation(t *testing.T) {
 					CommitFunc: func(ctx context.Context) error {
 						return nil
 					},
-					RollbackFunc: func(ctx context.Context) error {
-						return nil
-					},
+					RollbackFunc: func(ctx context.Context) {},
 				},
 			},
 			args: args{

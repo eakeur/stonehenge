@@ -59,6 +59,7 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, 
 	if err != nil {
 		return response, transfer.ErrRegistering
 	}
+	defer u.tx.Rollback(ctx)
 
 	t.OriginID = origin.ID
 	t.DestinationID = dest.ID
@@ -67,14 +68,12 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, 
 	remaining := origin.Balance - req.Amount
 	err = u.ac.UpdateBalance(ctx, req.OriginID, remaining)
 	if err != nil {
-		u.tx.Rollback(ctx)
 		return response, transfer.ErrRegistering
 	}
 
 	// Updates the balance of the destination account after transaction
 	err = u.ac.UpdateBalance(ctx, req.DestID, dest.Balance+req.Amount)
 	if err != nil {
-		u.tx.Rollback(ctx)
 		return response, transfer.ErrRegistering
 	}
 
@@ -82,13 +81,11 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, 
 	t.EffectiveDate = time.Now()
 	transferId, err := u.tr.Create(ctx, t)
 	if err != nil {
-		u.tx.Rollback(ctx)
 		return response, transfer.ErrRegistering
 	}
 
 	err = u.tx.Commit(ctx)
 	if err != nil {
-		u.tx.Rollback(ctx)
 		return response, transfer.ErrRegistering
 	}
 
