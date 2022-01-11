@@ -7,9 +7,9 @@ import (
 )
 
 func (r *repository) Create(ctx context.Context, acc account.Account) (account.Account, error) {
-	db, found := common.TransactionFrom(ctx)
-	if !found {
-		return acc, account.ErrCreating
+	db, err := common.TransactionFrom(ctx)
+	if err != nil {
+		return account.Account{}, err
 	}
 
 	const script string = `
@@ -22,14 +22,14 @@ func (r *repository) Create(ctx context.Context, acc account.Account) (account.A
 	`
 
 	row := db.QueryRow(ctx, script, acc.ID, acc.Document, acc.Secret, acc.Name, acc.Balance)
-	err := row.Scan(
+	err = row.Scan(
 		&acc.ID,
 		&acc.ExternalID,
 		&acc.CreatedAt,
 		&acc.UpdatedAt,
 	)
 	if err != nil {
-		return acc, account.ErrCreating
+		return account.Account{}, err
 	}
 
 	return acc, nil

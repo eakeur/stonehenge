@@ -25,7 +25,7 @@ func (r *repository) GetWithCPF(ctx context.Context, document document.Document)
 	acc := account.Account{}
 	acc, err := parse(ret, acc)
 	if err != nil {
-		return acc, account.ErrNotFound
+		return account.Account{}, account.ErrNotFound
 	}
 	return acc, nil
 }

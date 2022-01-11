@@ -7,9 +7,9 @@ import (
 )
 
 func (r *repository) Create(ctx context.Context, tran transfer.Transfer) (transfer.Transfer, error) {
-	db, found := common.TransactionFrom(ctx)
-	if !found {
-		return tran, transfer.ErrRegistering
+	db, err := common.TransactionFrom(ctx)
+	if err != nil {
+		return transfer.Transfer{}, err
 	}
 	const script string = `
 		insert into
@@ -20,14 +20,14 @@ func (r *repository) Create(ctx context.Context, tran transfer.Transfer) (transf
 			id, external_id, created_at, updated_at
 	`
 	row := db.QueryRow(ctx, script, tran.ID, tran.OriginID, tran.DestinationID, tran.Amount, tran.EffectiveDate)
-	err := row.Scan(
+	err = row.Scan(
 		&tran.ID,
 		&tran.ExternalID,
 		&tran.CreatedAt,
 		&tran.UpdatedAt,
 	)
 	if err != nil {
-		return tran, transfer.ErrRegistering
+		return transfer.Transfer{}, err
 	}
 
 	return tran, nil

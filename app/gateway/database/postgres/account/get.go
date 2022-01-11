@@ -24,7 +24,7 @@ func (r *repository) GetByExternalID(ctx context.Context, id id.ExternalID) (acc
 	ret := r.db.QueryRow(ctx, query, id)
 	acc, err := parse(ret, acc)
 	if err != nil {
-		return acc, account.ErrNotFound
+		return account.Account{}, account.ErrNotFound
 	}
 	return acc, nil
 }

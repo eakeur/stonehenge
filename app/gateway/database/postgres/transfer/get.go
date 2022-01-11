@@ -22,7 +22,7 @@ func (r *repository) GetByExternalID(ctx context.Context, id id.ExternalID) (tra
 	tr := transfer.Transfer{}
 	tr, err := parse(ret, tr)
 	if err != nil {
-		return tr, transfer.ErrNotFound
+		return transfer.Transfer{}, transfer.ErrNotFound
 	}
 	return tr, nil
 }
