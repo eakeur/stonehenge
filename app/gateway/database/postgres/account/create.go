@@ -3,14 +3,13 @@ package account
 import (
 	"context"
 	"stonehenge/app/core/entities/account"
-	"stonehenge/app/core/types/id"
 	"stonehenge/app/gateway/database/postgres/common"
 )
 
-func (r *repository) Create(ctx context.Context, acc *account.Account) (id.ExternalID, error) {
+func (r *repository) Create(ctx context.Context, acc account.Account) (account.Account, error) {
 	db, found := common.TransactionFrom(ctx)
 	if !found {
-		return id.New(), account.ErrCreating
+		return acc, account.ErrCreating
 	}
 
 	const script string = `
@@ -30,8 +29,8 @@ func (r *repository) Create(ctx context.Context, acc *account.Account) (id.Exter
 		&acc.UpdatedAt,
 	)
 	if err != nil {
-		return id.New(), account.ErrCreating
+		return acc, account.ErrCreating
 	}
 
-	return acc.ExternalID, nil
+	return acc, nil
 }

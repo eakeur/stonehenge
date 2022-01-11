@@ -3,14 +3,13 @@ package transfer
 import (
 	"context"
 	"stonehenge/app/core/entities/transfer"
-	"stonehenge/app/core/types/id"
 	"stonehenge/app/gateway/database/postgres/common"
 )
 
-func (r *repository) Create(ctx context.Context, tran *transfer.Transfer) (id.ExternalID, error) {
+func (r *repository) Create(ctx context.Context, tran transfer.Transfer) (transfer.Transfer, error) {
 	db, found := common.TransactionFrom(ctx)
 	if !found {
-		return id.New(), transfer.ErrRegistering
+		return tran, transfer.ErrRegistering
 	}
 	const script string = `
 		insert into
@@ -28,8 +27,8 @@ func (r *repository) Create(ctx context.Context, tran *transfer.Transfer) (id.Ex
 		&tran.UpdatedAt,
 	)
 	if err != nil {
-		return id.New(), transfer.ErrRegistering
+		return tran, transfer.ErrRegistering
 	}
 
-	return tran.ExternalID, nil
+	return tran, nil
 }

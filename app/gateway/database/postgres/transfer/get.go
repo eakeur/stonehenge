@@ -6,7 +6,7 @@ import (
 	"stonehenge/app/core/types/id"
 )
 
-func (r *repository) Get(ctx context.Context, id id.ExternalID) (transfer.Transfer, error) {
+func (r *repository) GetByExternalID(ctx context.Context, id id.ExternalID) (transfer.Transfer, error) {
 	const query string = `select
 		id
 		external_id
