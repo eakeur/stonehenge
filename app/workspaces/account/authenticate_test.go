@@ -87,14 +87,14 @@ func TestAuthentication(t *testing.T) {
 					Secret:   "12345677",
 				},
 			},
-			want: id.ZeroValue,
+			want:    id.ZeroValue,
 			wantErr: password.ErrWrongPassword,
 		},
 		{
 			name: "should return unsuccessful authentication due invalid document",
 			fields: fields{
 				repo: &account.RepositoryMock{},
-				tx: &transaction.RepositoryMock{},
+				tx:   &transaction.RepositoryMock{},
 			},
 			args: args{
 				ctx: context.Background(),
@@ -103,7 +103,7 @@ func TestAuthentication(t *testing.T) {
 					Secret:   "12345677",
 				},
 			},
-			want: id.ZeroValue,
+			want:    id.ZeroValue,
 			wantErr: document.ErrInvalidDocument,
 		},
 		{
@@ -123,7 +123,7 @@ func TestAuthentication(t *testing.T) {
 					Secret:   "12345678",
 				},
 			},
-			want: id.ZeroValue,
+			want:    id.ZeroValue,
 			wantErr: account.ErrNotFound,
 		},
 	}

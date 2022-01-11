@@ -43,8 +43,9 @@ func TestAccountCreation(t *testing.T) {
 					GetWithCPFFunc: func(ctx context.Context, document document.Document) (account.Account, error) {
 						return account.Account{}, account.ErrNotFound
 					},
-					CreateFunc: func(ctx context.Context, account *account.Account) (id.ExternalID, error) {
-						return accountID, nil
+					CreateFunc: func(ctx context.Context, acc account.Account) (account.Account, error) {
+						acc.ExternalID = accountID
+						return acc, nil
 					},
 				},
 				tx: &transaction.RepositoryMock{
@@ -147,8 +148,9 @@ func TestAccountCreation(t *testing.T) {
 					GetWithCPFFunc: func(ctx context.Context, document document.Document) (account.Account, error) {
 						return account.Account{}, account.ErrNotFound
 					},
-					CreateFunc: func(ctx context.Context, account *account.Account) (id.ExternalID, error) {
-						return accountID, nil
+					CreateFunc: func(ctx context.Context, acc account.Account) (account.Account, error) {
+						acc.ExternalID = accountID
+						return acc, nil
 					},
 				},
 				tx: &transaction.RepositoryMock{
@@ -179,8 +181,9 @@ func TestAccountCreation(t *testing.T) {
 					GetWithCPFFunc: func(ctx context.Context, document document.Document) (account.Account, error) {
 						return account.Account{}, account.ErrNotFound
 					},
-					CreateFunc: func(ctx context.Context, acc *account.Account) (id.ExternalID, error) {
-						return accountID, account.ErrCreating
+					CreateFunc: func(ctx context.Context, acc account.Account) (account.Account, error) {
+						acc.ExternalID = accountID
+						return acc, account.ErrCreating
 					},
 				},
 				tx: &transaction.RepositoryMock{

@@ -50,7 +50,7 @@ func TestCreate(t *testing.T) {
 			name: "should return successful creation of transfer",
 			fields: fields{
 				ac: &account.RepositoryMock{
-					GetFunc: func(ctx context.Context, ext id.ExternalID) (account.Account, error) {
+					GetByExternalIDFunc: func(ctx context.Context, ext id.ExternalID) (account.Account, error) {
 						internal := 1
 						if ext == id.From(idDestination) {
 							internal = 2
@@ -65,8 +65,9 @@ func TestCreate(t *testing.T) {
 					},
 				},
 				tr: &transfer.RepositoryMock{
-					CreateFunc: func(ctx context.Context, transfer *transfer.Transfer) (id.ExternalID, error) {
-						return id.From(idTransfer), nil
+					CreateFunc: func(ctx context.Context, transfer transfer.Transfer) (transfer.Transfer, error) {
+						transfer.ExternalID = id.From(idTransfer)
+						return transfer, nil
 					},
 				},
 				tx: &transaction.RepositoryMock{
@@ -98,7 +99,7 @@ func TestCreate(t *testing.T) {
 			name: "should return unsuccessful creation of transfer due to not enough money in origin balance",
 			fields: fields{
 				ac: &account.RepositoryMock{
-					GetFunc: func(ctx context.Context, ext id.ExternalID) (account.Account, error) {
+					GetByExternalIDFunc: func(ctx context.Context, ext id.ExternalID) (account.Account, error) {
 						internal := 1
 						if ext == id.From(idDestination) {
 							internal = 2
@@ -172,7 +173,7 @@ func TestCreate(t *testing.T) {
 			name: "should return unsuccessful creation of transfer due to not existence of origin accoount",
 			fields: fields{
 				ac: &account.RepositoryMock{
-					GetFunc: func(ctx context.Context, ext id.ExternalID) (account.Account, error) {
+					GetByExternalIDFunc: func(ctx context.Context, ext id.ExternalID) (account.Account, error) {
 						if ext == id.From(idDestination) {
 							return account.Account{
 								ID:      2,
@@ -202,7 +203,7 @@ func TestCreate(t *testing.T) {
 			name: "should return unsuccessful creation of transfer due to not existence of destination accoount",
 			fields: fields{
 				ac: &account.RepositoryMock{
-					GetFunc: func(ctx context.Context, ext id.ExternalID) (account.Account, error) {
+					GetByExternalIDFunc: func(ctx context.Context, ext id.ExternalID) (account.Account, error) {
 						if ext != id.From(idDestination) {
 							return account.Account{
 								ID:      1,
@@ -232,7 +233,7 @@ func TestCreate(t *testing.T) {
 			name: "should return unsuccessful creation of transfer due to error when beginning transaction",
 			fields: fields{
 				ac: &account.RepositoryMock{
-					GetFunc: func(ctx context.Context, ext id.ExternalID) (account.Account, error) {
+					GetByExternalIDFunc: func(ctx context.Context, ext id.ExternalID) (account.Account, error) {
 						internal := 1
 						if ext == id.From(idDestination) {
 							internal = 2
@@ -267,7 +268,7 @@ func TestCreate(t *testing.T) {
 			name: "should return unsuccessful creation of transfer due to error when updating balance of origin",
 			fields: fields{
 				ac: &account.RepositoryMock{
-					GetFunc: func(ctx context.Context, ext id.ExternalID) (account.Account, error) {
+					GetByExternalIDFunc: func(ctx context.Context, ext id.ExternalID) (account.Account, error) {
 						internal := 1
 						if ext == id.From(idDestination) {
 							internal = 2
@@ -306,7 +307,7 @@ func TestCreate(t *testing.T) {
 			name: "should return unsuccessful creation of transfer due to error when updating balance of destination",
 			fields: fields{
 				ac: &account.RepositoryMock{
-					GetFunc: func(ctx context.Context, ext id.ExternalID) (account.Account, error) {
+					GetByExternalIDFunc: func(ctx context.Context, ext id.ExternalID) (account.Account, error) {
 						internal := 1
 						if ext == id.From(idDestination) {
 							internal = 2
@@ -348,7 +349,7 @@ func TestCreate(t *testing.T) {
 			name: "should return unsuccessful creation of transfer due to error when creating transfer entity effectively",
 			fields: fields{
 				ac: &account.RepositoryMock{
-					GetFunc: func(ctx context.Context, ext id.ExternalID) (account.Account, error) {
+					GetByExternalIDFunc: func(ctx context.Context, ext id.ExternalID) (account.Account, error) {
 						internal := 1
 						if ext == id.From(idDestination) {
 							internal = 2
@@ -363,8 +364,8 @@ func TestCreate(t *testing.T) {
 					},
 				},
 				tr: &transfer.RepositoryMock{
-					CreateFunc: func(ctx context.Context, tr *transfer.Transfer) (id.ExternalID, error) {
-						return tr.ExternalID, pgx.ErrNoSchema
+					CreateFunc: func(ctx context.Context, tr transfer.Transfer) (transfer.Transfer, error) {
+						return tr, pgx.ErrNoSchema
 					},
 				},
 				tx: &transaction.RepositoryMock{
@@ -391,7 +392,7 @@ func TestCreate(t *testing.T) {
 			name: "should return unsuccessful creation of transfer due to error when creating transfer entity effectively",
 			fields: fields{
 				ac: &account.RepositoryMock{
-					GetFunc: func(ctx context.Context, ext id.ExternalID) (account.Account, error) {
+					GetByExternalIDFunc: func(ctx context.Context, ext id.ExternalID) (account.Account, error) {
 						internal := 1
 						if ext == id.From(idDestination) {
 							internal = 2
@@ -406,8 +407,9 @@ func TestCreate(t *testing.T) {
 					},
 				},
 				tr: &transfer.RepositoryMock{
-					CreateFunc: func(ctx context.Context, tr *transfer.Transfer) (id.ExternalID, error) {
-						return tr.ExternalID, nil
+					CreateFunc: func(ctx context.Context, tr transfer.Transfer) (transfer.Transfer, error) {
+						tr.ExternalID = id.From(idTransfer)
+						return tr, nil
 					},
 				},
 				tx: &transaction.RepositoryMock{
