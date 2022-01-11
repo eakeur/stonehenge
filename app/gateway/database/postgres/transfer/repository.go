@@ -12,7 +12,7 @@ type repository struct {
 }
 
 func parse(row common.Scanner, tr transfer.Transfer) (transfer.Transfer, error) {
-	err := row.Scan(&tr.ID, &tr.OriginID, &tr.DestinationID, &tr.Amount, &tr.EffectiveDate, &tr.UpdatedAt, &tr.CreatedAt)
+	err := row.Scan(&tr.ID, &tr.ExternalID, &tr.OriginID, &tr.DestinationID, &tr.Amount, &tr.EffectiveDate, &tr.UpdatedAt, &tr.CreatedAt)
 	if err != nil {
 		return tr, err
 	}

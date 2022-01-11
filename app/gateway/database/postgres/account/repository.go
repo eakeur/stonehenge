@@ -18,7 +18,7 @@ func NewRepository(db *pgxpool.Pool) account.Repository {
 }
 
 func parse(row common.Scanner, acc account.Account) (account.Account, error) {
-	err := row.Scan(&acc.ID, &acc.Name, &acc.Document, &acc.Balance, &acc.Secret, &acc.UpdatedAt, &acc.CreatedAt)
+	err := row.Scan(&acc.ID, &acc.ExternalID, &acc.Name, &acc.Document, &acc.Balance, &acc.Secret, &acc.UpdatedAt, &acc.CreatedAt)
 	if err != nil {
 		return acc, err
 	}
