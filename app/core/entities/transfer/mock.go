@@ -6,10 +6,10 @@ import (
 )
 
 type RepositoryMock struct {
-	ListFunc   func(context.Context, Filter) ([]Transfer, error)
-	GetFunc    func(ctx context.Context, id id.ExternalID) (Transfer, error)
-	CreateFunc func(ctx context.Context, transfer *Transfer) (id.ExternalID, error)
-	calls      struct {
+	ListFunc            func(context.Context, Filter) ([]Transfer, error)
+	GetByExternalIDFunc func(ctx context.Context, id id.ExternalID) (Transfer, error)
+	CreateFunc          func(ctx context.Context, transfer Transfer) (Transfer, error)
+	calls               struct {
 		List []listCall
 
 		Get []getCall
@@ -26,15 +26,15 @@ func (r *RepositoryMock) List(ctx context.Context, filter Filter) ([]Transfer, e
 	return r.ListFunc(ctx, filter)
 }
 
-func (r *RepositoryMock) Get(ctx context.Context, id id.ExternalID) (Transfer, error) {
+func (r *RepositoryMock) GetByExternalID(ctx context.Context, id id.ExternalID) (Transfer, error) {
 	r.calls.Get = append(r.calls.Get, getCall{
 		Ctx: ctx,
 		ID:  id,
 	})
-	return r.GetFunc(ctx, id)
+	return r.GetByExternalIDFunc(ctx, id)
 }
 
-func (r *RepositoryMock) Create(ctx context.Context, transfer *Transfer) (id.ExternalID, error) {
+func (r *RepositoryMock) Create(ctx context.Context, transfer Transfer) (Transfer, error) {
 	r.calls.Create = append(r.calls.Create, createCall{
 		Ctx:      ctx,
 		Transfer: transfer,
@@ -57,5 +57,5 @@ type getCall struct {
 type createCall struct {
 	Ctx context.Context
 
-	Transfer *Transfer
+	Transfer Transfer
 }
