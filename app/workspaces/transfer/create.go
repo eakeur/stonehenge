@@ -22,7 +22,7 @@ type CreateOutput struct {
 }
 
 func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, error) {
-	t := &transfer.Transfer{
+	t := transfer.Transfer{
 		Amount: req.Amount,
 	}
 
@@ -39,7 +39,7 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, 
 	}
 
 	// Fetches the origin account and checks for errors
-	origin, err := u.ac.Get(ctx, req.OriginID)
+	origin, err := u.ac.GetByExternalID(ctx, req.OriginID)
 	if err != nil {
 		return response, account.ErrNotFound
 	}
@@ -50,7 +50,7 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, 
 	}
 
 	// Fetches the origin account and checks for errors
-	dest, err := u.ac.Get(ctx, req.DestID)
+	dest, err := u.ac.GetByExternalID(ctx, req.DestID)
 	if err != nil {
 		return response, account.ErrNotFound
 	}
@@ -79,7 +79,7 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, 
 
 	// Creates a transfer register on storage
 	t.EffectiveDate = time.Now()
-	transferId, err := u.tr.Create(ctx, t)
+	t, err = u.tr.Create(ctx, t)
 	if err != nil {
 		return response, transfer.ErrRegistering
 	}
@@ -90,7 +90,7 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, 
 	}
 
 	response.RemainingBalance = remaining
-	response.TransferId = transferId
+	response.TransferId = t.ExternalID
 	response.CreatedAt = t.CreatedAt
 	return response, nil
 }

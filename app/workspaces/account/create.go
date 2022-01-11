@@ -55,7 +55,7 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, 
 	}
 	defer u.tx.Rollback(ctx)
 
-	accountId, err := u.ac.Create(ctx, &acc)
+	acc, err = u.ac.Create(ctx, acc)
 	if err != nil {
 		return response, account.ErrCreating
 	}
@@ -64,7 +64,7 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, 
 		return response, account.ErrCreating
 	}
 
-	response.AccountID = accountId
+	response.AccountID = acc.ExternalID
 	response.CreatedAt = acc.CreatedAt
 
 	return response, nil
