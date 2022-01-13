@@ -3,30 +3,23 @@ package account
 import (
 	"context"
 	"stonehenge/app/core/entities/account"
-	"stonehenge/app/core/types/id"
 )
-
-type ListRequest struct {
-	Context context.Context
-	Filter  account.Filter
-}
-
-type Reference struct {
-	Id   id.ID
-	Name string
-}
 
 func (u *workspace) List(ctx context.Context, filter account.Filter) ([]Reference, error) {
 	list, err := u.ac.List(ctx, filter)
 	if err != nil {
 		return nil, err
 	}
-	refs := make([]Reference, len(list))
-	for i, a := range list {
+	return toReference(list), nil
+}
+
+func toReference(accounts []account.Account) []Reference {
+	refs := make([]Reference, len(accounts))
+	for i, a := range accounts {
 		refs[i] = Reference{
-			Id:   a.ID,
-			Name: a.Name,
+			ExternalID: a.ExternalID,
+			Name:       a.Name,
 		}
 	}
-	return refs, nil
+	return refs
 }

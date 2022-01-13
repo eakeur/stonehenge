@@ -27,5 +27,8 @@ type Transfer struct {
 	// EffectiveDate is the date that the transaction happened
 	EffectiveDate time.Time
 
+	// Details is a wrapper for identifying the two parts involved in this transfer externally
+	Details Details
+
 	audits.Audit
 }

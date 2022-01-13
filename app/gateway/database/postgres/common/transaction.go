@@ -2,6 +2,7 @@ package common
 
 import (
 	"context"
+	"stonehenge/app/core/entities/transaction"
 
 	"github.com/jackc/pgx/v4"
 )
@@ -13,7 +14,10 @@ const (
 )
 
 // TransactionFrom looks up for a pgx.Tx object in this context and retrieves it
-func TransactionFrom(ctx context.Context) (pgx.Tx, bool) {
+func TransactionFrom(ctx context.Context) (pgx.Tx, error) {
 	v, ok := ctx.Value(TXContextKey).(pgx.Tx)
-	return v, ok
+	if !ok {
+		return v, transaction.ErrNoTransaction
+	}
+	return v, nil
 }

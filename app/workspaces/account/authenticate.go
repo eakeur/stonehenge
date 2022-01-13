@@ -2,14 +2,8 @@ package account
 
 import (
 	"context"
-	"stonehenge/app/core/types/document"
 	"stonehenge/app/core/types/id"
 )
-
-type AuthenticationRequest struct {
-	Document document.Document
-	Secret   string
-}
 
 func (u *workspace) Authenticate(ctx context.Context, req AuthenticationRequest) (id.ExternalID, error) {
 	if err := req.Document.Validate(); err != nil {

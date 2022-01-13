@@ -9,9 +9,9 @@ import (
 )
 
 func (r *repository) UpdateBalance(ctx context.Context, id id.ExternalID, balance currency.Currency) error {
-	db, found := common.TransactionFrom(ctx)
-	if !found {
-		return account.ErrCreating
+	db, err := common.TransactionFrom(ctx)
+	if err != nil {
+		return err
 	}
 
 	const script string = `
@@ -20,11 +20,15 @@ func (r *repository) UpdateBalance(ctx context.Context, id id.ExternalID, balanc
 		set
 			balance = $1
 		where
-			id = $2
+			external_id = $2
 	`
-	_, err := db.Exec(ctx, script, balance, id)
+	res, err := db.Exec(ctx, script, balance, id)
 	if err != nil {
-		return account.ErrCreating
+		return account.ErrUpdating
+	}
+
+	if res.RowsAffected() != 1 {
+		return account.ErrNotFound
 	}
 
 	return nil

@@ -13,14 +13,18 @@ import (
 
 func TestList(t *testing.T) {
 	t.Parallel()
+
+	tx := &transaction.RepositoryMock{}
+
 	type args struct {
 		ctx    context.Context
 		filter account.Filter
 	}
 
 	type fields struct {
-		repo account.Repository
 		tx   transaction.Transaction
+		repo account.Repository
+
 	}
 
 	type test struct {
@@ -31,80 +35,62 @@ func TestList(t *testing.T) {
 		wantErr error
 	}
 
-	var tests = []test{
+	tests := []test{
+
+		// Should return []Reference populated with information of accounts that satisfies the filter
 		{
-			name: "should return successful list with results",
-			fields: fields{
-				repo: &account.RepositoryMock{
-					ListFunc: func(ctx context.Context, filter account.Filter) ([]account.Account, error) {
-						return []account.Account{
-							{
-								ID:         1,
-								ExternalID: id.New(),
-								Document:   "70830052062",
-								Secret:     password.From("12345678"),
-								Name:       "John Reis",
-								Balance:    2500,
-								Audit:      audits.Audit{},
-							},
-							{
-								ID:         2,
-								ExternalID: id.New(),
-								Document:   "24388516007",
-								Secret:     password.From("12345678"),
-								Name:       "Wagner Reis",
-								Balance:    4500,
-								Audit:      audits.Audit{},
-							},
-							{
-								ID:         3,
-								ExternalID: id.New(),
-								Document:   "05161964057",
-								Secret:     password.From("12345678"),
-								Name:       "Spencer Reis",
-								Balance:    5000,
-								Audit:      audits.Audit{},
-							},
-						}, nil
-					},
+			name: "return array of accounts satisfying filter",
+			fields: fields{tx: tx, repo: &account.RepositoryMock{ListResult: []account.Account{
+				{
+					ID:         1,
+					ExternalID: id.From(accountID),
+					Document:   "70830052062",
+					Secret:     password.From("12345678"),
+					Name:       "John Reis",
+					Balance:    2500,
+					Audit:      audits.Audit{},
 				},
-				tx: &transaction.RepositoryMock{},
-			},
-			args: args{
-				ctx:    context.Background(),
-				filter: account.Filter{Name: "Reis"},
-			},
+				{
+					ID:         2,
+					ExternalID: id.From(accountID),
+					Document:   "24388516007",
+					Secret:     password.From("12345678"),
+					Name:       "Wagner Reis",
+					Balance:    4500,
+					Audit:      audits.Audit{},
+				},
+				{
+					ID:         3,
+					ExternalID: id.From(accountID),
+					Document:   "05161964057",
+					Secret:     password.From("12345678"),
+					Name:       "Spencer Reis",
+					Balance:    5000,
+					Audit:      audits.Audit{},
+				},
+			}}},
+			args: args{ctx: context.Background(), filter: account.Filter{Name: "Reis"}},
 			want: []Reference{
-				{
-					Id:   1,
-					Name: "John Reis",
-				},
-				{
-					Id:   2,
-					Name: "Wagner Reis",
-				},
-				{
-					Id:   3,
-					Name: "Spencer Reis",
-				},
+				{ ExternalID: id.From(accountID), Name: "John Reis" },
+				{ ExternalID: id.From(accountID), Name: "Wagner Reis" },
+				{ ExternalID: id.From(accountID), Name: "Spencer Reis" },
 			},
 		},
+
+		// Should return []Reference empty due to no accounts satisfying filter
 		{
-			name: "should return unsuccessful list result due to no accounts found",
-			fields: fields{
-				repo: &account.RepositoryMock{
-					ListFunc: func(ctx context.Context, filter account.Filter) ([]account.Account, error) {
-						return []account.Account{}, account.ErrNotFound
-					},
-				},
-				tx: &transaction.RepositoryMock{},
-			},
-			args: args{
-				ctx:    context.Background(),
-				filter: account.Filter{Name: "Raising"},
-			},
-			want:    nil,
-			wantErr: account.ErrNotFound,
+			name: "return empty array of accounts satisfying filter",
+			fields: fields{tx: tx, repo: &account.RepositoryMock{ListResult: []account.Account{}}},
+			args: args{ctx: context.Background(), filter: account.Filter{Name: "Rise"}},
+			want: []Reference{},
+		},
+
+		// Should return ErrFetching on repository error
+		{
+			name: "return ErrFetching on repository error",
+			fields: fields{tx: tx, repo: &account.RepositoryMock{ Error: account.ErrFetching }},
+			args: args{ctx: context.Background(), filter: account.Filter{Name: "Reis"}},
+			wantErr: account.ErrFetching,
 		},
 	}
 

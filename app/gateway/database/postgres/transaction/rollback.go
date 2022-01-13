@@ -6,8 +6,8 @@ import (
 )
 
 func (t *pgxTransaction) Rollback(ctx context.Context) {
-	tx, ok := common.TransactionFrom(ctx)
-	if !ok {
+	tx, err := common.TransactionFrom(ctx)
+	if err != nil {
 		return
 	}
 

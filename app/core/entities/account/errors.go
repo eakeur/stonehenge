@@ -5,7 +5,13 @@ import "errors"
 var (
 
 	// ErrCreating occurs when an untracked error happens when creating a new account
-	ErrCreating = errors.New("an error occurred while creating this account")
+	ErrCreating = errors.New("an error occurred while creating this account. please abort this operation")
+
+	// ErrFetching occurs when an untracked error happens when fetching an account
+	ErrFetching = errors.New("an error occurred while fetching accounts")
+
+	// ErrUpdating occurs when an untracked error happens when updating an account
+	ErrUpdating = errors.New("an error occurred while updating accounts. please abort this operation")
 
 	// ErrInvalidID throws when the identification provided is an invalid form of ID
 	ErrInvalidID = errors.New("the account id provided is invalid. please, try again with a valid one")

@@ -2,34 +2,45 @@ package transfer
 
 import (
 	"context"
+	"errors"
+	"github.com/jackc/pgconn"
 	"stonehenge/app/core/entities/transfer"
-	"stonehenge/app/core/types/id"
 	"stonehenge/app/gateway/database/postgres/common"
 )
 
-func (r *repository) Create(ctx context.Context, tran *transfer.Transfer) (id.ExternalID, error) {
-	db, found := common.TransactionFrom(ctx)
-	if !found {
-		return id.New(), transfer.ErrRegistering
+func (r *repository) Create(ctx context.Context, tr transfer.Transfer) (transfer.Transfer, error) {
+	db, err := common.TransactionFrom(ctx)
+	if err != nil {
+		return transfer.Transfer{}, err
 	}
 	const script string = `
 		insert into
-			transfers (id, account_origin_id, account_destination_id, amount, effective_date)
+			transfers (account_origin_id, account_destination_id, amount, effective_date)
 		values 
-			($1, $2, $3, $4, $5)
+			($1, $2, $3, $4)
 		returning 
 			id, external_id, created_at, updated_at
 	`
-	row := db.QueryRow(ctx, script, tran.ID, tran.OriginID, tran.DestinationID, tran.Amount, tran.EffectiveDate)
-	err := row.Scan(
-		&tran.ID,
-		&tran.ExternalID,
-		&tran.CreatedAt,
-		&tran.UpdatedAt,
+	row := db.QueryRow(ctx, script, tr.OriginID, tr.DestinationID, tr.Amount, tr.EffectiveDate)
+	err = row.Scan(
+		&tr.ID,
+		&tr.ExternalID,
+		&tr.CreatedAt,
+		&tr.UpdatedAt,
 	)
 	if err != nil {
-		return id.New(), transfer.ErrRegistering
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code == "23503" && pgErr.ConstraintName == "transfers_account_origin_id_fkey" {
+				return transfer.Transfer{}, transfer.ErrNonexistentOrigin
+			}
+
+			if pgErr.Code == "23503" && pgErr.ConstraintName == "transfers_account_destination_id_fkey" {
+				return transfer.Transfer{}, transfer.ErrNonexistentDestination
+			}
+		}
+		return transfer.Transfer{}, transfer.ErrRegistering
 	}
 
-	return tran.ExternalID, nil
+	return tr, nil
 }
