@@ -90,6 +90,7 @@ func TestList(t *testing.T) {
 			name: "return ErrFetching on repository error",
 			fields: fields{tx: tx, repo: &account.RepositoryMock{ Error: account.ErrFetching }},
 			args: args{ctx: context.Background(), filter: account.Filter{Name: "Reis"}},
+			want: []Reference{},
 			wantErr: account.ErrFetching,
 		},
 	}

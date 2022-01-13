@@ -110,6 +110,7 @@ func TestList(t *testing.T) {
 			name:    "return ErrFetching on repository error",
 			fields:  fields{tx: tx, ac: ac, tr: &transfer.RepositoryMock{Error: transfer.ErrFetching}},
 			args:    args{ctx: context.Background(), filter: transfer.Filter{OriginID: id.From(unknownID)}},
+			want: 	 []Reference{},
 			wantErr: transfer.ErrFetching,
 		},
 	}
