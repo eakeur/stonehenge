@@ -2,28 +2,28 @@ package transfer
 
 import (
 	"context"
+	"github.com/stretchr/testify/assert"
 	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/entities/transaction"
 	"stonehenge/app/core/entities/transfer"
-	"stonehenge/app/core/types/audits"
 	"stonehenge/app/core/types/id"
 	"testing"
-	"time"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestList(t *testing.T) {
 	t.Parallel()
+	tx := &transaction.RepositoryMock{}
+	ac := &account.RepositoryMock{}
+
 	type args struct {
 		ctx    context.Context
 		filter transfer.Filter
 	}
 
 	type fields struct {
+		tx transaction.Transaction
 		ac account.Repository
 		tr transfer.Repository
-		tx transaction.Transaction
 	}
 
 	type test struct {
@@ -34,59 +34,83 @@ func TestList(t *testing.T) {
 		wantErr error
 	}
 
-	var tests = []test{
+	tests := []test{
+		// Should return []Reference populated with information of transfers that satisfies the filter
 		{
-			name: "should return successful list with results",
-			fields: fields{
-				ac: &account.RepositoryMock{},
-				tr: &transfer.RepositoryMock{
-					ListFunc: func(c context.Context, f transfer.Filter) ([]transfer.Transfer, error) {
-						return []transfer.Transfer{
-							{
-								ID:            1,
-								ExternalID:    id.ZeroValue,
-								OriginID:      1,
-								DestinationID: 2,
-								Amount:        5,
-								EffectiveDate: time.Time{},
-								Audit:         audits.Audit{},
-							},
-						}, nil
-					},
+			name: "return array of transfers satisfying filter",
+			fields: fields{tx: tx, ac: ac, tr: &transfer.RepositoryMock{ListResult: []transfer.Transfer{
+				{
+					ID:            1,
+					ExternalID:    id.From(transferID),
+					OriginID:      1,
+					DestinationID: 2,
+					Amount:        2500,
 				},
-				tx: &transaction.RepositoryMock{},
-			},
-			args: args{
-				ctx:    context.Background(),
-				filter: transfer.Filter{},
-			},
+				{
+					ID:            2,
+					ExternalID:    id.From(transferID),
+					OriginID:      1,
+					DestinationID: 3,
+					Amount:        440,
+				},
+				{
+					ID:            3,
+					ExternalID:    id.From(transferID),
+					OriginID:      1,
+					DestinationID: 4,
+					Amount:        50000,
+				},
+				{
+					ID:            4,
+					ExternalID:    id.From(transferID),
+					OriginID:      1,
+					DestinationID: 5,
+					Amount:        2660,
+				},
+			}}},
+			args: args{ctx: context.Background(), filter: transfer.Filter{OriginID: id.From(originID)}},
 			want: []Reference{
 				{
-					Id:            1,
-					OriginId:      1,
-					DestinationId: 2,
-					Amount:        5,
-					EffectiveDate: time.Time{},
+					ExternalID:    id.From(transferID),
+					OriginID:      1,
+					DestinationID: 2,
+					Amount:        2500,
+				},
+				{
+					ExternalID:    id.From(transferID),
+					OriginID:      1,
+					DestinationID: 3,
+					Amount:        440,
+				},
+				{
+					ExternalID:    id.From(transferID),
+					OriginID:      1,
+					DestinationID: 4,
+					Amount:        50000,
+				},
+				{
+					ExternalID:    id.From(transferID),
+					OriginID:      1,
+					DestinationID: 5,
+					Amount:        2660,
 				},
 			},
 		},
+
+		// Should return []Reference empty due to no transfers satisfying filter
 		{
-			name: "should return unsuccessful list result due to no transfers found",
-			fields: fields{
-				ac: &account.RepositoryMock{},
-				tr: &transfer.RepositoryMock{
-					ListFunc: func(c context.Context, f transfer.Filter) ([]transfer.Transfer, error) {
-						return []transfer.Transfer{}, transfer.ErrNotFound
-					},
-				},
-				tx: &transaction.RepositoryMock{},
-			},
-			args: args{
-				ctx:    context.Background(),
-				filter: transfer.Filter{},
-			},
-			want:    nil,
-			wantErr: transfer.ErrNotFound,
+			name:   "return empty array of transfers satisfying filter",
+			fields: fields{tx: tx, ac: ac, tr: &transfer.RepositoryMock{ListResult: []transfer.Transfer{}}},
+			args:   args{ctx: context.Background(), filter: transfer.Filter{OriginID: id.From(unknownID)}},
+			want:   []Reference{},
+		},
+
+		// Should return ErrFetching on repository error
+		{
+			name:    "return ErrFetching on repository error",
+			fields:  fields{tx: tx, ac: ac, tr: &transfer.RepositoryMock{Error: transfer.ErrFetching}},
+			args:    args{ctx: context.Background(), filter: transfer.Filter{OriginID: id.From(unknownID)}},
+			wantErr: transfer.ErrFetching,
 		},
 	}
 

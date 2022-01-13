@@ -4,22 +4,8 @@ import (
 	"context"
 	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/entities/transfer"
-	"stonehenge/app/core/types/currency"
-	"stonehenge/app/core/types/id"
 	"time"
 )
-
-type CreateInput struct {
-	OriginID id.ExternalID
-	DestID   id.ExternalID
-	Amount   currency.Currency
-}
-
-type CreateOutput struct {
-	RemainingBalance currency.Currency
-	TransferId       id.ExternalID
-	CreatedAt        time.Time
-}
 
 func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, error) {
 	t := transfer.Transfer{
@@ -41,7 +27,7 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, 
 	// Fetches the origin account and checks for errors
 	origin, err := u.ac.GetByExternalID(ctx, req.OriginID)
 	if err != nil {
-		return response, account.ErrNotFound
+		return response, transfer.ErrNonexistentOrigin
 	}
 
 	// Validates if the balance of the origin is zero and if it's sufficient to accomplish the operation
@@ -52,7 +38,7 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, 
 	// Fetches the origin account and checks for errors
 	dest, err := u.ac.GetByExternalID(ctx, req.DestID)
 	if err != nil {
-		return response, account.ErrNotFound
+		return response, transfer.ErrNonexistentDestination
 	}
 
 	ctx, err = u.tx.Begin(ctx)
@@ -68,20 +54,20 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, 
 	remaining := origin.Balance - req.Amount
 	err = u.ac.UpdateBalance(ctx, req.OriginID, remaining)
 	if err != nil {
-		return response, transfer.ErrRegistering
+		return response, err
 	}
 
 	// Updates the balance of the destination account after transaction
 	err = u.ac.UpdateBalance(ctx, req.DestID, dest.Balance+req.Amount)
 	if err != nil {
-		return response, transfer.ErrRegistering
+		return response, err
 	}
 
 	// Creates a transfer register on storage
 	t.EffectiveDate = time.Now()
 	t, err = u.tr.Create(ctx, t)
 	if err != nil {
-		return response, transfer.ErrRegistering
+		return response, err
 	}
 
 	err = u.tx.Commit(ctx)

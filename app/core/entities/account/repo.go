@@ -7,25 +7,34 @@ import (
 	"stonehenge/app/core/types/id"
 )
 
-//go:generate moq -fmt goimports -out repo_mock.go . Repository:RepositoryMock
-
 // Repository is the data access layer for the account entity
 type Repository interface {
-	// List gets all accounts existing
+
+	// List gets all accounts existing that respects a given filter. It may return ErrFetching if an untracked error happens
 	List(context.Context, Filter) ([]Account, error)
 
-	// GetByExternalID gets the account with the ID specified
+	// GetByExternalID gets the account with the id.ExternalID specified. It may return ErrNotFound
+	// if no account with the id.ExternalID is found, ErrInvalidID if the id.ExternalID provided is corrupt
+	// or ErrFetching if an untracked error happens
 	GetByExternalID(context.Context, id.ExternalID) (Account, error)
 
-	// GetWithCPF gets the account with the document specified
+	// GetWithCPF gets the account with the document.Document specified. It may return ErrNotFound
+	// if no account with that document.Document is found, document.ErrInvalidDocument if the document.Document provided is corrupt
+	// or ErrFetching if an untracked error happens
 	GetWithCPF(context.Context, document.Document) (Account, error)
 
-	// GetBalance gets the balance with the ID specified
+	// GetBalance gets the balance with the id.ExternalID specified. It may return ErrNotFound
+	// if no account with the id.ExternalID is found, ErrInvalidID if the id.ExternalID provided is corrupt
+	// or ErrFetching if an untracked error happens
 	GetBalance(context.Context, id.ExternalID) (currency.Currency, error)
 
-	// Create creates a new account and returns its new id
+	// Create creates a new account and returns it with all field fulfilled. It must be called within a transaction.Transaction context
+	// and may return ErrAlreadyExist if the data passed in already belongs to another Account, transaction.ErrNoTransaction
+	// if there is no transaction in context or ErrCreating if an untracked error happens
 	Create(context.Context, Account) (Account, error)
 
-	// UpdateBalance replaces the balance of the account with the id provided
+	// UpdateBalance replaces the balance of the account with the id.ID provided with a new one. It must be called within a transaction.Transaction context
+	// and may return ErrNotFound if no account with the id.ID is found, transaction.ErrNoTransaction
+	// if there is no transaction in context or ErrUpdating if an untracked error happens
 	UpdateBalance(context.Context, id.ExternalID, currency.Currency) error
 }

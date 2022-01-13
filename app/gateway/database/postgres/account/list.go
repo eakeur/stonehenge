@@ -26,17 +26,22 @@ func (r *repository) List(ctx context.Context, filter account.Filter) ([]account
 
 	ret, err := r.db.Query(ctx, query, args...)
 	if err != nil {
-		return nil, account.ErrNotFound
+		return nil, account.ErrFetching
 	}
 	defer ret.Close()
-	accounts := make([]account.Account, 0)
 
+	accounts := make([]account.Account, 0)
 	for ret.Next() {
 		acc := account.Account{}
-		acc, err := parse(ret, acc)
-		if err != nil {
-			continue
-		}
+		err = ret.Scan(
+			&acc.ID,
+			&acc.ExternalID,
+			&acc.Name,
+			&acc.Document,
+			&acc.Balance,
+			&acc.Secret,
+			&acc.UpdatedAt,
+			&acc.CreatedAt)
 		accounts = append(accounts, acc)
 	}
 	return accounts, nil

@@ -31,3 +31,14 @@ type Account struct {
 
 	audits.Audit
 }
+
+func (a Account) Validate() error {
+
+	// Checks document's consistency
+	if err := a.Document.Validate(); err != nil {
+		return err
+	}
+
+	return nil
+
+}

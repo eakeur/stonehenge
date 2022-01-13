@@ -2,6 +2,7 @@ package account
 
 import (
 	"context"
+	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/types/currency"
 	"stonehenge/app/core/types/id"
 	"stonehenge/app/gateway/database/postgres/common"
@@ -19,11 +20,15 @@ func (r *repository) UpdateBalance(ctx context.Context, id id.ExternalID, balanc
 		set
 			balance = $1
 		where
-			id = $2
+			external_id = $2
 	`
-	_, err = db.Exec(ctx, script, balance, id)
+	res, err := db.Exec(ctx, script, balance, id)
 	if err != nil {
-		return err
+		return account.ErrUpdating
+	}
+
+	if res.RowsAffected() != 1 {
+		return account.ErrNotFound
 	}
 
 	return nil

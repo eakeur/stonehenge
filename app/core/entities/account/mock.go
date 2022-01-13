@@ -8,13 +8,19 @@ import (
 )
 
 type RepositoryMock struct {
-	ListFunc            func(context.Context, Filter) ([]Account, error)
-	GetByExternalIDFunc func(ctx context.Context, id id.ExternalID) (Account, error)
-	GetWithCPFFunc      func(ctx context.Context, document document.Document) (Account, error)
-	GetBalanceFunc      func(ctx context.Context, id id.ExternalID) (currency.Currency, error)
-	CreateFunc          func(ctx context.Context, account Account) (Account, error)
-	UpdateBalanceFunc   func(ctx context.Context, id id.ExternalID, balance currency.Currency) error
-	calls               struct {
+	ListFunc              func(context.Context, Filter) ([]Account, error)
+	ListResult            []Account
+	GetByExternalIDFunc   func(ctx context.Context, id id.ExternalID) (Account, error)
+	GetByExternalIDResult Account
+	GetWithCPFFunc        func(ctx context.Context, document document.Document) (Account, error)
+	GetWithCPFResult      Account
+	GetBalanceFunc        func(ctx context.Context, id id.ExternalID) (currency.Currency, error)
+	GetBalanceResult      currency.Currency
+	CreateFunc            func(ctx context.Context, account Account) (Account, error)
+	CreateResult          Account
+	UpdateBalanceFunc     func(ctx context.Context, id id.ExternalID, balance currency.Currency) error
+	Error error
+	calls                 struct {
 		List          []listCall
 		Get           []getCall
 		GetWithCPF    []getWithCPFCall
@@ -29,6 +35,9 @@ func (r *RepositoryMock) List(ctx context.Context, filter Filter) ([]Account, er
 		Ctx:    ctx,
 		Filter: filter,
 	})
+	if r.ListFunc == nil {
+		return r.ListResult, r.Error
+	}
 	return r.ListFunc(ctx, filter)
 }
 
@@ -37,6 +46,9 @@ func (r *RepositoryMock) GetByExternalID(ctx context.Context, id id.ExternalID) 
 		Ctx: ctx,
 		ID:  id,
 	})
+	if r.GetByExternalIDFunc == nil {
+		return r.GetByExternalIDResult, r.Error
+	}
 	return r.GetByExternalIDFunc(ctx, id)
 }
 
@@ -45,6 +57,9 @@ func (r *RepositoryMock) GetWithCPF(ctx context.Context, document document.Docum
 		Ctx:      ctx,
 		Document: document,
 	})
+	if r.GetWithCPFFunc == nil {
+		return r.GetWithCPFResult, r.Error
+	}
 	return r.GetWithCPFFunc(ctx, document)
 }
 
@@ -53,6 +68,9 @@ func (r *RepositoryMock) GetBalance(ctx context.Context, id id.ExternalID) (curr
 		Ctx: ctx,
 		ID:  id,
 	})
+	if r.GetBalanceFunc == nil {
+		return r.GetBalanceResult, r.Error
+	}
 	return r.GetBalanceFunc(ctx, id)
 }
 
@@ -61,6 +79,9 @@ func (r *RepositoryMock) Create(ctx context.Context, account Account) (Account, 
 		Ctx:     ctx,
 		Account: account,
 	})
+	if r.CreateFunc == nil {
+		return r.CreateResult, r.Error
+	}
 	return r.CreateFunc(ctx, account)
 }
 
@@ -70,6 +91,9 @@ func (r *RepositoryMock) UpdateBalance(ctx context.Context, id id.ExternalID, ba
 		ID:      id,
 		Balance: balance,
 	})
+	if r.UpdateBalanceFunc == nil {
+		return r.Error
+	}
 	return r.UpdateBalanceFunc(ctx, id, balance)
 }
 

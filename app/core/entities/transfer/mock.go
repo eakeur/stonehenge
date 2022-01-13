@@ -2,18 +2,16 @@ package transfer
 
 import (
 	"context"
-	"stonehenge/app/core/types/id"
 )
 
 type RepositoryMock struct {
-	ListFunc            func(context.Context, Filter) ([]Transfer, error)
-	GetByExternalIDFunc func(ctx context.Context, id id.ExternalID) (Transfer, error)
-	CreateFunc          func(ctx context.Context, transfer Transfer) (Transfer, error)
-	calls               struct {
-		List []listCall
-
-		Get []getCall
-
+	ListFunc     func(context.Context, Filter) ([]Transfer, error)
+	ListResult   []Transfer
+	CreateFunc   func(ctx context.Context, transfer Transfer) (Transfer, error)
+	CreateResult Transfer
+	Error        error
+	calls        struct {
+		List   []listCall
 		Create []createCall
 	}
 }
@@ -23,15 +21,10 @@ func (r *RepositoryMock) List(ctx context.Context, filter Filter) ([]Transfer, e
 		Ctx:    ctx,
 		Filter: filter,
 	})
+	if r.ListFunc == nil {
+		return r.ListResult, r.Error
+	}
 	return r.ListFunc(ctx, filter)
-}
-
-func (r *RepositoryMock) GetByExternalID(ctx context.Context, id id.ExternalID) (Transfer, error) {
-	r.calls.Get = append(r.calls.Get, getCall{
-		Ctx: ctx,
-		ID:  id,
-	})
-	return r.GetByExternalIDFunc(ctx, id)
 }
 
 func (r *RepositoryMock) Create(ctx context.Context, transfer Transfer) (Transfer, error) {
@@ -39,6 +32,9 @@ func (r *RepositoryMock) Create(ctx context.Context, transfer Transfer) (Transfe
 		Ctx:      ctx,
 		Transfer: transfer,
 	})
+	if r.CreateFunc == nil {
+		return r.CreateResult, r.Error
+	}
 	return r.CreateFunc(ctx, transfer)
 }
 
@@ -46,12 +42,6 @@ type listCall struct {
 	Ctx context.Context
 
 	Filter Filter
-}
-
-type getCall struct {
-	Ctx context.Context
-
-	ID id.ExternalID
 }
 
 type createCall struct {

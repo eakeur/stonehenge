@@ -2,6 +2,8 @@ package account
 
 import (
 	"context"
+	"errors"
+	"github.com/jackc/pgx/v4"
 	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/types/id"
 )
@@ -21,10 +23,24 @@ func (r *repository) GetByExternalID(ctx context.Context, id id.ExternalID) (acc
 	where external_id = $1`
 
 	acc := account.Account{}
+
 	ret := r.db.QueryRow(ctx, query, id)
-	acc, err := parse(ret, acc)
+	err := ret.Scan(
+		&acc.ID,
+		&acc.ExternalID,
+		&acc.Name,
+		&acc.Document,
+		&acc.Balance,
+		&acc.Secret,
+		&acc.UpdatedAt,
+		&acc.CreatedAt)
+
 	if err != nil {
-		return account.Account{}, account.ErrNotFound
+		if errors.Is(pgx.ErrNoRows, err) {
+			return account.Account{}, account.ErrNotFound
+		}
+		return account.Account{}, account.ErrFetching
+
 	}
 	return acc, nil
 }

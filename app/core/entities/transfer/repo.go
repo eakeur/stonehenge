@@ -2,7 +2,6 @@ package transfer
 
 import (
 	"context"
-	"stonehenge/app/core/types/id"
 )
 
 //go:generate moq -fmt goimports -out repo_mock.go . Repository:RepositoryMock
@@ -11,9 +10,6 @@ import (
 type Repository interface {
 	// List gets all transfers existing
 	List(ctx context.Context, filter Filter) ([]Transfer, error)
-
-	// GetByExternalID gets the transfer with the ID specified
-	GetByExternalID(ctx context.Context, id id.ExternalID) (Transfer, error)
 
 	// Create creates a new transfer and returns its new id
 	Create(ctx context.Context, transfer Transfer) (Transfer, error)

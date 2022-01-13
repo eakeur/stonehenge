@@ -2,11 +2,13 @@ package account
 
 import (
 	"context"
+	"errors"
+	"github.com/jackc/pgx/v4"
 	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/types/document"
 )
 
-func (r *repository) GetWithCPF(ctx context.Context, document document.Document) (account.Account, error) {
+func (r *repository) GetWithCPF(ctx context.Context, doc document.Document) (account.Account, error) {
 	const query string = `select 
 		id, 
 		external_id, 
@@ -21,11 +23,25 @@ func (r *repository) GetWithCPF(ctx context.Context, document document.Document)
 	where 
 		document = $1`
 
-	ret := r.db.QueryRow(ctx, query, document)
+	ret := r.db.QueryRow(ctx, query, doc)
 	acc := account.Account{}
-	acc, err := parse(ret, acc)
+	err := ret.Scan(
+		&acc.ID,
+		&acc.ExternalID,
+		&acc.Name,
+		&acc.Document,
+		&acc.Balance,
+		&acc.Secret,
+		&acc.UpdatedAt,
+		&acc.CreatedAt)
+
 	if err != nil {
-		return account.Account{}, account.ErrNotFound
+		if errors.Is(pgx.ErrNoRows, err) {
+			return account.Account{}, account.ErrNotFound
+		}
+
+		return account.Account{}, account.ErrFetching
+
 	}
 	return acc, nil
 }
