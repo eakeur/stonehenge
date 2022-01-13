@@ -8,18 +8,14 @@ import (
 func (u *workspace) List(ctx context.Context, filter account.Filter) ([]Reference, error) {
 	list, err := u.ac.List(ctx, filter)
 	if err != nil {
-		return nil, err
+		return []Reference{}, err
 	}
-	return toReference(list), nil
-}
-
-func toReference(accounts []account.Account) []Reference {
-	refs := make([]Reference, len(accounts))
-	for i, a := range accounts {
+	refs := make([]Reference, len(list))
+	for i, a := range list {
 		refs[i] = Reference{
 			ExternalID: a.ExternalID,
 			Name:       a.Name,
 		}
 	}
-	return refs
+	return refs, nil
 }

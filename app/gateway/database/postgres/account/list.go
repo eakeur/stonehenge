@@ -26,7 +26,7 @@ func (r *repository) List(ctx context.Context, filter account.Filter) ([]account
 
 	ret, err := r.db.Query(ctx, query, args...)
 	if err != nil {
-		return nil, account.ErrFetching
+		return []account.Account{}, account.ErrFetching
 	}
 	defer ret.Close()
 

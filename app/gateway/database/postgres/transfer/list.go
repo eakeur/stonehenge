@@ -44,7 +44,7 @@ func (r *repository) List(ctx context.Context, filter transfer.Filter) ([]transf
 
 	ret, err := r.db.Query(ctx, query, args...)
 	if err != nil {
-		return nil, transfer.ErrFetching
+		return []transfer.Transfer{}, transfer.ErrFetching
 	}
 	defer ret.Close()
 
