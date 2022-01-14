@@ -11,10 +11,10 @@ import (
 )
 
 func TestCreate(t *testing.T) {
-
-	t.Parallel()
-
-	db := postgrestest.GetDB()
+	db, err := postgrestest.NewCleanDatabase()
+	if err != nil {
+		t.Fatalf("could not get database: %v", err)
+	}
 
 	tx := transaction.NewTransaction(db)
 
@@ -68,6 +68,8 @@ func TestCreate(t *testing.T) {
 	for _, test := range tests {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
+			defer postgrestest.RecycleDatabase(test.args.ctx)
+
 			repo := NewRepository(db)
 
 			if test.before != nil {
@@ -97,11 +99,6 @@ func TestCreate(t *testing.T) {
 
 			assert.ErrorIs(t, test.wantErr, err)
 			assert.Equal(t, accountInDB, acc)
-
-			err = postgrestest.RecycleDatabase(ctx)
-			if err != nil {
-				t.Fatalf("could not recycle database: %v", err)
-			}
 		})
 	}
 }
