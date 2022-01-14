@@ -20,7 +20,7 @@ func (r *repository) List(ctx context.Context, filter account.Filter) ([]account
 		accounts`
 	args := make([]interface{}, 0)
 	if filter.Name != "" {
-		query = common.AppendCondition(query, "and", "name like ?")
+		query = common.AppendCondition(query, "and", "name like ?", 1)
 		args = append(args, "%"+filter.Name+"%")
 	}
 

@@ -20,9 +20,14 @@ type Executor interface {
 	Query(query string, args ...interface{}) (*sql.Rows, error)
 }
 
-func AppendCondition(query string, logic string, condition string) string {
+func AppendCondition(query string, logic string, condition string, paramNumbers ...int) string {
+	for _, number := range paramNumbers {
+		condition = strings.Replace(condition, "?", fmt.Sprintf("$%v", number), 1)
+	}
+
 	if strings.Contains(query, " where ") {
 		return fmt.Sprintf("%v %v %v", query, logic, condition)
 	}
+
 	return fmt.Sprintf("%v where %v", query, condition)
 }

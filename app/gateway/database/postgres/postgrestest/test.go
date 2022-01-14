@@ -1,6 +1,7 @@
 package postgrestest
 
 import (
+	"context"
 	"fmt"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/ory/dockertest/v3"
@@ -18,8 +19,13 @@ const (
 var port string
 var db *pgxpool.Pool
 
-func GetDB() *pgxpool.Pool {
-	return db
+func NewCleanDatabase() (*pgxpool.Pool, error) {
+	ctx := context.Background()
+	err := RecycleDatabase(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return db, nil
 }
 
 func SetupTest(m *testing.M) int {

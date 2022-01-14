@@ -9,36 +9,40 @@ import (
 
 func (r *repository) List(ctx context.Context, filter transfer.Filter) ([]transfer.Transfer, error) {
 	query := `select
-		id,
-		external_id,
-		origin_id,
-		destination_id,
+		t.id,
+		t.external_id,
+		t.account_origin_id,
+		t.account_destination_id,
 		ori.external_id,
 		des.external_id,
-		amount,
-		effective_date,
-		updated_at,
-		created_at
+		t.amount,
+		t.effective_date,
+		t.updated_at,
+		t.created_at
 	from 
-		transfers
+		transfers t
 	inner join 
-		accounts ori on origin_id = ori.id
+		accounts ori on account_origin_id = ori.id
 	inner join 
-		accounts des on destination_id = des.id
+		accounts des on account_destination_id = des.id
 `
 	args := make([]interface{}, 0)
+	idx := 0
 	if filter.OriginID != id.ZeroValue {
-		query = common.AppendCondition(query, "and", "ori.external_id = ?")
+		idx++
+		query = common.AppendCondition(query, "and", "ori.external_id = ?", idx)
 		args = append(args, filter.OriginID)
 	}
 
 	if filter.DestinationID != id.ZeroValue {
-		query = common.AppendCondition(query, "and", "des.external_id = ?")
+		idx++
+		query = common.AppendCondition(query, "and", "des.external_id = ?", idx)
 		args = append(args, filter.DestinationID)
 	}
 
 	if !filter.InitialDate.IsZero() && !filter.FinalDate.IsZero() {
-		query = common.AppendCondition(query, "and", "effective_date between ? and ?")
+		idx += 2
+		query = common.AppendCondition(query, "and", "effective_date between ? and ?", idx-1, idx)
 		args = append(args, filter.InitialDate, filter.FinalDate)
 	}
 
