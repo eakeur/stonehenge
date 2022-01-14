@@ -101,5 +101,5 @@ func PopulateTransfers(ctx context.Context, transfers ...transfer.Transfer) ([]t
 		transfers[i] = tr
 	}
 
-	return []transfer.Transfer{}, nil
+	return transfers, nil
 }
