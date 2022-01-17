@@ -2,7 +2,7 @@ package access
 
 import (
 	"context"
-	"stonehenge/app/core/entities/account"
+	"stonehenge/app/core/types/id"
 )
 
 var _ Factory = &FactoryMock{}
@@ -15,7 +15,7 @@ type FactoryMock struct {
 	Error                        error
 }
 
-func (f FactoryMock) Create(_ account.Account) (Access, error) {
+func (f FactoryMock) Create(_ id.External) (Access, error) {
 	return f.CreateResult, f.Error
 }
 

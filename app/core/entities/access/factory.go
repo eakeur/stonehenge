@@ -2,13 +2,13 @@ package access
 
 import (
 	"context"
-	"stonehenge/app/core/entities/account"
+	"stonehenge/app/core/types/id"
 )
 
 // Factory is an interface with useful actions to create and manage access token and objects
 type Factory interface {
 	// Create creates an Access object containing the account's external ID and its correspondent access token.
-	Create(account.Account) (Access, error)
+	Create(id.External) (Access, error)
 
 	// ExtractAccessFromToken extracts an access object from the given token. It may return an error if the token
 	// is invalid or expired
