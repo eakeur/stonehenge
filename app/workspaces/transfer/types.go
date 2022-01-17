@@ -15,9 +15,8 @@ type Reference struct {
 }
 
 type CreateInput struct {
-	OriginID id.External
-	DestID   id.External
-	Amount   currency.Currency
+	DestID id.External
+	Amount currency.Currency
 }
 
 type CreateOutput struct {
