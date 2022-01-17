@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"stonehenge/app/core/types/currency"
 	"stonehenge/app/core/types/id"
-	"stonehenge/app/gateway/api/common"
 	"stonehenge/app/gateway/api/responses"
 	"stonehenge/app/workspaces/transfer"
 )
@@ -22,10 +21,7 @@ func (c *Controller) Create(rw http.ResponseWriter, r *http.Request) {
 		responses.WriteErrorResponse(rw, http.StatusBadRequest, err)
 	}
 
-	accountID := common.FetchContextUser(r.Context())
-
 	req := transfer.CreateInput{
-		OriginID: accountID,
 		DestID:   body.DestinationID,
 		Amount:   currency.Currency(body.Amount),
 	}

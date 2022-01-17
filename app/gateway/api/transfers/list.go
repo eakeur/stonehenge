@@ -5,7 +5,6 @@ import (
 	"net/url"
 	"stonehenge/app/core/entities/transfer"
 	"stonehenge/app/core/types/id"
-	"stonehenge/app/gateway/api/common"
 	"stonehenge/app/gateway/api/responses"
 	"time"
 )
@@ -13,7 +12,6 @@ import (
 // List gets all transfers of this actual account
 func (c *Controller) List(rw http.ResponseWriter, r *http.Request) {
 	filters := getFilter(r.URL.Query())
-	filters.OriginID = common.FetchContextUser(r.Context())
 	list, err := c.workspace.List(r.Context(), filters)
 	if err != nil {
 		responses.WriteErrorResponse(rw, http.StatusBadRequest, err)
