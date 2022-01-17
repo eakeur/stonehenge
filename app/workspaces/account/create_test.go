@@ -45,7 +45,7 @@ func TestAccountCreation(t *testing.T) {
 			name: "return CreateOutput for created account",
 			fields: fields{tx: tx, repo: &account.RepositoryMock{
 				CreateFunc: func(ctx context.Context, account account.Account) (account.Account, error) {
-					account.ExternalID = id.From(accountID)
+					account.ExternalID = id.ExternalFrom(accountID)
 					return account, nil
 				},
 			}},
@@ -54,7 +54,7 @@ func TestAccountCreation(t *testing.T) {
 				Secret:   password.From("D@V@C@O@"),
 				Name:     "Lina Pereira",
 			}},
-			want: CreateOutput{AccountID: id.From(accountID)},
+			want: CreateOutput{AccountID: id.ExternalFrom(accountID)},
 		},
 
 		// Should return ErrAlreadyExists for document related to another account already

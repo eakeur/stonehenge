@@ -10,16 +10,16 @@ import (
 type RepositoryMock struct {
 	ListFunc              func(context.Context, Filter) ([]Account, error)
 	ListResult            []Account
-	GetByExternalIDFunc   func(ctx context.Context, id id.ExternalID) (Account, error)
+	GetByExternalIDFunc   func(ctx context.Context, id id.External) (Account, error)
 	GetByExternalIDResult Account
 	GetWithCPFFunc        func(ctx context.Context, document document.Document) (Account, error)
 	GetWithCPFResult      Account
-	GetBalanceFunc        func(ctx context.Context, id id.ExternalID) (currency.Currency, error)
+	GetBalanceFunc        func(ctx context.Context, id id.External) (currency.Currency, error)
 	GetBalanceResult      currency.Currency
 	CreateFunc            func(ctx context.Context, account Account) (Account, error)
 	CreateResult          Account
-	UpdateBalanceFunc     func(ctx context.Context, id id.ExternalID, balance currency.Currency) error
-	Error error
+	UpdateBalanceFunc     func(ctx context.Context, id id.External, balance currency.Currency) error
+	Error                 error
 	calls                 struct {
 		List          []listCall
 		Get           []getCall
@@ -41,7 +41,7 @@ func (r *RepositoryMock) List(ctx context.Context, filter Filter) ([]Account, er
 	return r.ListFunc(ctx, filter)
 }
 
-func (r *RepositoryMock) GetByExternalID(ctx context.Context, id id.ExternalID) (Account, error) {
+func (r *RepositoryMock) GetByExternalID(ctx context.Context, id id.External) (Account, error) {
 	r.calls.Get = append(r.calls.Get, getCall{
 		Ctx: ctx,
 		ID:  id,
@@ -63,7 +63,7 @@ func (r *RepositoryMock) GetWithCPF(ctx context.Context, document document.Docum
 	return r.GetWithCPFFunc(ctx, document)
 }
 
-func (r *RepositoryMock) GetBalance(ctx context.Context, id id.ExternalID) (currency.Currency, error) {
+func (r *RepositoryMock) GetBalance(ctx context.Context, id id.External) (currency.Currency, error) {
 	r.calls.GetBalance = append(r.calls.GetBalance, getCall{
 		Ctx: ctx,
 		ID:  id,
@@ -85,7 +85,7 @@ func (r *RepositoryMock) Create(ctx context.Context, account Account) (Account, 
 	return r.CreateFunc(ctx, account)
 }
 
-func (r *RepositoryMock) UpdateBalance(ctx context.Context, id id.ExternalID, balance currency.Currency) error {
+func (r *RepositoryMock) UpdateBalance(ctx context.Context, id id.External, balance currency.Currency) error {
 	r.calls.UpdateBalance = append(r.calls.UpdateBalance, updateBalanceCall{
 		Ctx:     ctx,
 		ID:      id,
@@ -106,7 +106,7 @@ type listCall struct {
 type getCall struct {
 	Ctx context.Context
 
-	ID id.ExternalID
+	ID id.External
 }
 
 type getWithCPFCall struct {
@@ -124,7 +124,7 @@ type createCall struct {
 type updateBalanceCall struct {
 	Ctx context.Context
 
-	ID id.ExternalID
+	ID id.External
 
 	Balance currency.Currency
 }

@@ -9,7 +9,7 @@ import (
 	"stonehenge/app/core/types/id"
 )
 
-func (r *repository) GetBalance(ctx context.Context, id id.ExternalID) (currency.Currency, error) {
+func (r *repository) GetBalance(ctx context.Context, id id.External) (currency.Currency, error) {
 	const query string = "select balance from accounts where external_id = $1"
 	ret := r.db.QueryRow(ctx, query, id)
 	var balance currency.Currency

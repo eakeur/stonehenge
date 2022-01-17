@@ -15,7 +15,7 @@ type Account struct {
 	ID id.ID
 
 	// ExternalID is the public identifier of this entity
-	ExternalID id.ExternalID
+	ExternalID id.External
 
 	// The unique document that represents the user
 	Document document.Document

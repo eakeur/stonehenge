@@ -24,7 +24,6 @@ func TestList(t *testing.T) {
 	type fields struct {
 		tx   transaction.Transaction
 		repo account.Repository
-
 	}
 
 	type test struct {
@@ -43,7 +42,7 @@ func TestList(t *testing.T) {
 			fields: fields{tx: tx, repo: &account.RepositoryMock{ListResult: []account.Account{
 				{
 					ID:         1,
-					ExternalID: id.From(accountID),
+					ExternalID: id.ExternalFrom(accountID),
 					Document:   "70830052062",
 					Secret:     password.From("12345678"),
 					Name:       "John Reis",
@@ -52,7 +51,7 @@ func TestList(t *testing.T) {
 				},
 				{
 					ID:         2,
-					ExternalID: id.From(accountID),
+					ExternalID: id.ExternalFrom(accountID),
 					Document:   "24388516007",
 					Secret:     password.From("12345678"),
 					Name:       "Wagner Reis",
@@ -61,7 +60,7 @@ func TestList(t *testing.T) {
 				},
 				{
 					ID:         3,
-					ExternalID: id.From(accountID),
+					ExternalID: id.ExternalFrom(accountID),
 					Document:   "05161964057",
 					Secret:     password.From("12345678"),
 					Name:       "Spencer Reis",
@@ -71,26 +70,26 @@ func TestList(t *testing.T) {
 			}}},
 			args: args{ctx: context.Background(), filter: account.Filter{Name: "Reis"}},
 			want: []Reference{
-				{ ExternalID: id.From(accountID), Name: "John Reis" },
-				{ ExternalID: id.From(accountID), Name: "Wagner Reis" },
-				{ ExternalID: id.From(accountID), Name: "Spencer Reis" },
+				{ExternalID: id.ExternalFrom(accountID), Name: "John Reis"},
+				{ExternalID: id.ExternalFrom(accountID), Name: "Wagner Reis"},
+				{ExternalID: id.ExternalFrom(accountID), Name: "Spencer Reis"},
 			},
 		},
 
 		// Should return []Reference empty due to no accounts satisfying filter
 		{
-			name: "return empty array of accounts satisfying filter",
+			name:   "return empty array of accounts satisfying filter",
 			fields: fields{tx: tx, repo: &account.RepositoryMock{ListResult: []account.Account{}}},
-			args: args{ctx: context.Background(), filter: account.Filter{Name: "Rise"}},
-			want: []Reference{},
+			args:   args{ctx: context.Background(), filter: account.Filter{Name: "Rise"}},
+			want:   []Reference{},
 		},
 
 		// Should return ErrFetching on repository error
 		{
-			name: "return ErrFetching on repository error",
-			fields: fields{tx: tx, repo: &account.RepositoryMock{ Error: account.ErrFetching }},
-			args: args{ctx: context.Background(), filter: account.Filter{Name: "Reis"}},
-			want: []Reference{},
+			name:    "return ErrFetching on repository error",
+			fields:  fields{tx: tx, repo: &account.RepositoryMock{Error: account.ErrFetching}},
+			args:    args{ctx: context.Background(), filter: account.Filter{Name: "Reis"}},
+			want:    []Reference{},
 			wantErr: account.ErrFetching,
 		},
 	}

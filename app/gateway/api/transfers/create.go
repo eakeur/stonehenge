@@ -12,7 +12,7 @@ import (
 )
 
 type PostRequestBody struct {
-	DestinationID id.ExternalID
+	DestinationID id.External
 	Amount        int
 }
 
@@ -50,7 +50,7 @@ func getPostRequestBody(body io.ReadCloser) (PostRequestBody, error) {
 		return req, err
 	}
 
-	if req.DestinationID == id.ZeroValue || req.Amount == 0 {
+	if req.DestinationID == id.Zero || req.Amount == 0 {
 		return req, err
 	}
 

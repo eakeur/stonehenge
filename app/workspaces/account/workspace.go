@@ -12,13 +12,13 @@ type Workspace interface {
 	Create(ctx context.Context, req CreateInput) (CreateOutput, error)
 
 	// GetBalance gets the account balance with the ID specified
-	GetBalance(ctx context.Context, id id.ExternalID) (GetBalanceResponse, error)
+	GetBalance(ctx context.Context, id id.External) (GetBalanceResponse, error)
 
 	// List gets all accounts existing that satisfies the passed filter
 	List(ctx context.Context, filter account.Filter) ([]Reference, error)
 
 	// Authenticate verifies a user credential and returns the account id if it's all ok
-	Authenticate(ctx context.Context, req AuthenticationRequest) (id.ExternalID, error)
+	Authenticate(ctx context.Context, req AuthenticationRequest) (id.External, error)
 }
 
 type workspace struct {

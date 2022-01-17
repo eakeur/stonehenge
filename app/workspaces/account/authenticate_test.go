@@ -34,19 +34,19 @@ func TestAuthentication(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    id.ExternalID
+		want    id.External
 		wantErr error
 	}
 
 	var tests = []test{
 
-		// Should return ExternalID of the successfully authenticated account
+		// Should return External of the successfully authenticated account
 		{
-			name: "return ExternalID of authenticated account",
+			name: "return External of authenticated account",
 			fields: fields{tx: tx, repo: &account.RepositoryMock{
 				GetWithCPFResult: account.Account{
 					ID:         1,
-					ExternalID: id.From(accountID),
+					ExternalID: id.ExternalFrom(accountID),
 					Document:   "97662062015",
 					Secret:     password.From("D@V@C@O@"),
 					Name:       "Lina Pereira",
@@ -57,7 +57,7 @@ func TestAuthentication(t *testing.T) {
 				Document: "97662062015",
 				Secret:   "D@V@C@O@",
 			}},
-			want:    id.From(accountID),
+			want: id.ExternalFrom(accountID),
 		},
 
 		// Should return ErrWrongPassword authenticating with unmatching password
@@ -66,7 +66,7 @@ func TestAuthentication(t *testing.T) {
 			fields: fields{tx: tx, repo: &account.RepositoryMock{
 				GetWithCPFResult: account.Account{
 					ID:         1,
-					ExternalID: id.From(accountID),
+					ExternalID: id.ExternalFrom(accountID),
 					Document:   "97662062015",
 					Secret:     password.From("D@V@C@O@"),
 					Name:       "Lina Pereira",
@@ -77,7 +77,7 @@ func TestAuthentication(t *testing.T) {
 				Document: "97662062015",
 				Secret:   "D@V@C@A@",
 			}},
-			want:    id.ZeroValue,
+			want:    id.Zero,
 			wantErr: password.ErrWrongPassword,
 		},
 
@@ -89,7 +89,7 @@ func TestAuthentication(t *testing.T) {
 				Document: "9766206201",
 				Secret:   "D@V@C@O@",
 			}},
-			want:    id.ZeroValue,
+			want:    id.Zero,
 			wantErr: document.ErrInvalidDocument,
 		},
 
@@ -101,7 +101,7 @@ func TestAuthentication(t *testing.T) {
 				Document: "97662062015",
 				Secret:   "D@V@C@O@",
 			}},
-			want:    id.ZeroValue,
+			want:    id.Zero,
 			wantErr: account.ErrNotFound,
 		},
 	}

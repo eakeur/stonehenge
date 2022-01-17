@@ -1,6 +1,6 @@
 begin;
 
--- create extension if not exists "uuid-ossp";
+create extension if not exists "uuid-ossp";
 
 create table if not exists accounts (
      id                         serial          not null
@@ -8,7 +8,7 @@ create table if not exists accounts (
     ,name                       varchar(255)    not null
     ,document                   varchar(14)     not null
     ,balance                    bigint          not null    default 0
-    ,secret                     varchar(255)    not null
+    ,secret                     bytea           not null
     ,updated_at                 timestamp       not null    default now()
     ,created_at                 timestamp       not null    default now()
 

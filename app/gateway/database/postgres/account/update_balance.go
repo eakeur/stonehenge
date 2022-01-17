@@ -8,7 +8,7 @@ import (
 	"stonehenge/app/gateway/database/postgres/common"
 )
 
-func (r *repository) UpdateBalance(ctx context.Context, id id.ExternalID, balance currency.Currency) error {
+func (r *repository) UpdateBalance(ctx context.Context, id id.External, balance currency.Currency) error {
 	db, err := common.TransactionFrom(ctx)
 	if err != nil {
 		return err

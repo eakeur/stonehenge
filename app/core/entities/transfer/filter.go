@@ -8,10 +8,10 @@ import (
 // Filter stores information that refines the transfer list, bringing up only what is needed
 type Filter struct {
 	// OriginID filters transfers made by this account only
-	OriginID id.ExternalID
+	OriginID id.External
 
 	// DestinationID filters transfers made to this account only
-	DestinationID id.ExternalID
+	DestinationID id.External
 
 	// InitialDate filters transfers made at this time or later
 	InitialDate time.Time

@@ -16,7 +16,7 @@ func TestGetBalance(t *testing.T) {
 
 	type args struct {
 		ctx context.Context
-		id  id.ExternalID
+		id  id.External
 	}
 
 	type fields struct {
@@ -36,17 +36,17 @@ func TestGetBalance(t *testing.T) {
 
 		// Should return the balance property of the account returned by the repository
 		{
-			name: "return Balance property of account",
-			fields: fields{tx: tx, repo: &account.RepositoryMock{ GetBalanceResult: 5000 }},
-			args: args{ctx: context.Background(), id: id.From(accountID)},
-			want: GetBalanceResponse{Balance: 5000},
+			name:   "return Balance property of account",
+			fields: fields{tx: tx, repo: &account.RepositoryMock{GetBalanceResult: 5000}},
+			args:   args{ctx: context.Background(), id: id.ExternalFrom(accountID)},
+			want:   GetBalanceResponse{Balance: 5000},
 		},
 
 		// Should return ErrNotFound because no account with the ID specified was found
 		{
-			name: "return ErrNotFound for nonexistent account",
-			fields: fields{tx: tx, repo: &account.RepositoryMock{ Error: account.ErrNotFound }},
-			args: args{ctx: context.Background(), id: id.From(accountID)},
+			name:    "return ErrNotFound for nonexistent account",
+			fields:  fields{tx: tx, repo: &account.RepositoryMock{Error: account.ErrNotFound}},
+			args:    args{ctx: context.Background(), id: id.ExternalFrom(accountID)},
 			wantErr: account.ErrNotFound,
 		},
 	}
