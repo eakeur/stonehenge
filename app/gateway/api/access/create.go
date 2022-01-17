@@ -1,16 +1,17 @@
 package access
 
 import (
-	"github.com/golang-jwt/jwt"
 	"stonehenge/app/core/entities/access"
-	"stonehenge/app/core/entities/account"
+	"stonehenge/app/core/types/id"
 	"time"
+
+	"github.com/golang-jwt/jwt"
 )
 
-func (f Factory) Create(acc account.Account) (access.Access, error) {
+func (f Factory) Create(ext id.External) (access.Access, error) {
 	t := jwt.New(jwt.GetSigningMethod("HS256"))
 	t.Claims = &jwt.StandardClaims{
-		Id:        acc.ExternalID.String(),
+		Id:        ext.String(),
 		ExpiresAt: time.Now().Add(f.tokenExpirationTime).Unix(),
 	}
 
@@ -20,7 +21,7 @@ func (f Factory) Create(acc account.Account) (access.Access, error) {
 	}
 
 	return access.Access{
-		AccountID: acc.ExternalID,
+		AccountID: ext,
 		Token:     token,
 	}, nil
 }
