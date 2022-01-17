@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/stretchr/testify/assert"
 	"stonehenge/app/core/entities/account"
-	"stonehenge/app/core/types/password"
 	"stonehenge/app/gateway/database/postgres/postgrestest"
 	"stonehenge/app/gateway/database/postgres/transaction"
 	"testing"
@@ -26,7 +25,8 @@ func TestCreate(t *testing.T) {
 	type test struct {
 		name    string
 		args    args
-		before  func(test, account.Repository) error
+		before  func(test) error
+		want    account.Account
 		wantErr error
 	}
 
@@ -35,32 +35,18 @@ func TestCreate(t *testing.T) {
 		// Should return Account with generated fields
 		{
 			name: "return Account with generated fields",
-			args: args{ctx: context.Background(), account: account.Account{
-				Document: "05161964057",
-				Secret:   password.From("12345678"),
-				Name:     "Spencer Reis",
-				Balance:  5000,
-			}},
+			args: args{ctx: context.Background(), account: postgrestest.GetFakeAccount()},
+			want: postgrestest.GetFakeAccount(),
 		},
 
 		// Should return ErrAlreadyExist for duplicate account
 		{
 			name: "return ErrAlreadyExist for duplicate account",
-			before: func(test test, repo account.Repository) error {
-				_, err := postgrestest.PopulateAccounts(test.args.ctx, account.Account{
-					Document: "05161964057",
-					Secret:   password.From("12345678"),
-					Name:     "Spencer Reis",
-					Balance:  5000,
-				})
+			before: func(test test) error {
+				_, err := postgrestest.PopulateAccounts(test.args.ctx, postgrestest.GetFakeAccount())
 				return err
 			},
-			args: args{ctx: context.Background(), account: account.Account{
-				Document: "05161964057",
-				Secret:   password.From("12345678"),
-				Name:     "Spencer Reis",
-				Balance:  5000,
-			}},
+			args:    args{ctx: context.Background(), account: postgrestest.GetFakeAccount()},
 			wantErr: account.ErrAlreadyExist,
 		},
 	}
@@ -73,32 +59,31 @@ func TestCreate(t *testing.T) {
 			repo := NewRepository(db)
 
 			if test.before != nil {
-				err := test.before(test, repo)
+				err := test.before(test)
 				if err != nil {
 					t.Fatalf("error running routine before: %v", err)
 				}
 			}
 			ctx, err := tx.Begin(test.args.ctx)
 			if err != nil {
-				t.Error(err)
+				t.Fatalf("could not start transaction: %v", err)
 			}
+			defer tx.Rollback(ctx)
 
 			acc, err := repo.Create(ctx, test.args.account)
-			if err != nil {
-				tx.Rollback(ctx)
-				assert.ErrorIs(t, test.wantErr, err)
-				return
-			}
+			if err == nil {
+				if err := tx.Commit(ctx); err != nil {
+					t.Fatalf("could not commit transaction: %v", err)
+				}
 
-			if err := tx.Commit(ctx); err != nil {
-				tx.Rollback(ctx)
-				assert.ErrorIs(t, test.wantErr, err)
+				test.want.ID = acc.ID
+				test.want.ExternalID = acc.ExternalID
+				test.want.CreatedAt = acc.CreatedAt
+				test.want.UpdatedAt = acc.UpdatedAt
 			}
-
-			accountInDB, err := repo.GetByExternalID(ctx, acc.ExternalID)
 
 			assert.ErrorIs(t, test.wantErr, err)
-			assert.Equal(t, accountInDB, acc)
+			assert.Equal(t, test.want, acc)
 		})
 	}
 }

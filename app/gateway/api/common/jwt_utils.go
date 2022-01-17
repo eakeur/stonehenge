@@ -13,7 +13,7 @@ const JwtKey string = "EDAF12D5D997C58B1962FD8350E8B1C158447B5D1002DABA4F551BC3C
 const TokenValidMinutes = 10
 
 // CreateToken creates a JWT token string containing the account id of the applicant
-func CreateToken(userId id.ExternalID) (string, error) {
+func CreateToken(userId id.External) (string, error) {
 	t := jwt.New(jwt.GetSigningMethod("HS256"))
 	t.Claims = TokenDetails{
 		&jwt.StandardClaims{
@@ -56,5 +56,5 @@ type TokenDetails struct {
 	*jwt.StandardClaims
 
 	// The id of the current account
-	AccountId *id.ExternalID
+	AccountId *id.External
 }

@@ -24,6 +24,8 @@ func (r *repository) List(ctx context.Context, filter account.Filter) ([]account
 		args = append(args, "%"+filter.Name+"%")
 	}
 
+	query += "\n order by id"
+
 	ret, err := r.db.Query(ctx, query, args...)
 	if err != nil {
 		return []account.Account{}, account.ErrFetching

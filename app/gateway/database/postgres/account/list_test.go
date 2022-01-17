@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/stretchr/testify/assert"
 	"stonehenge/app/core/entities/account"
-	"stonehenge/app/core/types/password"
 	"stonehenge/app/gateway/database/postgres/postgrestest"
 	"testing"
 )
@@ -35,62 +34,22 @@ func TestList(t *testing.T) {
 		{
 			name: "return account expected",
 			before: func(test test, a account.Repository) ([]account.Account, error) {
-				accounts, err := postgrestest.PopulateAccounts(test.args.ctx,
-					account.Account{
-						Document: "70830052062",
-						Secret:   password.From("12345678"),
-						Name:     "John Reis",
-						Balance:  2500,
-					},
-					account.Account{
-						Document: "24388516007",
-						Secret:   password.From("12345678"),
-						Name:     "Wagner Reis",
-						Balance:  4500,
-					},
-					account.Account{
-						Document: "05161964057",
-						Secret:   password.From("12345678"),
-						Name:     "Spencer Reis",
-						Balance:  5000,
-					},
-					account.Account{
-						Document: "24788516002",
-						Secret:   password.From("12345678"),
-						Name:     "Lina Pereira",
-						Balance:  4500,
-					},
-					account.Account{
-						Document: "24385516005",
-						Secret:   password.From("12345678"),
-						Name:     "Elza Soares",
-						Balance:  4500,
-					},
-					account.Account{
-						Document: "24384516008",
-						Secret:   password.From("12345678"),
-						Name:     "Jur Arras",
-						Balance:  4500,
-					})
-				return accounts, err
+				return postgrestest.PopulateAccounts(test.args.ctx, postgrestest.GetFakeAccounts()...)
 			},
 			args: args{ctx: context.Background(), filter: account.Filter{Name: "Reis"}},
 			want: []account.Account{
 				{
 					Document: "70830052062",
-					Secret:   password.From("12345678"),
 					Name:     "John Reis",
 					Balance:  2500,
 				},
 				{
 					Document: "24388516007",
-					Secret:   password.From("12345678"),
 					Name:     "Wagner Reis",
 					Balance:  4500,
 				},
 				{
 					Document: "05161964057",
-					Secret:   password.From("12345678"),
 					Name:     "Spencer Reis",
 					Balance:  5000,
 				},
@@ -122,6 +81,11 @@ func TestList(t *testing.T) {
 					assert.Equal(t, exp.Name, acc.Name)
 					assert.Equal(t, exp.Document, acc.Document)
 					assert.Equal(t, exp.Balance, acc.Balance)
+					assert.Nil(t, acc.Secret.Compare("12345678"))
+					assert.NotNil(t, acc.CreatedAt)
+					assert.NotNil(t, acc.UpdatedAt)
+					assert.NotNil(t, acc.ID)
+					assert.NotNil(t, acc.ExternalID)
 				}
 			}
 		})

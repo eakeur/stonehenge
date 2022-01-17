@@ -5,7 +5,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/types/document"
-	"stonehenge/app/core/types/password"
 	"stonehenge/app/gateway/database/postgres/postgrestest"
 	"testing"
 )
@@ -26,7 +25,7 @@ func TestGetWithCPF(t *testing.T) {
 	type test struct {
 		name    string
 		args    args
-		before  func(test, account.Repository) (account.Account, error)
+		before  func(test) (account.Account, error)
 		want    account.Account
 		wantErr error
 	}
@@ -36,17 +35,12 @@ func TestGetWithCPF(t *testing.T) {
 		// Should return the account expected
 		{
 			name: "return account expected",
-			before: func(test test, a account.Repository) (account.Account, error) {
-				accounts, err := postgrestest.PopulateAccounts(test.args.ctx, account.Account{
-					Document: "05161964057",
-					Secret:   password.From("12345678"),
-					Name:     "Spencer Reis",
-					Balance:  758250,
-				})
+			before: func(test test) (account.Account, error) {
+				accounts, err := postgrestest.PopulateAccounts(test.args.ctx, postgrestest.GetFakeAccount())
 				return accounts[0], err
 			},
-			args: args{ctx: context.Background(), document: "05161964057"},
-			want: account.Account{},
+			args: args{ctx: context.Background(), document: "24788516002"},
+			want: postgrestest.GetFakeAccount(),
 		},
 
 		// Should return ErrNotFound for unknown document
@@ -66,11 +60,14 @@ func TestGetWithCPF(t *testing.T) {
 			repo := NewRepository(db)
 
 			if test.before != nil {
-				acc, err := test.before(test, repo)
-				test.want = acc
+				acc, err := test.before(test)
 				if err != nil {
 					t.Fatalf("error running routine before: %v", err)
 				}
+				test.want.ID = acc.ID
+				test.want.ExternalID = acc.ExternalID
+				test.want.CreatedAt = acc.CreatedAt
+				test.want.UpdatedAt = acc.UpdatedAt
 			}
 
 			got, err := repo.GetWithCPF(test.args.ctx, test.args.document)

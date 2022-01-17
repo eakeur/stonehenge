@@ -2,18 +2,18 @@ package id
 
 import "github.com/google/uuid"
 
-var ZeroValue = ExternalID(uuid.MustParse("00000000-0000-0000-0000-000000000000"))
+var Zero = External(uuid.Nil)
 
-type ExternalID uuid.UUID
+type External uuid.UUID
 
-func New() ExternalID {
-	return ExternalID(uuid.New())
+func NewExternal() External {
+	return External(uuid.New())
 }
 
-func From(id string) ExternalID {
+func ExternalFrom(id string) External {
 	parsed, err := uuid.Parse(id)
 	if err != nil {
-		return ZeroValue
+		return Zero
 	}
-	return ExternalID(parsed)
+	return External(parsed)
 }

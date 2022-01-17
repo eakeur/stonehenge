@@ -3,9 +3,7 @@ package transfer
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
-	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/entities/transfer"
-	"stonehenge/app/core/types/password"
 	"stonehenge/app/gateway/database/postgres/postgrestest"
 	"testing"
 )
@@ -35,49 +33,12 @@ func TestList(t *testing.T) {
 		{
 			name: "return account expected",
 			before: func(test test) (transfer.Filter, error) {
-				accounts, err := postgrestest.PopulateAccounts(test.args.ctx,
-					account.Account{
-						Document: "70830052062",
-						Secret:   password.From("12345678"),
-						Name:     "John Reis",
-						Balance:  2500,
-					},
-					account.Account{
-						Document: "24388516007",
-						Secret:   password.From("12345678"),
-						Name:     "Wagner Reis",
-						Balance:  4500,
-					})
+				accounts, err := postgrestest.PopulateAccounts(test.args.ctx, postgrestest.GetFakeAccounts()...)
 				if err != nil {
 					return transfer.Filter{}, err
 				}
 
-				_, err = postgrestest.PopulateTransfers(test.args.ctx,
-					transfer.Transfer{
-						OriginID:      1,
-						DestinationID: 2,
-						Amount:        500,
-					},
-					transfer.Transfer{
-						OriginID:      1,
-						DestinationID: 2,
-						Amount:        500,
-					},
-					transfer.Transfer{
-						OriginID:      2,
-						DestinationID: 1,
-						Amount:        500,
-					},
-					transfer.Transfer{
-						OriginID:      2,
-						DestinationID: 1,
-						Amount:        500,
-					},
-					transfer.Transfer{
-						OriginID:      1,
-						DestinationID: 2,
-						Amount:        500,
-					})
+				_, err = postgrestest.PopulateTransfers(test.args.ctx, postgrestest.GetFakeTransfers()...)
 
 				if err != nil {
 					return transfer.Filter{}, err
@@ -85,7 +46,7 @@ func TestList(t *testing.T) {
 
 				return transfer.Filter{
 					OriginID: accounts[0].ExternalID,
-				}, err
+				}, nil
 			},
 			args: args{ctx: context.Background()},
 			want: []transfer.Transfer{
@@ -125,8 +86,16 @@ func TestList(t *testing.T) {
 			assert.ErrorIs(t, err, test.wantErr)
 			assert.Equal(t, len(test.want), len(got))
 			if len(test.want) == len(got) {
-				for _, acc := range got {
-					assert.Equal(t, filter.OriginID, acc.Details.OriginExternalID)
+				for i, tr := range got {
+					exp := test.want[i]
+					assert.Equal(t, filter.OriginID, tr.Details.OriginExternalID)
+					assert.Equal(t, exp.OriginID, tr.OriginID)
+					assert.Equal(t, exp.DestinationID, tr.DestinationID)
+					assert.Equal(t, exp.Amount, tr.Amount)
+					assert.NotNil(t, tr.CreatedAt)
+					assert.NotNil(t, tr.UpdatedAt)
+					assert.NotNil(t, tr.ID)
+					assert.NotNil(t, tr.ExternalID)
 				}
 			}
 		})

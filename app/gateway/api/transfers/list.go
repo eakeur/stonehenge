@@ -29,11 +29,11 @@ func (c *Controller) List(rw http.ResponseWriter, r *http.Request) {
 func getFilter(values url.Values) transfer.Filter {
 	filter := transfer.Filter{}
 
-	if ori := id.From(values.Get("origin")); ori != id.ZeroValue {
+	if ori := id.ExternalFrom(values.Get("origin")); ori != id.Zero {
 		filter.OriginID = ori
 	}
 
-	if dest := id.From(values.Get("destination")); dest != id.ZeroValue {
+	if dest := id.ExternalFrom(values.Get("destination")); dest != id.Zero {
 		filter.OriginID = dest
 	}
 

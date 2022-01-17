@@ -28,13 +28,13 @@ func (r *repository) List(ctx context.Context, filter transfer.Filter) ([]transf
 `
 	args := make([]interface{}, 0)
 	idx := 0
-	if filter.OriginID != id.ZeroValue {
+	if filter.OriginID != id.Zero {
 		idx++
 		query = common.AppendCondition(query, "and", "ori.external_id = ?", idx)
 		args = append(args, filter.OriginID)
 	}
 
-	if filter.DestinationID != id.ZeroValue {
+	if filter.DestinationID != id.Zero {
 		idx++
 		query = common.AppendCondition(query, "and", "des.external_id = ?", idx)
 		args = append(args, filter.DestinationID)
@@ -45,6 +45,8 @@ func (r *repository) List(ctx context.Context, filter transfer.Filter) ([]transf
 		query = common.AppendCondition(query, "and", "effective_date between ? and ?", idx-1, idx)
 		args = append(args, filter.InitialDate, filter.FinalDate)
 	}
+
+	query += "\n order by effective_date desc"
 
 	ret, err := r.db.Query(ctx, query, args...)
 	if err != nil {

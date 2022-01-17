@@ -20,7 +20,7 @@ type CreateInput struct {
 }
 
 type CreateOutput struct {
-	AccountID id.ExternalID
+	AccountID id.External
 	CreatedAt time.Time
 }
 
@@ -29,6 +29,6 @@ type GetBalanceResponse struct {
 }
 
 type Reference struct {
-	ExternalID id.ExternalID
+	ExternalID id.External
 	Name       string
 }

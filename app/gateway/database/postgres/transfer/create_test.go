@@ -3,13 +3,11 @@ package transfer
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
-	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/entities/transfer"
-	"stonehenge/app/core/types/id"
-	"stonehenge/app/core/types/password"
 	"stonehenge/app/gateway/database/postgres/postgrestest"
 	"stonehenge/app/gateway/database/postgres/transaction"
 	"testing"
+	"time"
 )
 
 func TestCreate(t *testing.T) {
@@ -29,6 +27,7 @@ func TestCreate(t *testing.T) {
 		name    string
 		args    args
 		before  func(test) error
+		want    transfer.Transfer
 		wantErr error
 	}
 
@@ -38,46 +37,35 @@ func TestCreate(t *testing.T) {
 		{
 			name: "return Transfer with generated fields",
 			before: func(test test) error {
-				_, err := postgrestest.PopulateAccounts(test.args.ctx,
-					account.Account{
-						Document: "05161964057",
-						Secret:   password.From("12345678"),
-						Name:     "Spencer Reis",
-						Balance:  5000,
-					},
-					account.Account{
-						Document: "05161964056",
-						Secret:   password.From("87654321"),
-						Name:     "Nina Simone",
-						Balance:  50000,
-					})
-				if err != nil {
-					return err
-				}
-				return nil
+				_, err := postgrestest.PopulateAccounts(test.args.ctx, postgrestest.GetFakeAccounts()...)
+				return err
 			},
 			args: args{ctx: context.Background(), transfer: transfer.Transfer{
 				OriginID:      1,
 				DestinationID: 2,
 				Amount:        500,
+				EffectiveDate: func() time.Time {
+					t, _ := time.Parse("2006/01/02 15:04:05", "2022/01/01 10:50:01")
+					return t
+				}(),
 			}},
+			want: transfer.Transfer{
+				OriginID:      1,
+				DestinationID: 2,
+				Amount:        500,
+				EffectiveDate: func() time.Time {
+					t, _ := time.Parse("2006/01/02 15:04:05", "2022/01/01 10:50:01")
+					return t
+				}(),
+			},
 		},
 
 		// Should return ErrNonexistentOrigin for unknown origin id
 		{
 			name: "return ErrNonexistentOrigin ",
 			before: func(test test) error {
-				_, err := postgrestest.PopulateAccounts(test.args.ctx,
-					account.Account{
-						Document: "05161964056",
-						Secret:   password.From("87654321"),
-						Name:     "Nina Simone",
-						Balance:  50000,
-					})
-				if err != nil {
-					return err
-				}
-				return nil
+				_, err := postgrestest.PopulateAccounts(test.args.ctx, postgrestest.GetFakeAccount())
+				return err
 			},
 			args: args{ctx: context.Background(), transfer: transfer.Transfer{
 				OriginID:      2,
@@ -91,17 +79,8 @@ func TestCreate(t *testing.T) {
 		{
 			name: "return ErrNonexistentDestination",
 			before: func(test test) error {
-				_, err := postgrestest.PopulateAccounts(test.args.ctx,
-					account.Account{
-						Document: "05161964056",
-						Secret:   password.From("87654321"),
-						Name:     "Nina Simone",
-						Balance:  50000,
-					})
-				if err != nil {
-					return err
-				}
-				return nil
+				_, err := postgrestest.PopulateAccounts(test.args.ctx, postgrestest.GetFakeAccount())
+				return err
 			},
 			args: args{ctx: context.Background(), transfer: transfer.Transfer{
 				OriginID:      1,
@@ -129,23 +108,21 @@ func TestCreate(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
+			defer tx.Rollback(ctx)
 
 			tr, err := repo.Create(ctx, test.args.transfer)
-			if err != nil {
-				tx.Rollback(ctx)
-				assert.ErrorIs(t, test.wantErr, err)
-				return
-			}
-
-			if err := tx.Commit(ctx); err != nil {
-				tx.Rollback(ctx)
-				assert.ErrorIs(t, test.wantErr, err)
+			if err == nil {
+				if err := tx.Commit(ctx); err != nil {
+					assert.ErrorIs(t, test.wantErr, err)
+				}
+				test.want.ID = tr.ID
+				test.want.ExternalID = tr.ExternalID
+				test.want.CreatedAt = tr.CreatedAt
+				test.want.UpdatedAt = tr.UpdatedAt
 			}
 
 			assert.ErrorIs(t, test.wantErr, err)
-			if test.wantErr != nil {
-				assert.Equal(t, id.ID(1), tr.ID)
-			}
+			assert.Equal(t, test.want, tr)
 		})
 	}
 }

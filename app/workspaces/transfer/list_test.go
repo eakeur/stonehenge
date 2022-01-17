@@ -41,55 +41,55 @@ func TestList(t *testing.T) {
 			fields: fields{tx: tx, ac: ac, tr: &transfer.RepositoryMock{ListResult: []transfer.Transfer{
 				{
 					ID:            1,
-					ExternalID:    id.From(transferID),
+					ExternalID:    id.ExternalFrom(transferID),
 					OriginID:      1,
 					DestinationID: 2,
 					Amount:        2500,
 				},
 				{
 					ID:            2,
-					ExternalID:    id.From(transferID),
+					ExternalID:    id.ExternalFrom(transferID),
 					OriginID:      1,
 					DestinationID: 3,
 					Amount:        440,
 				},
 				{
 					ID:            3,
-					ExternalID:    id.From(transferID),
+					ExternalID:    id.ExternalFrom(transferID),
 					OriginID:      1,
 					DestinationID: 4,
 					Amount:        50000,
 				},
 				{
 					ID:            4,
-					ExternalID:    id.From(transferID),
+					ExternalID:    id.ExternalFrom(transferID),
 					OriginID:      1,
 					DestinationID: 5,
 					Amount:        2660,
 				},
 			}}},
-			args: args{ctx: context.Background(), filter: transfer.Filter{OriginID: id.From(originID)}},
+			args: args{ctx: context.Background(), filter: transfer.Filter{OriginID: id.ExternalFrom(originID)}},
 			want: []Reference{
 				{
-					ExternalID:    id.From(transferID),
+					ExternalID:    id.ExternalFrom(transferID),
 					OriginID:      1,
 					DestinationID: 2,
 					Amount:        2500,
 				},
 				{
-					ExternalID:    id.From(transferID),
+					ExternalID:    id.ExternalFrom(transferID),
 					OriginID:      1,
 					DestinationID: 3,
 					Amount:        440,
 				},
 				{
-					ExternalID:    id.From(transferID),
+					ExternalID:    id.ExternalFrom(transferID),
 					OriginID:      1,
 					DestinationID: 4,
 					Amount:        50000,
 				},
 				{
-					ExternalID:    id.From(transferID),
+					ExternalID:    id.ExternalFrom(transferID),
 					OriginID:      1,
 					DestinationID: 5,
 					Amount:        2660,
@@ -101,7 +101,7 @@ func TestList(t *testing.T) {
 		{
 			name:   "return empty array of transfers satisfying filter",
 			fields: fields{tx: tx, ac: ac, tr: &transfer.RepositoryMock{ListResult: []transfer.Transfer{}}},
-			args:   args{ctx: context.Background(), filter: transfer.Filter{OriginID: id.From(unknownID)}},
+			args:   args{ctx: context.Background(), filter: transfer.Filter{OriginID: id.ExternalFrom(unknownID)}},
 			want:   []Reference{},
 		},
 
@@ -109,8 +109,8 @@ func TestList(t *testing.T) {
 		{
 			name:    "return ErrFetching on repository error",
 			fields:  fields{tx: tx, ac: ac, tr: &transfer.RepositoryMock{Error: transfer.ErrFetching}},
-			args:    args{ctx: context.Background(), filter: transfer.Filter{OriginID: id.From(unknownID)}},
-			want: 	 []Reference{},
+			args:    args{ctx: context.Background(), filter: transfer.Filter{OriginID: id.ExternalFrom(unknownID)}},
+			want:    []Reference{},
 			wantErr: transfer.ErrFetching,
 		},
 	}

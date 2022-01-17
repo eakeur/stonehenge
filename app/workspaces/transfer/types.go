@@ -7,7 +7,7 @@ import (
 )
 
 type Reference struct {
-	ExternalID    id.ExternalID
+	ExternalID    id.External
 	OriginID      id.ID
 	DestinationID id.ID
 	Amount        currency.Currency
@@ -15,13 +15,13 @@ type Reference struct {
 }
 
 type CreateInput struct {
-	OriginID id.ExternalID
-	DestID   id.ExternalID
+	OriginID id.External
+	DestID   id.External
 	Amount   currency.Currency
 }
 
 type CreateOutput struct {
 	RemainingBalance currency.Currency
-	TransferId       id.ExternalID
+	TransferId       id.External
 	CreatedAt        time.Time
 }
