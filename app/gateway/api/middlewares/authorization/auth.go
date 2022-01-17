@@ -2,44 +2,25 @@ package authorization
 
 import (
 	"net/http"
-	"stonehenge/app/gateway/api/common"
-	"strings"
+	"stonehenge/app/core/entities/access"
 )
 
-func Middleware(next http.Handler) http.Handler {
+func Middleware(next http.Handler, factory access.Factory) http.Handler {
 	return http.HandlerFunc(func(wr http.ResponseWriter, r *http.Request) {
-		token := getToken(r)
-		account, err := common.ExtractToken(token)
+		token := r.Header.Get("Authorization")
+		access, err := factory.ExtractAccessFromToken(token)
+		if err != nil {
+			wr.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		access, err = factory.Create(access.AccountID)
 		if err != nil {
 			wr.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 
-		token, err = common.CreateToken(*account.AccountId)
-		if err != nil {
-			wr.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-
-		common.AssignToken(wr, token)
-
-		ctx := common.AssignUserToContext(r.Context(), *account.AccountId)
+		wr.Header().Add("Authorization", "Bearer "+access.Token)
+		ctx := factory.AssignAccessToContext(r.Context(), access)
 		next.ServeHTTP(wr, r.WithContext(ctx))
 	})
-}
-
-// getToken returns the request token present in the request
-func getToken(r *http.Request) string {
-	jwtToken := r.Header.Get("Authorization")
-	if strings.Trim(jwtToken, " ") == "" {
-		cookies := r.Cookies()
-		for _, cookie := range cookies {
-			if cookie.Name == "access_token" {
-				jwtToken = cookie.Value
-				break
-			}
-		}
-	}
-
-	return jwtToken
 }
