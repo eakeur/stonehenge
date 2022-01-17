@@ -2,6 +2,7 @@ package transfer
 
 import (
 	"context"
+	"stonehenge/app/core/entities/access"
 	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/entities/transaction"
 	"stonehenge/app/core/entities/transfer"
@@ -18,12 +19,14 @@ type workspace struct {
 	ac account.Repository
 	tr transfer.Repository
 	tx transaction.Transaction
+	tk access.Factory
 }
 
-func New(ac account.Repository, tr transfer.Repository, tx transaction.Transaction) *workspace {
+func New(ac account.Repository, tr transfer.Repository, tx transaction.Transaction, tk access.Factory) *workspace {
 	return &workspace{
 		ac: ac,
 		tr: tr,
 		tx: tx,
+		tk: tk,
 	}
 }
