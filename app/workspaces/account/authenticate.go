@@ -2,23 +2,28 @@ package account
 
 import (
 	"context"
-	"stonehenge/app/core/types/id"
+	"stonehenge/app/core/entities/access"
 )
 
-func (u *workspace) Authenticate(ctx context.Context, req AuthenticationRequest) (id.External, error) {
+func (u *workspace) Authenticate(ctx context.Context, req AuthenticationRequest) (access.Access, error) {
 	if err := req.Document.Validate(); err != nil {
-		return id.Zero, err
+		return access.Access{}, err
 	}
 
 	acc, err := u.ac.GetWithCPF(ctx, req.Document)
 	if err != nil {
-		return id.Zero, err
+		return access.Access{}, err
 	}
 
 	if err := acc.Secret.Compare(req.Secret); err != nil {
-		return id.Zero, err
+		return access.Access{}, err
 	}
 
-	return acc.ExternalID, nil
+	tok, err := u.tk.Create(acc.ExternalID)
+	if err != nil {
+		return access.Access{}, err
+	}
+
+	return tok, nil
 
 }

@@ -6,6 +6,11 @@ import (
 )
 
 func (u *workspace) List(ctx context.Context, filter account.Filter) ([]Reference, error) {
+	_, err := u.tk.GetAccessFromContext(ctx)
+	if err != nil {
+		return []Reference{}, err
+	}
+
 	list, err := u.ac.List(ctx, filter)
 	if err != nil {
 		return []Reference{}, err
