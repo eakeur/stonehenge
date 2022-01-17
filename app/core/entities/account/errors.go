@@ -13,8 +13,7 @@ var (
 	// ErrUpdating occurs when an untracked error happens when updating an account
 	ErrUpdating = errors.New("an error occurred while updating accounts. please abort this operation")
 
-	// ErrInvalidID throws when the identification provided is an invalid form of ID
-	ErrInvalidID = errors.New("the account id provided is invalid. please, try again with a valid one")
+	ErrCannotAccess = errors.New("the current logged-in account cannot have access to this operation")
 
 	// ErrNotFound expresses that the account with the identification provided does not exist, or, for some reason, could not be found
 	ErrNotFound = errors.New("the account requested could not be found or does not exist")
