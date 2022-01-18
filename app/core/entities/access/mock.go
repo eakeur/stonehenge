@@ -5,7 +5,7 @@ import (
 	"stonehenge/app/core/types/id"
 )
 
-var _ Repository = &RepositoryMock{}
+var _ Manager = &RepositoryMock{}
 
 type RepositoryMock struct {
 	CreateResult                 Access

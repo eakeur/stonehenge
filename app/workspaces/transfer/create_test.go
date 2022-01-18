@@ -42,7 +42,7 @@ func TestCreate(t *testing.T) {
 
 	type fields struct {
 		tx transaction.Transaction
-		tk access.Repository
+		tk access.Manager
 		ac account.Repository
 		tr transfer.Repository
 	}

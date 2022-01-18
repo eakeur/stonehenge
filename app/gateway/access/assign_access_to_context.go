@@ -5,6 +5,6 @@ import (
 	"stonehenge/app/core/entities/access"
 )
 
-func (f Repository) AssignAccessToContext(ctx context.Context, acc access.Access) context.Context {
+func (f Manager) AssignAccessToContext(ctx context.Context, acc access.Access) context.Context {
 	return context.WithValue(ctx, accessContextId, acc)
 }

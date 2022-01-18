@@ -12,16 +12,16 @@ const (
 	accessContextId key = 41
 )
 
-type Repository struct {
+type Manager struct {
 	tokenExpirationTime time.Duration
 	tokenSigningKey     []byte
 	tokenSigningMethod  jwt.SigningMethod
 }
 
-func NewRepository(tokenExpirationTime time.Duration, tokenSigningKey []byte) access.Repository {
-	return Repository{
+func NewManager(tokenExpirationTime time.Duration, tokenSigningKey []byte) access.Manager {
+	return Manager{
 		tokenExpirationTime: tokenExpirationTime,
 		tokenSigningKey:     tokenSigningKey,
-		tokenSigningMethod: jwt.GetSigningMethod("HS256"),
+		tokenSigningMethod:  jwt.GetSigningMethod("HS256"),
 	}
 }

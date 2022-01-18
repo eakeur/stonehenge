@@ -14,7 +14,7 @@ type Server struct {
 	Router *chi.Mux
 }
 
-func New(workspaces *WorkspaceWrapper, accessFactory access.Repository) *Server {
+func New(workspaces *WorkspaceWrapper, accessFactory access.Manager) *Server {
 	router := chi.NewRouter()
 
 	authMiddleware := func(h http.Handler) http.Handler {

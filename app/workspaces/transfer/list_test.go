@@ -30,7 +30,7 @@ func TestList(t *testing.T) {
 		tx transaction.Transaction
 		ac account.Repository
 		tr transfer.Repository
-		tk access.Repository
+		tk access.Manager
 	}
 
 	type test struct {

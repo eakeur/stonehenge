@@ -19,10 +19,10 @@ type workspace struct {
 	ac account.Repository
 	tr transfer.Repository
 	tx transaction.Transaction
-	tk access.Repository
+	tk access.Manager
 }
 
-func New(ac account.Repository, tr transfer.Repository, tx transaction.Transaction, tk access.Repository) *workspace {
+func New(ac account.Repository, tr transfer.Repository, tx transaction.Transaction, tk access.Manager) *workspace {
 	return &workspace{
 		ac: ac,
 		tr: tr,
