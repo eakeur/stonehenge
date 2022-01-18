@@ -15,7 +15,7 @@ func TestList(t *testing.T) {
 	t.Parallel()
 	tx := &transaction.RepositoryMock{}
 	ac := &account.RepositoryMock{}
-	tk := &access.FactoryMock{
+	tk := &access.RepositoryMock{
 		CreateResult: access.Access{
 			AccountID: id.ExternalFrom(originID),
 		},
@@ -30,7 +30,7 @@ func TestList(t *testing.T) {
 		tx transaction.Transaction
 		ac account.Repository
 		tr transfer.Repository
-		tk access.Factory
+		tk access.Repository
 	}
 
 	type test struct {

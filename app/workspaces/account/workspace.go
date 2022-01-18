@@ -25,10 +25,10 @@ type Workspace interface {
 type workspace struct {
 	ac account.Repository
 	tx transaction.Transaction
-	tk access.Factory
+	tk access.Repository
 }
 
-func New(ac account.Repository, tx transaction.Transaction, tk access.Factory) *workspace {
+func New(ac account.Repository, tx transaction.Transaction, tk access.Repository) *workspace {
 	return &workspace{
 		ac: ac,
 		tx: tx,

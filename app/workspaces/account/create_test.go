@@ -21,7 +21,7 @@ func TestAccountCreation(t *testing.T) {
 		},
 	}
 
-	tk := &access.FactoryMock{
+	tk := &access.RepositoryMock{
 		CreateResult: access.Access{
 			AccountID: id.ExternalFrom(accountID),
 		},
@@ -34,7 +34,7 @@ func TestAccountCreation(t *testing.T) {
 
 	type fields struct {
 		tx   transaction.Transaction
-		tk   access.Factory
+		tk   access.Repository
 		repo account.Repository
 	}
 

@@ -5,7 +5,7 @@ import (
 	"stonehenge/app/core/entities/access"
 )
 
-func Middleware(next http.Handler, factory access.Factory) http.Handler {
+func Middleware(next http.Handler, factory access.Repository) http.Handler {
 	return http.HandlerFunc(func(wr http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("Authorization")
 		access, err := factory.ExtractAccessFromToken(token)

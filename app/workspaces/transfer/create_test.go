@@ -28,7 +28,7 @@ func TestCreate(t *testing.T) {
 		},
 	}
 
-	tk := &access.FactoryMock{
+	tk := &access.RepositoryMock{
 		CreateResult: access.Access{
 			AccountID: id.ExternalFrom(originID),
 		},
@@ -42,7 +42,7 @@ func TestCreate(t *testing.T) {
 
 	type fields struct {
 		tx transaction.Transaction
-		tk access.Factory
+		tk access.Repository
 		ac account.Repository
 		tr transfer.Repository
 	}
@@ -83,8 +83,8 @@ func TestCreate(t *testing.T) {
 				},
 			},
 			args: args{ctx: context.Background(), input: CreateInput{
-				DestID:   id.ExternalFrom(destinationID),
-				Amount:   2500,
+				DestID: id.ExternalFrom(destinationID),
+				Amount: 2500,
 			}},
 			want: CreateOutput{RemainingBalance: 2500, TransferId: id.ExternalFrom(transferID)},
 		},
@@ -110,8 +110,8 @@ func TestCreate(t *testing.T) {
 				},
 			},
 			args: args{ctx: context.Background(), input: CreateInput{
-				DestID:   id.ExternalFrom(destinationID),
-				Amount:   2500,
+				DestID: id.ExternalFrom(destinationID),
+				Amount: 2500,
 			}},
 			wantErr: account.ErrNoMoney,
 		},
@@ -126,8 +126,8 @@ func TestCreate(t *testing.T) {
 				ac: &account.RepositoryMock{},
 			},
 			args: args{ctx: context.Background(), input: CreateInput{
-				DestID:   id.ExternalFrom(originID),
-				Amount:   2500,
+				DestID: id.ExternalFrom(originID),
+				Amount: 2500,
 			}},
 			wantErr: transfer.ErrSameAccount,
 		},
@@ -142,8 +142,8 @@ func TestCreate(t *testing.T) {
 				ac: &account.RepositoryMock{},
 			},
 			args: args{ctx: context.Background(), input: CreateInput{
-				DestID:   id.ExternalFrom(destinationID),
-				Amount:   0,
+				DestID: id.ExternalFrom(destinationID),
+				Amount: 0,
 			}},
 			wantErr: transfer.ErrAmountInvalid,
 		},
@@ -154,7 +154,7 @@ func TestCreate(t *testing.T) {
 			fields: fields{
 				tx: tx,
 				tr: &transfer.RepositoryMock{},
-				tk: &access.FactoryMock{
+				tk: &access.RepositoryMock{
 					CreateResult: access.Access{
 						AccountID: id.ExternalFrom(unknownID),
 					},
@@ -173,8 +173,8 @@ func TestCreate(t *testing.T) {
 				},
 			},
 			args: args{ctx: context.Background(), input: CreateInput{
-				DestID:   id.ExternalFrom(destinationID),
-				Amount:   2500,
+				DestID: id.ExternalFrom(destinationID),
+				Amount: 2500,
 			}},
 			wantErr: transfer.ErrNonexistentOrigin,
 		},
@@ -200,8 +200,8 @@ func TestCreate(t *testing.T) {
 				},
 			},
 			args: args{ctx: context.Background(), input: CreateInput{
-				DestID:   id.ExternalFrom(unknownID),
-				Amount:   2500,
+				DestID: id.ExternalFrom(unknownID),
+				Amount: 2500,
 			}},
 			wantErr: transfer.ErrNonexistentDestination,
 		},
@@ -237,8 +237,8 @@ func TestCreate(t *testing.T) {
 				},
 			},
 			args: args{ctx: context.Background(), input: CreateInput{
-				DestID:   id.ExternalFrom(destinationID),
-				Amount:   2500,
+				DestID: id.ExternalFrom(destinationID),
+				Amount: 2500,
 			}},
 			wantErr: account.ErrUpdating,
 		},
@@ -274,8 +274,8 @@ func TestCreate(t *testing.T) {
 				},
 			},
 			args: args{ctx: context.Background(), input: CreateInput{
-				DestID:   id.ExternalFrom(destinationID),
-				Amount:   2500,
+				DestID: id.ExternalFrom(destinationID),
+				Amount: 2500,
 			}},
 			wantErr: account.ErrUpdating,
 		},
@@ -301,8 +301,8 @@ func TestCreate(t *testing.T) {
 				},
 			},
 			args: args{ctx: context.Background(), input: CreateInput{
-				DestID:   id.ExternalFrom(destinationID),
-				Amount:   2500,
+				DestID: id.ExternalFrom(destinationID),
+				Amount: 2500,
 			}},
 			wantErr: transfer.ErrRegistering,
 		},

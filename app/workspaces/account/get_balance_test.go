@@ -15,7 +15,7 @@ func TestGetBalance(t *testing.T) {
 
 	tx := &transaction.RepositoryMock{}
 
-	tk := &access.FactoryMock{
+	tk := &access.RepositoryMock{
 		GetAccessFromContextResult: access.Access{AccountID: id.ExternalFrom(accountID)},
 	}
 
@@ -26,7 +26,7 @@ func TestGetBalance(t *testing.T) {
 
 	type fields struct {
 		tx   transaction.Transaction
-		tk   access.Factory
+		tk   access.Repository
 		repo account.Repository
 	}
 

@@ -7,7 +7,7 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-func (f Factory) ExtractAccessFromToken(token string) (access.Access, error) {
+func (f Repository) ExtractAccessFromToken(token string) (access.Access, error) {
 	parsed, err := jwt.ParseWithClaims(token, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return f.tokenSigningKey, nil
 	})

@@ -12,7 +12,7 @@ type WorkspaceWrapper struct {
 	Transfers transfer.Workspace
 }
 
-func NewWorkspaceWrapper(wrapper *RepositoryWrapper, helper transaction.Transaction, tokenFactory access.Factory) *WorkspaceWrapper {
+func NewWorkspaceWrapper(wrapper *RepositoryWrapper, helper transaction.Transaction, tokenFactory access.Repository) *WorkspaceWrapper {
 	return &WorkspaceWrapper{
 		Accounts:  account.New(wrapper.Account, helper, tokenFactory),
 		Transfers: transfer.New(wrapper.Account, wrapper.Transfer, helper, tokenFactory),

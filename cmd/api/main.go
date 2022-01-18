@@ -21,7 +21,7 @@ func main() {
 
 	helper := transaction.NewTransaction(connection)
 	repos := server.NewPostgresRepositoryWrapper(connection)
-	tokenFac := access.NewFactory(10*time.Minute, []byte("EDF"))
+	tokenFac := access.NewRepository(10*time.Minute, []byte("EDF"))
 	workspaces := server.NewWorkspaceWrapper(repos, helper, tokenFac)
 	server.New(workspaces, tokenFac)
 }

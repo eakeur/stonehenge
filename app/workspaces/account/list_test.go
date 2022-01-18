@@ -16,7 +16,7 @@ func TestList(t *testing.T) {
 	t.Parallel()
 
 	tx := &transaction.RepositoryMock{}
-	tk := &access.FactoryMock{}
+	tk := &access.RepositoryMock{}
 
 	type args struct {
 		ctx    context.Context
@@ -25,7 +25,7 @@ func TestList(t *testing.T) {
 
 	type fields struct {
 		tx   transaction.Transaction
-		tk   access.Factory
+		tk   access.Repository
 		repo account.Repository
 	}
 

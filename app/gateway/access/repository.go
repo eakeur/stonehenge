@@ -11,13 +11,13 @@ const (
 	accessContextId key = 41
 )
 
-type Factory struct {
+type Repository struct {
 	tokenExpirationTime time.Duration
 	tokenSigningKey     []byte
 }
 
-func NewFactory(tokenExpirationTime time.Duration, tokenSigningKey []byte) access.Factory {
-	return Factory{
+func NewRepository(tokenExpirationTime time.Duration, tokenSigningKey []byte) access.Repository {
+	return Repository{
 		tokenExpirationTime: tokenExpirationTime,
 		tokenSigningKey:     tokenSigningKey,
 	}

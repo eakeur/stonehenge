@@ -5,8 +5,8 @@ import (
 	"stonehenge/app/core/types/id"
 )
 
-// Factory is an interface with useful actions to create and manage access token and objects
-type Factory interface {
+// Repository is an interface with useful actions to create and manage access token and objects
+type Repository interface {
 	// Create creates an Access object containing the account's external ID and its correspondent access token.
 	Create(id.External) (Access, error)
 
