@@ -20,4 +20,4 @@ jobs:
     - name: Test
       run: go test -v ./...
       env:
-        STONEHENGE_MIGRATIONS: ${{env.GITHUB_WORKSPACE}}/app/gateway/database/postgres/migrations
+        STONEHENGE_MIGRATIONS: ${{GITHUB_WORKSPACE}}/app/gateway/database/postgres/migrations
