@@ -36,13 +36,13 @@ func SetupTest(m *testing.M) int {
 	}
 
 	defer teardown()
-	
+
 	return m.Run()
 }
 
 func createContainer() (func(), error) {
 
-	pool, res, err := createResource(testDatabase, testPassword)
+	pool, res, err := createResource(testUser, testDatabase, testPassword)
 	if err != nil {
 		return nil, err
 	}
@@ -64,13 +64,14 @@ func createContainer() (func(), error) {
 
 }
 
-func createResource(databaseName, userPassword string) (*dockertest.Pool, *dockertest.Resource, error) {
+func createResource(userName, databaseName, userPassword string) (*dockertest.Pool, *dockertest.Resource, error) {
 	pool, err := dockertest.NewPool("")
 	if err != nil {
 		return pool, nil, errors.Wrap(err, "the docker pool connection could not be established")
 	}
 
 	resource, err := pool.Run("postgres", "latest", []string{
+		fmt.Sprintf("POSTGRES_USER=%s", userName),
 		fmt.Sprintf("POSTGRES_PASSWORD=%s", userPassword),
 		fmt.Sprintf("POSTGRES_DB=%s", databaseName),
 	})
