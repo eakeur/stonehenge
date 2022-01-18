@@ -3,6 +3,7 @@ package transfer
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
+	"stonehenge/app/core/entities/access"
 	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/entities/transaction"
 	"stonehenge/app/core/entities/transfer"
@@ -14,6 +15,11 @@ func TestList(t *testing.T) {
 	t.Parallel()
 	tx := &transaction.RepositoryMock{}
 	ac := &account.RepositoryMock{}
+	tk := &access.FactoryMock{
+		CreateResult: access.Access{
+			AccountID: id.ExternalFrom(originID),
+		},
+	}
 
 	type args struct {
 		ctx    context.Context
@@ -24,6 +30,7 @@ func TestList(t *testing.T) {
 		tx transaction.Transaction
 		ac account.Repository
 		tr transfer.Repository
+		tk access.Factory
 	}
 
 	type test struct {
@@ -38,7 +45,7 @@ func TestList(t *testing.T) {
 		// Should return []Reference populated with information of transfers that satisfies the filter
 		{
 			name: "return array of transfers satisfying filter",
-			fields: fields{tx: tx, ac: ac, tr: &transfer.RepositoryMock{ListResult: []transfer.Transfer{
+			fields: fields{tx: tx, tk: tk, ac: ac, tr: &transfer.RepositoryMock{ListResult: []transfer.Transfer{
 				{
 					ID:            1,
 					ExternalID:    id.ExternalFrom(transferID),
@@ -100,7 +107,7 @@ func TestList(t *testing.T) {
 		// Should return []Reference empty due to no transfers satisfying filter
 		{
 			name:   "return empty array of transfers satisfying filter",
-			fields: fields{tx: tx, ac: ac, tr: &transfer.RepositoryMock{ListResult: []transfer.Transfer{}}},
+			fields: fields{tx: tx, tk: tk, ac: ac, tr: &transfer.RepositoryMock{ListResult: []transfer.Transfer{}}},
 			args:   args{ctx: context.Background(), filter: transfer.Filter{OriginID: id.ExternalFrom(unknownID)}},
 			want:   []Reference{},
 		},
@@ -108,7 +115,7 @@ func TestList(t *testing.T) {
 		// Should return ErrFetching on repository error
 		{
 			name:    "return ErrFetching on repository error",
-			fields:  fields{tx: tx, ac: ac, tr: &transfer.RepositoryMock{Error: transfer.ErrFetching}},
+			fields:  fields{tx: tx, tk: tk, ac: ac, tr: &transfer.RepositoryMock{Error: transfer.ErrFetching}},
 			args:    args{ctx: context.Background(), filter: transfer.Filter{OriginID: id.ExternalFrom(unknownID)}},
 			want:    []Reference{},
 			wantErr: transfer.ErrFetching,
@@ -119,7 +126,7 @@ func TestList(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			u := New(test.fields.ac, test.fields.tr, test.fields.tx)
+			u := New(test.fields.ac, test.fields.tr, test.fields.tx, test.fields.tk)
 			got, err := u.List(test.args.ctx, test.args.filter)
 			assert.ErrorIs(t, err, test.wantErr)
 			assert.Equal(t, test.want, got)

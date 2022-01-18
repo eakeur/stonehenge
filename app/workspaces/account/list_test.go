@@ -3,6 +3,7 @@ package account
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
+	"stonehenge/app/core/entities/access"
 	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/entities/transaction"
 	"stonehenge/app/core/types/audits"
@@ -15,6 +16,7 @@ func TestList(t *testing.T) {
 	t.Parallel()
 
 	tx := &transaction.RepositoryMock{}
+	tk := &access.FactoryMock{}
 
 	type args struct {
 		ctx    context.Context
@@ -23,6 +25,7 @@ func TestList(t *testing.T) {
 
 	type fields struct {
 		tx   transaction.Transaction
+		tk   access.Factory
 		repo account.Repository
 	}
 
@@ -39,7 +42,7 @@ func TestList(t *testing.T) {
 		// Should return []Reference populated with information of accounts that satisfies the filter
 		{
 			name: "return array of accounts satisfying filter",
-			fields: fields{tx: tx, repo: &account.RepositoryMock{ListResult: []account.Account{
+			fields: fields{tx: tx, tk: tk, repo: &account.RepositoryMock{ListResult: []account.Account{
 				{
 					ID:         1,
 					ExternalID: id.ExternalFrom(accountID),
@@ -79,7 +82,7 @@ func TestList(t *testing.T) {
 		// Should return []Reference empty due to no accounts satisfying filter
 		{
 			name:   "return empty array of accounts satisfying filter",
-			fields: fields{tx: tx, repo: &account.RepositoryMock{ListResult: []account.Account{}}},
+			fields: fields{tx: tx, tk: tk, repo: &account.RepositoryMock{ListResult: []account.Account{}}},
 			args:   args{ctx: context.Background(), filter: account.Filter{Name: "Rise"}},
 			want:   []Reference{},
 		},
@@ -87,7 +90,7 @@ func TestList(t *testing.T) {
 		// Should return ErrFetching on repository error
 		{
 			name:    "return ErrFetching on repository error",
-			fields:  fields{tx: tx, repo: &account.RepositoryMock{Error: account.ErrFetching}},
+			fields:  fields{tx: tx, tk: tk, repo: &account.RepositoryMock{Error: account.ErrFetching}},
 			args:    args{ctx: context.Background(), filter: account.Filter{Name: "Reis"}},
 			want:    []Reference{},
 			wantErr: account.ErrFetching,
@@ -98,7 +101,7 @@ func TestList(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			u := New(test.fields.repo, test.fields.tx)
+			u := New(test.fields.repo, test.fields.tx, test.fields.tk)
 			got, err := u.List(test.args.ctx, test.args.filter)
 			assert.ErrorIs(t, err, test.wantErr)
 			assert.Equal(t, test.want, got)
