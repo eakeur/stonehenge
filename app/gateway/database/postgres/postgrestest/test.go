@@ -57,7 +57,6 @@ func createContainer() (func(), error) {
 
 	if err := pool.Retry(func() error {
 		db, err = connect(testUser, testPassword, testHost, port, testDatabase, migPath)
-		log.Printf("Error connecting to the database: %v", err)
 		return err
 	}); err != nil {
 		teardown()
@@ -83,8 +82,6 @@ func createResource(userName, databaseName, userPassword string) (*dockertest.Po
 		fmt.Sprintf("POSTGRES_PASSWORD=%s", userPassword),
 		fmt.Sprintf("POSTGRES_DB=%s", databaseName),
 	})
-
-	log.Printf("Docker test container status: %v", resource.Container.State.Status)
 
 	if err != nil {
 		return pool, resource, errors.Wrap(err, "the docker container could not be created")
