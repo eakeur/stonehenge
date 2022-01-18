@@ -9,6 +9,9 @@ import (
 
 func (f Repository) ExtractAccessFromToken(token string) (access.Access, error) {
 	parsed, err := jwt.ParseWithClaims(token, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		if token.Method != f.tokenSigningMethod {
+			return access.Access{}, access.ErrTokenInvalidOrExpired
+		}
 		return f.tokenSigningKey, nil
 	})
 	if err != nil {
