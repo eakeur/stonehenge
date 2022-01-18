@@ -7,6 +7,7 @@ import (
 	"github.com/ory/dockertest/v3"
 	"github.com/pkg/errors"
 	"log"
+	"os"
 	"testing"
 )
 
@@ -52,8 +53,10 @@ func createContainer() (func(), error) {
 
 	port = res.GetPort("5432/tcp")
 
+	migPath := os.Getenv("STONEHENGE_MIGRATIONS")
+
 	if err := pool.Retry(func() error {
-		db, err = connect(testUser, testPassword, testHost, port, testDatabase)
+		db, err = connect(testUser, testPassword, testHost, port, testDatabase, migPath)
 		log.Printf("Error connecting to the database: %v", err)
 		return err
 	}); err != nil {
