@@ -8,6 +8,11 @@ import (
 )
 
 func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, error) {
+	actor, err := u.tk.GetAccessFromContext(ctx)
+	if err != nil {
+		return CreateOutput{}, err
+	}
+
 	t := transfer.Transfer{Amount: req.Amount}
 
 	// Checks if the amount is valid (bigger than 0)
@@ -16,12 +21,12 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, 
 	}
 
 	// Checks if the origin and destination accounts are the same
-	if req.DestID == req.OriginID {
+	if req.DestID == actor.AccountID {
 		return CreateOutput{}, transfer.ErrSameAccount
 	}
 
 	// Fetches the origin account and checks for errors
-	origin, err := u.ac.GetByExternalID(ctx, req.OriginID)
+	origin, err := u.ac.GetByExternalID(ctx, actor.AccountID)
 	if err != nil {
 		return CreateOutput{}, transfer.ErrNonexistentOrigin
 	}
@@ -48,7 +53,7 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, 
 
 	// Updates the balance of the origin account after transaction
 	remaining := origin.Balance - req.Amount
-	err = u.ac.UpdateBalance(ctx, req.OriginID, remaining)
+	err = u.ac.UpdateBalance(ctx, actor.AccountID, remaining)
 	if err != nil {
 		return CreateOutput{}, err
 	}

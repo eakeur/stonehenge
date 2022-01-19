@@ -9,7 +9,7 @@ import (
 	"stonehenge/app/gateway/database/postgres"
 )
 
-func connect(user, password, host, port, database string) (*pgxpool.Pool, error) {
+func connect(user, password, host, port, database, migrations string) (*pgxpool.Pool, error) {
 	ctx := context.Background()
 	url := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", user, password, host, port, database)
 
@@ -18,7 +18,7 @@ func connect(user, password, host, port, database string) (*pgxpool.Pool, error)
 		return db, err
 	}
 
-	err = postgres.Migrate(url, "/home/igor/go/src/stonehenge/app/gateway/database/postgres/migrations")
+	err = postgres.Migrate(url, migrations)
 
 	return db, err
 }

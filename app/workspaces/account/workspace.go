@@ -2,6 +2,7 @@ package account
 
 import (
 	"context"
+	"stonehenge/app/core/entities/access"
 	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/entities/transaction"
 	"stonehenge/app/core/types/id"
@@ -18,17 +19,19 @@ type Workspace interface {
 	List(ctx context.Context, filter account.Filter) ([]Reference, error)
 
 	// Authenticate verifies a user credential and returns the account id if it's all ok
-	Authenticate(ctx context.Context, req AuthenticationRequest) (id.External, error)
+	Authenticate(ctx context.Context, req AuthenticationRequest) (access.Access, error)
 }
 
 type workspace struct {
 	ac account.Repository
 	tx transaction.Transaction
+	tk access.Manager
 }
 
-func New(ac account.Repository, tx transaction.Transaction) *workspace {
+func New(ac account.Repository, tx transaction.Transaction, tk access.Manager) *workspace {
 	return &workspace{
 		ac: ac,
 		tx: tx,
+		tk: tk,
 	}
 }

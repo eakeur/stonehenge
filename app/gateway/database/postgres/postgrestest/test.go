@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/ory/dockertest/v3"
+	"github.com/pkg/errors"
 	"log"
+	"os"
 	"testing"
 )
 
@@ -31,59 +33,61 @@ func NewCleanDatabase() (*pgxpool.Pool, error) {
 func SetupTest(m *testing.M) int {
 	teardown, err := createContainer()
 	if err != nil {
-		log.Fatalf("an error occurred and it was not possible to create database container: %v", err)
+		log.Fatal(err)
 	}
 
 	defer teardown()
 
-	//err = fakes.PopulateDatabase(db)
-	//if err != nil {
-	//	teardown()
-	//	log.Fatalf("could not populate database: %e", err)
-	//}
-
 	return m.Run()
 }
 
-
 func createContainer() (func(), error) {
 
-	pool, res, err := createResource(testDatabase, testPassword)
+	pool, res, err := createResource(testUser, testDatabase, testPassword)
 	if err != nil {
 		return nil, err
 	}
-
 	teardown := func() {
 		err = pool.Purge(res)
 	}
 
 	port = res.GetPort("5432/tcp")
 
+	migPath := os.Getenv("STONEHENGE_MIGRATIONS")
+
 	if err := pool.Retry(func() error {
-		db, err = connect(testUser, testPassword, testHost, port, testDatabase)
+		db, err = connect(testUser, testPassword, testHost, port, testDatabase, migPath)
 		return err
 	}); err != nil {
 		teardown()
-		return nil, err
+		return nil, errors.Wrap(err, "an error occurred when setting up the database")
 	}
 
 	return teardown, nil
 
 }
 
-func createResource(databaseName, userPassword string) (*dockertest.Pool, *dockertest.Resource, error) {
+func createResource(userName, databaseName, userPassword string) (*dockertest.Pool, *dockertest.Resource, error) {
 	pool, err := dockertest.NewPool("")
 	if err != nil {
-		return pool, nil, err
+		return pool, nil, errors.Wrap(err, "the docker pool connection could not be established")
+	}
+
+	if err := pool.Client.Ping(); err != nil {
+		return pool, nil, errors.Wrap(err, "could not contact docker pool")
 	}
 
 	resource, err := pool.Run("postgres", "latest", []string{
+		fmt.Sprintf("POSTGRES_USER=%s", userName),
 		fmt.Sprintf("POSTGRES_PASSWORD=%s", userPassword),
 		fmt.Sprintf("POSTGRES_DB=%s", databaseName),
 	})
+
 	if err != nil {
-		return pool, resource, err
+		return pool, resource, errors.Wrap(err, "the docker container could not be created")
 	}
+
+	resource.Expire(120)
 
 	return pool, resource, nil
 }

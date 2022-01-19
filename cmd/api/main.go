@@ -3,9 +3,11 @@ package main
 import (
 	"context"
 	"log"
+	"stonehenge/app/gateway/access"
 	"stonehenge/app/gateway/api/server"
 	"stonehenge/app/gateway/database/postgres"
 	"stonehenge/app/gateway/database/postgres/transaction"
+	"time"
 )
 
 func main() {
@@ -18,10 +20,8 @@ func main() {
 	}
 
 	helper := transaction.NewTransaction(connection)
-
 	repos := server.NewPostgresRepositoryWrapper(connection)
-
-	workspaces := server.NewWorkspaceWrapper(repos, helper)
-
-	server.New(workspaces)
+	tokenFac := access.NewManager(10*time.Minute, []byte("EDF"))
+	workspaces := server.NewWorkspaceWrapper(repos, helper, tokenFac)
+	server.New(workspaces, tokenFac)
 }

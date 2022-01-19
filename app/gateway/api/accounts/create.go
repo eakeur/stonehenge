@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"stonehenge/app/core/types/document"
 	"stonehenge/app/core/types/password"
-	"stonehenge/app/gateway/api/common"
 	"stonehenge/app/gateway/api/responses"
 	"stonehenge/app/workspaces/account"
 )
@@ -30,20 +29,13 @@ func (c *Controller) Create(rw http.ResponseWriter, r *http.Request) {
 		Name:     body.Name,
 	}
 
-	create, err := c.workspace.Create(r.Context(), req)
+	acc, err := c.workspace.Create(r.Context(), req)
 	if err != nil {
-
 		responses.WriteErrorResponse(rw, http.StatusBadRequest, err)
 		return
 	}
 
-	tok, err := common.CreateToken(create.AccountID)
-	if err != nil {
-		responses.WriteErrorResponse(rw, http.StatusInternalServerError, ErrTokenGeneration)
-		return
-	}
-
-	common.AssignToken(rw, tok)
+	rw.Header().Add("Authorization", "Bearer "+ acc.Access.Token)
 
 	rw.WriteHeader(http.StatusCreated)
 
