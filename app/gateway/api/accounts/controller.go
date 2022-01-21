@@ -8,7 +8,7 @@ type Controller struct {
 	workspace account.Workspace
 }
 
-func New(workspace account.Workspace) Controller {
+func NewController(workspace account.Workspace) Controller {
 	return Controller{
 		workspace: workspace,
 	}

@@ -5,7 +5,7 @@ import (
 	"stonehenge/app/core/types/document"
 	"stonehenge/app/core/types/password"
 	"stonehenge/app/gateway/api/accounts/schema"
-	"stonehenge/app/gateway/api/responses"
+	"stonehenge/app/gateway/api/rest"
 	"stonehenge/app/workspaces/account"
 )
 
@@ -16,10 +16,10 @@ type PostRequestBody struct {
 }
 
 // Create creates a new account with the data passed in
-func (c *Controller) Create(r *http.Request) responses.Response {
+func (c *Controller) Create(r *http.Request) rest.Response {
 	req, err := schema.NewCreateRequest(r.Body)
 	if err != nil {
-		return responses.BuildBadRequestResult(err)
+		return rest.BuildBadRequestResult(err)
 	}
 
 	input := account.CreateInput{
@@ -30,10 +30,10 @@ func (c *Controller) Create(r *http.Request) responses.Response {
 
 	acc, err := c.workspace.Create(r.Context(), input)
 	if err != nil {
-		responses.BuildErrorResult(err)
+		rest.BuildErrorResult(err)
 	}
 
-	res := responses.BuildCreatedResult(schema.CreateResponse{AccountID: acc.AccountID.String(), Token: acc.Access.Token})
+	res := rest.BuildCreatedResult(schema.CreateResponse{AccountID: acc.AccountID.String(), Token: acc.Access.Token})
 	return res
 
 }

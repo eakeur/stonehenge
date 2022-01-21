@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"stonehenge/app/core/types/document"
 	"stonehenge/app/gateway/api/accounts/schema"
-	"stonehenge/app/gateway/api/responses"
+	"stonehenge/app/gateway/api/rest"
 	"stonehenge/app/workspaces/account"
 )
 
@@ -14,10 +14,10 @@ type LoginRequestBody struct {
 }
 
 // Authenticate logs an applicant in
-func (c *Controller) Authenticate(r *http.Request) responses.Response {
+func (c *Controller) Authenticate(r *http.Request) rest.Response {
 	body, err := schema.NewAuthenticationRequest(r.Body)
 	if err != nil {
-		return responses.BuildErrorResult(err)
+		return rest.BuildErrorResult(err)
 	}
 
 	ctx := r.Context()
@@ -26,9 +26,9 @@ func (c *Controller) Authenticate(r *http.Request) responses.Response {
 		Secret:   body.Secret,
 	})
 	if err != nil {
-		return responses.BuildErrorResult(err)
+		return rest.BuildErrorResult(err)
 	}
 
-	return responses.BuildOKResult(schema.AuthenticationResponse{Token: acc.Token})
+	return rest.BuildOKResult(schema.AuthenticationResponse{Token: acc.Token})
 
 }

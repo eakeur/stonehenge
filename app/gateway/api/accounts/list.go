@@ -5,15 +5,15 @@ import (
 	"net/url"
 	"stonehenge/app/core/entities/account"
 	"stonehenge/app/gateway/api/accounts/schema"
-	"stonehenge/app/gateway/api/responses"
+	"stonehenge/app/gateway/api/rest"
 )
 
 // List gets all accounts that satisfy the filter passed
-func (c *Controller) List(r *http.Request) responses.Response {
+func (c *Controller) List(r *http.Request) rest.Response {
 	filters := filter(r.URL.Query())
 	list, err := c.workspace.List(r.Context(), filters)
 	if err != nil {
-		return responses.BuildErrorResult(err)
+		return rest.BuildErrorResult(err)
 	}
 	res := make([]schema.ListResponse, len(list))
 	for i := 0; i < len(list); i++ {
@@ -22,7 +22,7 @@ func (c *Controller) List(r *http.Request) responses.Response {
 			OwnerName: list[i].Name,
 		}
 	}
-	return responses.BuildOKResult(res)
+	return rest.BuildOKResult(res)
 }
 
 func filter(values url.Values) account.Filter {
