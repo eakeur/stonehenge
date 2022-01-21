@@ -2,6 +2,7 @@ package responses
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
@@ -17,6 +18,21 @@ type Response struct {
 
 	// Headers stores information to be set on header
 	Headers map[string]string `json:"-"`
+}
+
+type Error struct {
+	// Status is the HTTP status related to this error
+	Status int `json:"-"`
+
+	// Code is a unique identifier of this error
+	Code string `json:"code,omitempty"`
+
+	// Message is a description of this error context
+	Message string `json:"message,omitempty"`
+}
+
+func (e Error) Error() string {
+	return fmt.Sprintf("%s: %s", e.Code, e.Message)
 }
 
 func WriteSuccessfulJSON(w http.ResponseWriter, status int, content interface{}) error {
