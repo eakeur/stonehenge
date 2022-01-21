@@ -1,15 +1,20 @@
 package transfers
 
 import (
+	"net/http"
+	"stonehenge/app/gateway/api/rest"
 	"stonehenge/app/workspaces/transfer"
 )
 
-type Controller struct {
+type controller struct {
 	workspace transfer.Workspace
 }
 
-func New(workspace transfer.Workspace) Controller {
-	return Controller{
-		workspace: workspace,
-	}
+func NewController(workspace transfer.Workspace) Controller {
+	return controller{workspace: workspace}
+}
+
+type Controller interface {
+	Create(r *http.Request) rest.Response
+	List(r *http.Request) rest.Response
 }
