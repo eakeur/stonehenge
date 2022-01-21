@@ -1,11 +1,10 @@
 package accounts
 
 import (
-	"encoding/json"
-	"io"
 	"net/http"
 	"stonehenge/app/core/types/document"
 	"stonehenge/app/core/types/password"
+	"stonehenge/app/gateway/api/accounts/schema"
 	"stonehenge/app/gateway/api/responses"
 	"stonehenge/app/workspaces/account"
 )
@@ -17,41 +16,24 @@ type PostRequestBody struct {
 }
 
 // Create creates a new account with the data passed in
-func (c *Controller) Create(rw http.ResponseWriter, r *http.Request) {
-	body, err := getPostRequestBody(r.Body)
+func (c *Controller) Create(r *http.Request) responses.Response {
+	req, err := schema.NewCreateRequest(r.Body)
 	if err != nil {
-		responses.WriteErrorResponse(rw, http.StatusBadRequest, err)
-		return
-	}
-	req := account.CreateInput{
-		Document: document.Document(body.Document),
-		Secret:   password.Password(body.Secret),
-		Name:     body.Name,
+		return responses.BuildBadRequestResult(err)
 	}
 
-	acc, err := c.workspace.Create(r.Context(), req)
+	input := account.CreateInput{
+		Document: document.Document(req.Document),
+		Secret:   password.Password(req.Secret),
+		Name:     req.Name,
+	}
+
+	acc, err := c.workspace.Create(r.Context(), input)
 	if err != nil {
-		responses.WriteErrorResponse(rw, http.StatusBadRequest, err)
-		return
+		responses.BuildErrorResult(err)
 	}
 
-	rw.Header().Add("Authorization", "Bearer "+ acc.Access.Token)
+	res := responses.BuildCreatedResult(schema.CreateResponse{AccountID: acc.AccountID.String(), Token: acc.Access.Token})
+	return res
 
-	rw.WriteHeader(http.StatusCreated)
-
-}
-
-func getPostRequestBody(body io.ReadCloser) (PostRequestBody, error) {
-	defer body.Close()
-	req := PostRequestBody{}
-	err := json.NewDecoder(body).Decode(&req)
-	if err != nil {
-		return req, err
-	}
-
-	if req.Document == "" || req.Secret == "" || req.Name == "" {
-		return req, err
-	}
-
-	return req, err
 }
