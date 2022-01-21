@@ -1,4 +1,4 @@
-package responses
+package rest
 
 import (
 	"encoding/json"
