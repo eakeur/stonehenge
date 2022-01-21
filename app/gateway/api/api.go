@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"net/http"
 	"stonehenge/app"
 	"stonehenge/app/gateway/api/accounts"
@@ -23,20 +24,21 @@ func New(application *app.Application) *Server {
 	trf := transfers.NewController(application.Transfers)
 
 	router := chi.NewRouter()
-
-	router.Route("/", func(r chi.Router) {
+	router.Use(middleware.Logger)
+	router.Use(middleware.Recoverer)
+	router.Group(func(r chi.Router) {
 		r.Use(authMiddleware)
-		r.Route("/accounts", func(r chi.Router) {
-			r.Get("/", rest.Handler{Func: acc.List}.Handle)
-			r.Get("/{accountID}/balance", rest.Handler{Func: acc.GetBalance}.Handle)
+		router.Route("/accounts", func(r chi.Router) {
+			r.Method("GET", "/", rest.Handler(acc.List))
+			r.Method("GET", "/{accountID}/balance", rest.Handler(acc.GetBalance))
 		})
-		r.Route("/transfers", func(r chi.Router) {
-			r.Post("/", rest.Handler{Func: trf.Create}.Handle)
-			r.Get("/", rest.Handler{Func: trf.List}.Handle)
+		router.Route("/transfers", func(r chi.Router) {
+			r.Method("POST", "/", rest.Handler(trf.Create))
+			r.Method("GET", "/", rest.Handler(trf.List))
 		})
 	})
-	router.Post("/login", rest.Handler{Func: acc.Authenticate}.Handle)
-	router.Post("/accounts", rest.Handler{Func: acc.Create}.Handle)
+	router.Method("POST", "/login", rest.Handler(acc.Authenticate))
+	router.Method("POST", "/accounts", rest.Handler(acc.Create))
 
 	return &Server{
 		Router: router,

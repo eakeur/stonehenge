@@ -5,15 +5,11 @@ import (
 	"net/http"
 )
 
-type HandlerFunc func(*http.Request) Response
+type Handler func(*http.Request) Response
 
-type Handler struct {
-	Func HandlerFunc
-}
+func (h Handler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
-func (h Handler) Handle(rw http.ResponseWriter, r *http.Request) {
-
-	res := h.Func(r)
+	res := h(r)
 
 	payload, err := json.Marshal(res)
 	if err != nil {
