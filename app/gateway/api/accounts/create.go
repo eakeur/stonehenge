@@ -33,7 +33,8 @@ func (c *Controller) Create(r *http.Request) rest.Response {
 		rest.BuildErrorResult(err)
 	}
 
-	res := rest.BuildCreatedResult(schema.CreateResponse{AccountID: acc.AccountID.String(), Token: acc.Access.Token})
-	return res
+	return rest.
+		BuildCreatedResult(schema.CreateResponse{AccountID: acc.AccountID.String(), Token: acc.Access.Token}).
+		AddHeaders("Authorization", "Bearer "+acc.Access.Token)
 
 }

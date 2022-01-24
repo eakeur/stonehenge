@@ -29,6 +29,7 @@ func (c *Controller) Authenticate(r *http.Request) rest.Response {
 		return rest.BuildErrorResult(err)
 	}
 
-	return rest.BuildOKResult(schema.AuthenticationResponse{Token: acc.Token})
-
+	return rest.
+		BuildOKResult(schema.AuthenticationResponse{Token: acc.Token}).
+		AddHeaders("Authorization", "Bearer " + acc.Token)
 }
