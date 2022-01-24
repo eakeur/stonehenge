@@ -2,26 +2,45 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
-	"stonehenge/app/gateway/access"
-	"stonehenge/app/gateway/api/server"
-	"stonehenge/app/gateway/database/postgres"
-	"stonehenge/app/gateway/database/postgres/transaction"
-	"time"
+	"net/http"
+	"stonehenge/app"
+	"stonehenge/app/config"
+	"stonehenge/app/gateway/api"
 )
 
 func main() {
-
 	ctx := context.Background()
-
-	connection, err := postgres.NewConnection(ctx, "postgres://postgres:postgres@localhost:5432/stonehenge?sslmode=disable", "/home/igor/go/src/stonehenge/app/gateway/database/postgres/migrations", nil, 5)
+	cfg := config.Config{
+		Database: config.DatabaseConfigurations{
+			User:           "postgres",
+			Password:       "postgres",
+			Host:           "localhost",
+			Port:           "5432",
+			Name:           "stonehenge",
+			SSLMode:        "disable",
+			MigrationsPath: "/home/igor/go/src/stonehenge/app/gateway/database/postgres/migrations",
+		},
+		Access: config.AccessConfigurations{
+			ExpirationTime: "15",
+			SigningKey:     "EB4CKU35",
+		},
+		Server: config.ServerConfigurations{
+			ListenPort: "8080",
+			Hostname:   "localhost",
+		},
+	}
+	application, err := app.NewApplication(ctx, cfg)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalf("Could not set up application: %v", err)
 	}
 
-	helper := transaction.NewTransaction(connection)
-	repos := server.NewPostgresRepositoryWrapper(connection)
-	tokenFac := access.NewManager(10*time.Minute, []byte("EDF"))
-	workspaces := server.NewWorkspaceWrapper(repos, helper, tokenFac)
-	server.New(workspaces, tokenFac)
+	stonehenge := api.New(application)
+	addr := fmt.Sprintf("%s:%s", cfg.Server.Hostname, cfg.Server.ListenPort)
+	log.Printf("Listening on http://%v", addr)
+	err = http.ListenAndServe(addr, stonehenge.Router)
+	if err != nil {
+		log.Fatalf("Server shut down: %v", err)
+	}
 }

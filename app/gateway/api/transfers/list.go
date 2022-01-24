@@ -5,49 +5,56 @@ import (
 	"net/url"
 	"stonehenge/app/core/entities/transfer"
 	"stonehenge/app/core/types/id"
-	"stonehenge/app/gateway/api/responses"
+	"stonehenge/app/gateway/api/rest"
+	"stonehenge/app/gateway/api/transfers/schema"
 	"time"
 )
 
 // List gets all transfers of this actual account
-func (c *Controller) List(rw http.ResponseWriter, r *http.Request) {
-	filters := getFilter(r.URL.Query())
+func (c controller) List(r *http.Request) rest.Response {
+	filters := filter(r.URL.Query())
 	list, err := c.workspace.List(r.Context(), filters)
 	if err != nil {
-		responses.WriteErrorResponse(rw, http.StatusBadRequest, err)
+		return rest.BuildErrorResult(err)
 	}
-
-	err = responses.WriteSuccessfulJSON(rw, http.StatusOK, list)
-	if err != nil {
-		responses.WriteErrorResponse(rw, http.StatusInternalServerError, err)
-		return
+	res := make([]schema.ListResponse, len(list))
+	for i, ref := range list {
+		res[i] = schema.ListResponse{
+			ExternalID: ref.ExternalID.String(),
+			// TODO change the IDs below to type External
+			//OriginID:      ref.OriginID.String(),
+			//DestinationID: ref.DestinationID.String(),
+			Amount:        ref.Amount.ToStandardCurrency(),
+			EffectiveDate: ref.EffectiveDate,
+		}
 	}
+	return rest.BuildOKResult(list)
 }
 
-func getFilter(values url.Values) transfer.Filter {
-	filter := transfer.Filter{}
+func filter(values url.Values) transfer.Filter {
+	f := transfer.Filter{}
 
 	if ori := id.ExternalFrom(values.Get("origin")); ori != id.Zero {
-		filter.OriginID = ori
+		f.OriginID = ori
 	}
 
 	if dest := id.ExternalFrom(values.Get("destination")); dest != id.Zero {
-		filter.OriginID = dest
+		f.OriginID = dest
 	}
 
 	if ini := values.Get("made_since"); ini != "" {
 		date, err := time.Parse("2006-01-02", ini)
 		if err == nil {
-			filter.InitialDate = date
+			f.InitialDate = date
 		}
 	}
 
 	if fin := values.Get("made_until"); fin != "" {
 		date, err := time.Parse("2006-01-02", fin)
 		if err == nil {
-			filter.InitialDate = date
+			f.InitialDate = date
 		}
 	}
 
-	return filter
+	return f
 }

@@ -1,11 +1,10 @@
 package accounts
 
 import (
-	"encoding/json"
-	"io"
 	"net/http"
 	"stonehenge/app/core/types/document"
-	"stonehenge/app/gateway/api/responses"
+	"stonehenge/app/gateway/api/accounts/schema"
+	"stonehenge/app/gateway/api/rest"
 	"stonehenge/app/workspaces/account"
 )
 
@@ -15,38 +14,22 @@ type LoginRequestBody struct {
 }
 
 // Authenticate logs an applicant in
-func (c *Controller) Authenticate(rw http.ResponseWriter, r *http.Request) {
-	body, err := getLoginRequestBody(r.Body)
+func (c *Controller) Authenticate(r *http.Request) rest.Response {
+	body, err := schema.NewAuthenticationRequest(r.Body)
 	if err != nil {
-		responses.WriteErrorResponse(rw, http.StatusBadRequest, err)
+		return rest.BuildErrorResult(err)
 	}
+
 	ctx := r.Context()
-	req := account.AuthenticationRequest{
-		Document: body.Document,
+	acc, err := c.workspace.Authenticate(ctx, account.AuthenticationRequest{
+		Document: document.Document(body.Document),
 		Secret:   body.Secret,
-	}
-	acc, err := c.workspace.Authenticate(ctx, req)
+	})
 	if err != nil {
-		responses.WriteErrorResponse(rw, http.StatusUnauthorized, err)
-		return
+		return rest.BuildErrorResult(err)
 	}
 
-	rw.Header().Add("Authorization", "Bearer "+acc.Token)
-	rw.WriteHeader(http.StatusOK)
-
-}
-
-func getLoginRequestBody(body io.ReadCloser) (LoginRequestBody, error) {
-	defer body.Close()
-	req := LoginRequestBody{}
-	err := json.NewDecoder(body).Decode(&req)
-	if err != nil {
-		return req, err
-	}
-
-	if req.Document == "" || req.Secret == "" {
-		return req, err
-	}
-
-	return req, nil
+	return rest.
+		BuildOKResult(schema.AuthenticationResponse{Token: acc.Token}).
+		AddHeaders("Authorization", "Bearer " + acc.Token)
 }

@@ -4,32 +4,33 @@ import (
 	"net/http"
 	"net/url"
 	"stonehenge/app/core/entities/account"
-	"stonehenge/app/gateway/api/responses"
+	"stonehenge/app/gateway/api/accounts/schema"
+	"stonehenge/app/gateway/api/rest"
 )
 
 // List gets all accounts that satisfy the filter passed
-func (c *Controller) List(rw http.ResponseWriter, r *http.Request) {
-	filters := getFilter(r.URL.Query())
+func (c *Controller) List(r *http.Request) rest.Response {
+	filters := filter(r.URL.Query())
 	list, err := c.workspace.List(r.Context(), filters)
 	if err != nil {
-		responses.WriteErrorResponse(rw, http.StatusBadRequest, err)
-		return
+		return rest.BuildErrorResult(err)
 	}
-
-	err = responses.WriteSuccessfulJSON(rw, http.StatusOK, list)
-	if err != nil {
-		responses.WriteErrorResponse(rw, http.StatusInternalServerError, err)
-		return
+	res := make([]schema.ListResponse, len(list))
+	for i := 0; i < len(list); i++ {
+		res[i] = schema.ListResponse{
+			AccountID: list[i].ExternalID.String(),
+			OwnerName: list[i].Name,
+		}
 	}
-
+	return rest.BuildOKResult(res)
 }
 
-func getFilter(values url.Values) account.Filter {
-	filter := account.Filter{}
+func filter(values url.Values) account.Filter {
+	f := account.Filter{}
 
 	if name := values.Get("name"); name != "" {
-		filter.Name = name
+		f.Name = name
 	}
 
-	return filter
+	return f
 }
