@@ -11,16 +11,27 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	res := h(r)
 
-	payload, err := json.Marshal(res)
-	if err != nil {
-		rw.WriteHeader(http.StatusInternalServerError)
-		return
+	if res.headers != nil {
+		header := rw.Header()
+		for k, v := range res.headers {
+			header.Add(k, v)
+		}
 	}
 
-	rw.WriteHeader(res.HTTPStatus)
-	_, err = rw.Write(payload)
-	if err != nil {
-		rw.WriteHeader(http.StatusInternalServerError)
-		return
+	if res.HTTPStatus != 0 {
+		rw.WriteHeader(res.HTTPStatus)
+	}
+
+	if res.Error != nil || res.Content != nil {
+		payload, err := json.Marshal(res)
+		if err != nil {
+			rw.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		_, err = rw.Write(payload)
+		if err != nil {
+			rw.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 	}
 }

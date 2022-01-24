@@ -1,9 +1,7 @@
 package rest
 
 import (
-	"encoding/json"
 	"fmt"
-	"net/http"
 )
 
 type Response struct {
@@ -16,8 +14,16 @@ type Response struct {
 	// Content holds the payload of the request, which is the most valuable information for the client
 	Content interface{} `json:"content,omitempty"`
 
-	// Headers stores information to be set on header
-	Headers map[string]string `json:"-"`
+	// headers stores information to be set on header
+	headers map[string]string
+}
+
+func (r Response) AddHeaders(key, value string) Response {
+	if r.headers == nil {
+		r.headers = map[string]string{}
+	}
+	r.headers[key] = value
+	return r
 }
 
 type Error struct {
@@ -33,27 +39,4 @@ type Error struct {
 
 func (e Error) Error() string {
 	return fmt.Sprintf("%s: %s", e.Code, e.Message)
-}
-
-func WriteSuccessfulJSON(w http.ResponseWriter, status int, content interface{}) error {
-	if content != nil {
-		body, err := json.Marshal(content)
-		if err != nil {
-			return err
-		}
-		_, err = w.Write(body)
-		if err != nil {
-			return err
-		}
-	}
-	w.WriteHeader(status)
-	return nil
-}
-
-func WriteErrorResponse(w http.ResponseWriter, status int, message error) {
-	w.WriteHeader(status)
-	_, err := w.Write([]byte(message.Error()))
-	if err != nil {
-		return
-	}
 }
