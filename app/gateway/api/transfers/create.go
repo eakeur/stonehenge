@@ -12,7 +12,7 @@ import (
 func (c controller) Create(r *http.Request) rest.Response {
 	body, err := schema.NewCreateRequest(r.Body)
 	if err != nil {
-		rest.BuildErrorResult(err)
+		return rest.BuildErrorResult(err)
 	}
 
 	create, err := c.workspace.Create(r.Context(), transfer.CreateInput{

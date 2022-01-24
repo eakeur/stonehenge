@@ -1,6 +1,9 @@
 package schema
 
-import "io"
+import (
+	"encoding/json"
+	"io"
+)
 
 type CreateRequest struct {
 	// Document is the applicant's CPF. Must be numbers only
@@ -14,5 +17,11 @@ type CreateRequest struct {
 }
 
 func NewCreateRequest(body io.ReadCloser) (CreateRequest, error){
-	return CreateRequest{}, nil
+	defer body.Close()
+	var req CreateRequest
+	err := json.NewDecoder(body).Decode(&req)
+	if err != nil {
+		return CreateRequest{}, err
+	}
+	return req, nil
 }

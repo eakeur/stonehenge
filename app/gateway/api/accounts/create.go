@@ -9,12 +9,6 @@ import (
 	"stonehenge/app/workspaces/account"
 )
 
-type PostRequestBody struct {
-	Document string
-	Secret   string
-	Name     string
-}
-
 // Create creates a new account with the data passed in
 func (c *Controller) Create(r *http.Request) rest.Response {
 	req, err := schema.NewCreateRequest(r.Body)
@@ -30,7 +24,7 @@ func (c *Controller) Create(r *http.Request) rest.Response {
 
 	acc, err := c.workspace.Create(r.Context(), input)
 	if err != nil {
-		rest.BuildErrorResult(err)
+		return rest.BuildErrorResult(err)
 	}
 
 	return rest.
