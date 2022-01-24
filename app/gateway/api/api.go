@@ -3,10 +3,10 @@ package api
 import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"net/http"
+
 	"stonehenge/app"
 	"stonehenge/app/gateway/api/accounts"
-	"stonehenge/app/gateway/api/middlewares/authorization"
+	"stonehenge/app/gateway/api/middlewares"
 	"stonehenge/app/gateway/api/rest"
 	"stonehenge/app/gateway/api/transfers"
 )
@@ -16,9 +16,8 @@ type Server struct {
 }
 
 func New(application *app.Application) *Server {
-	authMiddleware := func(h http.Handler) http.Handler {
-		return authorization.Middleware(h, application.AccessManager)
-	}
+
+	m := middlewares.NewMiddleware(application.AccessManager)
 
 	acc := accounts.NewController(application.Accounts)
 	trf := transfers.NewController(application.Transfers)
@@ -27,7 +26,7 @@ func New(application *app.Application) *Server {
 	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
 	router.Group(func(r chi.Router) {
-		r.Use(authMiddleware)
+		r.Use(m.Authorization)
 		router.Route("/accounts", func(r chi.Router) {
 			r.Method("GET", "/", rest.Handler(acc.List))
 			r.Method("GET", "/{accountID}/balance", rest.Handler(acc.GetBalance))
