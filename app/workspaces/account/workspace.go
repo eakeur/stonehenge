@@ -17,9 +17,6 @@ type Workspace interface {
 
 	// List gets all accounts existing that satisfies the passed filter
 	List(ctx context.Context, filter account.Filter) ([]Reference, error)
-
-	// Authenticate verifies a user credential and returns the account id if it's all ok
-	Authenticate(ctx context.Context, req AuthenticationRequest) (access.Access, error)
 }
 
 type workspace struct {

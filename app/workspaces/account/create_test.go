@@ -2,7 +2,6 @@ package account
 
 import (
 	"context"
-	"github.com/stretchr/testify/assert"
 	"stonehenge/app/core/entities/access"
 	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/entities/transaction"
@@ -10,6 +9,12 @@ import (
 	"stonehenge/app/core/types/id"
 	"stonehenge/app/core/types/password"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+const (
+	accountID = "d0052623-0695-4a3a-abf6-887f613dda8e"
 )
 
 func TestAccountCreation(t *testing.T) {
