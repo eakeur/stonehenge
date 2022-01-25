@@ -5,7 +5,7 @@ import (
 	"stonehenge/app/gateway/database/postgres/common"
 )
 
-func (t *pgxTransaction) Commit(ctx context.Context) error {
+func (t *manager) Commit(ctx context.Context) error {
 	tx, err := common.TransactionFrom(ctx)
 	if err != nil {
 		return err

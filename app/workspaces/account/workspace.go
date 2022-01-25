@@ -24,11 +24,11 @@ type Workspace interface {
 
 type workspace struct {
 	ac account.Repository
-	tx transaction.Transaction
+	tx transaction.Manager
 	tk access.Manager
 }
 
-func New(ac account.Repository, tx transaction.Transaction, tk access.Manager) *workspace {
+func New(ac account.Repository, tx transaction.Manager, tk access.Manager) *workspace {
 	return &workspace{
 		ac: ac,
 		tx: tx,

@@ -5,13 +5,13 @@ import (
 	"stonehenge/app/core/entities/transaction"
 )
 
-type pgxTransaction struct {
+type manager struct {
 	db *pgxpool.Pool
 }
 
-// NewTransaction creates a transaction adapter object
-func NewTransaction(db *pgxpool.Pool) transaction.Transaction {
-	return &pgxTransaction{
+// NewManager creates a transaction adapter object
+func NewManager(db *pgxpool.Pool) transaction.Manager {
+	return &manager{
 		db: db,
 	}
 }

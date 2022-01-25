@@ -2,18 +2,18 @@ package postgrestest
 
 import (
 	"context"
-	"fmt"
-	"github.com/jackc/pgx/v4/pgxpool"
 	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/entities/transfer"
 	"stonehenge/app/gateway/database/postgres"
+
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 func connect(user, password, host, port, database, migrations string) (*pgxpool.Pool, error) {
 	ctx := context.Background()
-	url := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", user, password, host, port, database)
+	url := postgres.CreateDatabaseURL(user, password, host, port, database, "disable")
 
-	db, err := postgres.NewConnection(ctx, url, "", nil, 0)
+	db, err := postgres.NewConnection(ctx, url, nil, 0)
 	if err != nil {
 		return db, err
 	}

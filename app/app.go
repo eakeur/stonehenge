@@ -2,8 +2,6 @@ package app
 
 import (
 	"context"
-	"fmt"
-	"github.com/pkg/errors"
 	"stonehenge/app/config"
 	"stonehenge/app/core/entities/access"
 	accessimpl "stonehenge/app/gateway/access"
@@ -16,12 +14,14 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/pkg/errors"
+
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type Application struct {
-	Accounts  accountworkspace.Workspace
-	Transfers transferworkspace.Workspace
+	Accounts      accountworkspace.Workspace
+	Transfers     transferworkspace.Workspace
 	AccessManager access.Manager
 }
 
@@ -39,7 +39,7 @@ func NewApplication(ctx context.Context, cfg config.Config) (*Application, error
 
 	accountsRepository := account.NewRepository(p)
 	transfersRepository := transfer.NewRepository(p)
-	transactionManager := transaction.NewTransaction(p)
+	transactionManager := transaction.NewManager(p)
 
 	accountsWorkspace := accountworkspace.New(accountsRepository, transactionManager, am)
 	transferWorkspace := transferworkspace.New(accountsRepository, transfersRepository, transactionManager, am)
@@ -56,13 +56,13 @@ func setupAccessManager(cfg config.AccessConfigurations) (access.Manager, error)
 		return accessimpl.Manager{}, errors.Wrap(err, "failed parsing access expiration time")
 	}
 
-	return accessimpl.NewManager(time.Minute * time.Duration(duration), []byte(cfg.SigningKey)), err
+	return accessimpl.NewManager(time.Minute*time.Duration(duration), []byte(cfg.SigningKey)), err
 }
 
 func setupDB(ctx context.Context, cfg config.DatabaseConfigurations) (*pgxpool.Pool, error) {
 
-	url := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Name, cfg.SSLMode)
-	conn, err := postgres.NewConnection(ctx, url, "", nil, 5)
+	url := postgres.CreateDatabaseURL(cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Name, cfg.SSLMode)
+	conn, err := postgres.NewConnection(ctx, url, nil, 5)
 	if err != nil {
 		return conn, err
 	}

@@ -15,7 +15,7 @@ func TestCreate(t *testing.T) {
 		t.Fatalf("could not get database: %v", err)
 	}
 
-	tx := transaction.NewTransaction(db)
+	tx := transaction.NewManager(db)
 
 	type args struct {
 		ctx     context.Context
