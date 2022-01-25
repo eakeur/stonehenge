@@ -2,8 +2,8 @@ package transaction
 
 import "context"
 
-// Transaction is an object that encapsulates many storage accesses into one transaction
-type Transaction interface {
+// Manager is an object that encapsulates many storage accesses into one transaction
+type Manager interface {
 	// Begin starts a transaction and stores an object to it in this context
 	Begin(context.Context) (context.Context, error)
 

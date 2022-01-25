@@ -27,7 +27,7 @@ func TestList(t *testing.T) {
 	}
 
 	type fields struct {
-		tx transaction.Transaction
+		tx transaction.Manager
 		ac account.Repository
 		tr transfer.Repository
 		tk access.Manager

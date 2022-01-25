@@ -5,7 +5,7 @@ import (
 	"stonehenge/app/gateway/database/postgres/common"
 )
 
-func (t *pgxTransaction) Begin(ctx context.Context) (context.Context, error) {
+func (t *manager) Begin(ctx context.Context) (context.Context, error) {
 	tx, err := t.db.Begin(ctx)
 	if err != nil {
 		return ctx, err

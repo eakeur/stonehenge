@@ -33,7 +33,7 @@ func TestAccountCreation(t *testing.T) {
 	}
 
 	type fields struct {
-		tx   transaction.Transaction
+		tx   transaction.Manager
 		tk   access.Manager
 		repo account.Repository
 	}

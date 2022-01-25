@@ -5,7 +5,7 @@ import (
 	"stonehenge/app/gateway/database/postgres/common"
 )
 
-func (t *pgxTransaction) Rollback(ctx context.Context) {
+func (t *manager) Rollback(ctx context.Context) {
 	tx, err := common.TransactionFrom(ctx)
 	if err != nil {
 		return

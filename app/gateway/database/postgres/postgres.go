@@ -30,7 +30,7 @@ func Migrate(db string, filesPath string) error {
 		return errors.Wrap(err, "could not start migration")
 	}
 
-	if err := migration.Up(); err != nil && err != migrate.ErrNoChange {
+	if err := migration.Up(); err != nil && errors.Is(err, migrate.ErrNoChange) {
 		return errors.Wrap(err, "error uploading migration")
 	}
 
