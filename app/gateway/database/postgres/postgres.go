@@ -13,6 +13,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+func CreateDatabaseURL(user, password, host, port, name, SSLMode string) string {
+	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", user, password, host, port, name, SSLMode)
+}
+
 // Migrate writes up the schema to a database
 func Migrate(db string, filesPath string) error {
 	path := fmt.Sprintf("file://%v", filesPath)
@@ -26,7 +30,7 @@ func Migrate(db string, filesPath string) error {
 		return errors.Wrap(err, "could not start migration")
 	}
 
-	if err := migration.Up(); err != nil && err != migrate.ErrNoChange && err != migrate.ErrInvalidVersion {
+	if err := migration.Up(); err != nil && err != migrate.ErrNoChange {
 		return errors.Wrap(err, "error uploading migration")
 	}
 
@@ -34,15 +38,11 @@ func Migrate(db string, filesPath string) error {
 }
 
 // NewConnection creates a connection object
-func NewConnection(ctx context.Context, url, migrationsPath string, log pgx.Logger, level pgx.LogLevel) (*pgxpool.Pool, error) {
+func NewConnection(ctx context.Context, url string, _ pgx.Logger, _ pgx.LogLevel) (*pgxpool.Pool, error) {
 	pgxConfig, err := pgxpool.ParseConfig(url)
 	if err != nil {
 		return nil, err
 	}
-
-	//pgxConfig.ConnConfig.Logger = log
-
-	//pgxConfig.ConnConfig.LogLevel = level
 
 	db, err := pgxpool.ConnectConfig(ctx, pgxConfig)
 	if err != nil {
