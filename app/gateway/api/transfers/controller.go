@@ -2,12 +2,14 @@ package transfers
 
 import (
 	"net/http"
+	"stonehenge/app/core/types/logger"
 	"stonehenge/app/gateway/api/rest"
 	"stonehenge/app/workspaces/transfer"
 )
 
 type controller struct {
 	workspace transfer.Workspace
+	logger logger.Logger
 }
 
 func NewController(workspace transfer.Workspace) Controller {
