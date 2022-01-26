@@ -6,6 +6,7 @@ import (
 
 	"stonehenge/app"
 	"stonehenge/app/gateway/api/accounts"
+	"stonehenge/app/gateway/api/authentication"
 	"stonehenge/app/gateway/api/middlewares"
 	"stonehenge/app/gateway/api/rest"
 	"stonehenge/app/gateway/api/transfers"
@@ -19,6 +20,7 @@ func New(application *app.Application) *Server {
 
 	m := middlewares.NewMiddleware(application.AccessManager)
 
+	aut := authentication.NewController(application.Authentication)
 	acc := accounts.NewController(application.Accounts)
 	trf := transfers.NewController(application.Transfers)
 
@@ -36,7 +38,7 @@ func New(application *app.Application) *Server {
 			r.Method("GET", "/", rest.Handler(trf.List))
 		})
 	})
-	router.Method("POST", "/login", rest.Handler(acc.Authenticate))
+	router.Method("POST", "/login", rest.Handler(aut.Authenticate))
 	router.Method("POST", "/accounts", rest.Handler(acc.Create))
 
 	return &Server{

@@ -9,11 +9,6 @@ import (
 	"time"
 )
 
-type AuthenticationRequest struct {
-	Document document.Document
-	Secret   string
-}
-
 type CreateInput struct {
 	Document document.Document
 	Secret   password.Password
@@ -23,7 +18,7 @@ type CreateInput struct {
 type CreateOutput struct {
 	AccountID id.External
 	CreatedAt time.Time
-	Access access.Access
+	Access    access.Access
 }
 
 type GetBalanceResponse struct {

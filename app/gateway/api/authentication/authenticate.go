@@ -1,11 +1,11 @@
-package accounts
+package authentication
 
 import (
 	"net/http"
 	"stonehenge/app/core/types/document"
-	"stonehenge/app/gateway/api/accounts/schema"
+	"stonehenge/app/gateway/api/authentication/schema"
 	"stonehenge/app/gateway/api/rest"
-	"stonehenge/app/workspaces/account"
+	"stonehenge/app/workspaces/authentication"
 )
 
 type LoginRequestBody struct {
@@ -21,7 +21,7 @@ func (c *Controller) Authenticate(r *http.Request) rest.Response {
 	}
 
 	ctx := r.Context()
-	acc, err := c.workspace.Authenticate(ctx, account.AuthenticationRequest{
+	acc, err := c.workspace.Authenticate(ctx, authentication.AuthenticationRequest{
 		Document: document.Document(body.Document),
 		Secret:   body.Secret,
 	})
@@ -31,5 +31,5 @@ func (c *Controller) Authenticate(r *http.Request) rest.Response {
 
 	return rest.
 		BuildOKResult(schema.AuthenticationResponse{Token: acc.Token}).
-		AddHeaders("Authorization", "Bearer " + acc.Token)
+		AddHeaders("Authorization", "Bearer "+acc.Token)
 }
