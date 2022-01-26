@@ -12,8 +12,9 @@ type repository struct {
 	logger logger.Logger
 }
 
-func NewRepository(db *pgxpool.Pool) account.Repository {
+func NewRepository(db *pgxpool.Pool, lg logger.Logger) account.Repository {
 	return &repository{
 		db: db,
+		logger: lg,
 	}
 }
