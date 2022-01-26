@@ -8,6 +8,7 @@ import (
 )
 
 func (r *repository) List(ctx context.Context, filter transfer.Filter) ([]transfer.Transfer, error) {
+	const operation = "Repositories.Transfer.List"
 	query := `select
 		t.id,
 		t.external_id,
@@ -29,18 +30,21 @@ func (r *repository) List(ctx context.Context, filter transfer.Filter) ([]transf
 	args := make([]interface{}, 0)
 	idx := 0
 	if filter.OriginID != id.Zero {
+		r.logger.Trace(ctx, operation, "searching accounts with origin_id filter")
 		idx++
 		query = common.AppendCondition(query, "and", "ori.external_id = ?", idx)
 		args = append(args, filter.OriginID)
 	}
 
 	if filter.DestinationID != id.Zero {
+		r.logger.Trace(ctx, operation, "searching accounts with destination_id filter")
 		idx++
 		query = common.AppendCondition(query, "and", "des.external_id = ?", idx)
 		args = append(args, filter.DestinationID)
 	}
 
 	if !filter.InitialDate.IsZero() && !filter.FinalDate.IsZero() {
+		r.logger.Trace(ctx, operation, "searching accounts with date filter")
 		idx += 2
 		query = common.AppendCondition(query, "and", "effective_date between ? and ?", idx-1, idx)
 		args = append(args, filter.InitialDate, filter.FinalDate)
@@ -50,6 +54,7 @@ func (r *repository) List(ctx context.Context, filter transfer.Filter) ([]transf
 
 	ret, err := r.db.Query(ctx, query, args...)
 	if err != nil {
+		r.logger.Error(ctx, operation, err.Error())
 		return []transfer.Transfer{}, transfer.ErrFetching
 	}
 	defer ret.Close()
@@ -70,5 +75,6 @@ func (r *repository) List(ctx context.Context, filter transfer.Filter) ([]transf
 			&tr.CreatedAt)
 		transfers = append(transfers, tr)
 	}
+	r.logger.Trace(ctx, operation, "finished process successfully")
 	return transfers, nil
 }
