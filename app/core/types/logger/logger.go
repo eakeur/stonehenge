@@ -1,11 +1,11 @@
 package logger
 
 type Logger interface {
-	Trace(string, string, interface{})
-	Debug(string, string, interface{})
-	Info(string, string, interface{})
-	Warn(string, string, interface{})
-	Error(string, string, interface{})
-	Fatal(string, string, interface{})
-	Panic(string, string, interface{})
+	Trace(string, string)
+	Debug(string, string)
+	Info(string, string)
+	Warn(string, string)
+	Error(string, string)
+	Fatal(string, string)
+	Panic(string, string)
 }
