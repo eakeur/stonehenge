@@ -4,6 +4,7 @@ type Config struct {
 	Database DatabaseConfigurations
 	Access   AccessConfigurations
 	Server ServerConfigurations
+	Logger LoggerConfigurations
 }
 
 type AccessConfigurations struct {
@@ -24,4 +25,8 @@ type DatabaseConfigurations struct {
 type ServerConfigurations struct {
 	ListenPort string
 	Hostname string
+}
+
+type LoggerConfigurations struct {
+	Environment string
 }
