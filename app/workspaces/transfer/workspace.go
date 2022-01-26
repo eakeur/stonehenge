@@ -6,6 +6,7 @@ import (
 	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/entities/transaction"
 	"stonehenge/app/core/entities/transfer"
+	"stonehenge/app/core/types/logger"
 )
 
 //go:generate moq -fmt goimports -out usecase_mock.go . UseCase:UseCaseMock
@@ -20,6 +21,7 @@ type workspace struct {
 	tr transfer.Repository
 	tx transaction.Manager
 	tk access.Manager
+	logger logger.Logger
 }
 
 func New(ac account.Repository, tr transfer.Repository, tx transaction.Manager, tk access.Manager) *workspace {

@@ -7,17 +7,21 @@ import (
 )
 
 func (u *workspace) List(ctx context.Context, filter transfer.Filter) ([]Reference, error) {
+	const operation = "Workspaces.Transfer.List"
 	actor, err := u.tk.GetAccessFromContext(ctx)
 	if err != nil {
+		u.logger.Error(ctx, operation, err.Error())
 		return []Reference{}, err
 	}
 
 	if filter.OriginID != actor.AccountID && filter.DestinationID != actor.AccountID {
+		u.logger.Error(ctx, operation, "cannot access data that has nothing to do with the logged in user")
 		return []Reference{}, account.ErrCannotAccess
 	}
 
 	list, err := u.tr.List(ctx, filter)
 	if err != nil {
+		u.logger.Error(ctx, operation, err.Error())
 		return []Reference{}, err
 	}
 	refs := make([]Reference, len(list))
@@ -30,5 +34,6 @@ func (u *workspace) List(ctx context.Context, filter transfer.Filter) ([]Referen
 			EffectiveDate: a.EffectiveDate,
 		}
 	}
+	u.logger.Trace(ctx, operation, "finished process successfully")
 	return refs, nil
 }
