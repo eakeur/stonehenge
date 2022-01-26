@@ -9,8 +9,10 @@ import (
 )
 
 func (r *repository) Create(ctx context.Context, acc account.Account) (account.Account, error) {
+	const operation = "Repositories.Account.Create"
 	db, err := common.TransactionFrom(ctx)
 	if err != nil {
+		r.logger.Error(ctx, operation, err.Error())
 		return account.Account{}, err
 	}
 
@@ -31,6 +33,7 @@ func (r *repository) Create(ctx context.Context, acc account.Account) (account.A
 		&acc.UpdatedAt,
 	)
 	if err != nil {
+		r.logger.Error(ctx, operation, err.Error())
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
 			return account.Account{}, account.ErrAlreadyExist
@@ -39,5 +42,6 @@ func (r *repository) Create(ctx context.Context, acc account.Account) (account.A
 		return account.Account{}, account.ErrCreating
 	}
 
+	r.logger.Trace(ctx, operation, "finished process successfully")
 	return acc, nil
 }

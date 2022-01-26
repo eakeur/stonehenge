@@ -9,6 +9,7 @@ import (
 )
 
 func (r *repository) GetByExternalID(ctx context.Context, id id.External) (account.Account, error) {
+	const operation = "Repositories.Account.GetByExternalID"
 	const query string = `select 
 		id, 
 		external_id, 
@@ -36,11 +37,13 @@ func (r *repository) GetByExternalID(ctx context.Context, id id.External) (accou
 		&acc.CreatedAt)
 
 	if err != nil {
+		r.logger.Error(ctx, operation, err.Error())
 		if errors.Is(pgx.ErrNoRows, err) {
 			return account.Account{}, account.ErrNotFound
 		}
 		return account.Account{}, account.ErrFetching
 
 	}
+	r.logger.Trace(ctx, operation, "finished process successfully")
 	return acc, nil
 }

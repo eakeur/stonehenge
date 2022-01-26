@@ -7,6 +7,7 @@ import (
 )
 
 func (r *repository) List(ctx context.Context, filter account.Filter) ([]account.Account, error) {
+	const operation = "Repositories.Account.List"
 	query := `select 
 		id, 
 		external_id, 
@@ -20,6 +21,7 @@ func (r *repository) List(ctx context.Context, filter account.Filter) ([]account
 		accounts`
 	args := make([]interface{}, 0)
 	if filter.Name != "" {
+		r.logger.Trace(ctx, operation, "searching accounts with filter name")
 		query = common.AppendCondition(query, "and", "name like ?", 1)
 		args = append(args, "%"+filter.Name+"%")
 	}
@@ -28,6 +30,7 @@ func (r *repository) List(ctx context.Context, filter account.Filter) ([]account
 
 	ret, err := r.db.Query(ctx, query, args...)
 	if err != nil {
+		r.logger.Error(ctx, operation, err.Error())
 		return []account.Account{}, account.ErrFetching
 	}
 	defer ret.Close()
@@ -46,5 +49,7 @@ func (r *repository) List(ctx context.Context, filter account.Filter) ([]account
 			&acc.CreatedAt)
 		accounts = append(accounts, acc)
 	}
+
+	r.logger.Trace(ctx, operation, "finished process successfully")
 	return accounts, nil
 }

@@ -9,6 +9,7 @@ import (
 )
 
 func (r *repository) GetWithCPF(ctx context.Context, doc document.Document) (account.Account, error) {
+	const operation = "Repositories.Account.GetWithCPF"
 	const query string = `select 
 		id, 
 		external_id, 
@@ -36,6 +37,7 @@ func (r *repository) GetWithCPF(ctx context.Context, doc document.Document) (acc
 		&acc.CreatedAt)
 
 	if err != nil {
+		r.logger.Error(ctx, operation, err.Error())
 		if errors.Is(pgx.ErrNoRows, err) {
 			return account.Account{}, account.ErrNotFound
 		}
@@ -43,5 +45,6 @@ func (r *repository) GetWithCPF(ctx context.Context, doc document.Document) (acc
 		return account.Account{}, account.ErrFetching
 
 	}
+	r.logger.Trace(ctx, operation, "finished process successfully")
 	return acc, nil
 }
