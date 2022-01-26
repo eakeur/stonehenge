@@ -3,9 +3,11 @@ package account
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
+	"stonehenge/app/config"
 	"stonehenge/app/core/entities/account"
 	"stonehenge/app/gateway/database/postgres/postgrestest"
 	"stonehenge/app/gateway/database/postgres/transaction"
+	"stonehenge/app/gateway/logger"
 	"testing"
 )
 
@@ -16,6 +18,8 @@ func TestCreate(t *testing.T) {
 	}
 
 	tx := transaction.NewManager(db)
+
+	log := logger.NewLogger(config.LoggerConfigurations{Environment: "development"})
 
 	type args struct {
 		ctx     context.Context
@@ -56,7 +60,7 @@ func TestCreate(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			defer postgrestest.RecycleDatabase(test.args.ctx)
 
-			repo := NewRepository(db)
+			repo := NewRepository(db, log)
 
 			if test.before != nil {
 				err := test.before(test)
