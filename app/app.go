@@ -9,14 +9,15 @@ import (
 	"stonehenge/app/gateway/database/postgres/account"
 	"stonehenge/app/gateway/database/postgres/transaction"
 	"stonehenge/app/gateway/database/postgres/transfer"
+	"stonehenge/app/gateway/logger"
 	accountworkspace "stonehenge/app/workspaces/account"
 	"stonehenge/app/workspaces/authentication"
 	transferworkspace "stonehenge/app/workspaces/transfer"
 	"strconv"
 	"time"
 
-	"github.com/pkg/errors"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/pkg/errors"
 )
 
 type Application struct {
@@ -38,13 +39,15 @@ func NewApplication(ctx context.Context, cfg config.Config) (*Application, error
 		return &Application{}, err
 	}
 
+	log := logger.NewLogger(cfg.Logger)
+
 	accountsRepository := account.NewRepository(p)
 	transfersRepository := transfer.NewRepository(p)
 	transactionManager := transaction.NewManager(p)
 
-	accountsWorkspace := accountworkspace.New(accountsRepository, transactionManager, am)
-	transferWorkspace := transferworkspace.New(accountsRepository, transfersRepository, transactionManager, am)
-	authenticationWorkspace := authentication.New(accountsRepository, am)
+	accountsWorkspace := accountworkspace.New(accountsRepository, transactionManager, am, log)
+	transferWorkspace := transferworkspace.New(accountsRepository, transfersRepository, transactionManager, am, log)
+	authenticationWorkspace := authentication.New(accountsRepository, am, log)
 
 	return &Application{
 		Accounts: accountsWorkspace, Transfers: transferWorkspace,
