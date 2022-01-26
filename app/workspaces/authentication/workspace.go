@@ -18,9 +18,10 @@ type workspace struct {
 	logger logger.Logger
 }
 
-func New(ac account.Repository, tk access.Manager) *workspace {
+func New(ac account.Repository, tk access.Manager, lg logger.Logger) *workspace {
 	return &workspace{
 		ac: ac,
 		tk: tk,
+		logger: lg,
 	}
 }

@@ -24,11 +24,12 @@ type workspace struct {
 	logger logger.Logger
 }
 
-func New(ac account.Repository, tr transfer.Repository, tx transaction.Manager, tk access.Manager) *workspace {
+func New(ac account.Repository, tr transfer.Repository, tx transaction.Manager, tk access.Manager, lg logger.Logger) *workspace {
 	return &workspace{
 		ac: ac,
 		tr: tr,
 		tx: tx,
 		tk: tk,
+		logger: lg,
 	}
 }
