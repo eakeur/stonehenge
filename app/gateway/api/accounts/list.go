@@ -10,9 +10,12 @@ import (
 
 // List gets all accounts that satisfy the filter passed
 func (c *Controller) List(r *http.Request) rest.Response {
+	const operation = "Controller.Account.Create"
+	ctx := r.Context()
 	filters := filter(r.URL.Query())
-	list, err := c.workspace.List(r.Context(), filters)
+	list, err := c.workspace.List(ctx, filters)
 	if err != nil {
+		c.logger.Error(ctx, operation, err.Error())
 		return rest.BuildErrorResult(err)
 	}
 	res := make([]schema.ListResponse, len(list))
@@ -22,6 +25,7 @@ func (c *Controller) List(r *http.Request) rest.Response {
 			OwnerName: list[i].Name,
 		}
 	}
+	c.logger.Trace(ctx, operation, "finished process successfully")
 	return rest.BuildOKResult(res)
 }
 

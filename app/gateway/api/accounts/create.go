@@ -11,8 +11,11 @@ import (
 
 // Create creates a new account with the data passed in
 func (c *Controller) Create(r *http.Request) rest.Response {
+	const operation = "Controller.Account.Create"
+	ctx := r.Context()
 	req, err := schema.NewCreateRequest(r.Body)
 	if err != nil {
+		c.logger.Error(ctx, operation, err.Error())
 		return rest.BuildBadRequestResult(err)
 	}
 
@@ -24,9 +27,11 @@ func (c *Controller) Create(r *http.Request) rest.Response {
 
 	acc, err := c.workspace.Create(r.Context(), input)
 	if err != nil {
+		c.logger.Error(ctx, operation, err.Error())
 		return rest.BuildErrorResult(err)
 	}
 
+	c.logger.Trace(ctx, operation, "finished process successfully")
 	return rest.
 		BuildCreatedResult(schema.CreateResponse{AccountID: acc.AccountID.String(), Token: acc.Access.Token}).
 		AddHeaders("Authorization", "Bearer "+acc.Access.Token)
