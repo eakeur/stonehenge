@@ -10,7 +10,7 @@ import (
 const initialBalance currency.Currency = 5000
 
 func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, error) {
-
+	const operation = "Workspaces.Account.Create"
 	acc := account.Account{
 		Name:     req.Name,
 		Secret:   req.Secret,
@@ -19,29 +19,36 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, 
 	}
 
 	if err := acc.Validate(); err != nil {
+		u.logger.Error(ctx, operation, err.Error())
 		return CreateOutput{}, err
 	}
 
 	ctx, err := u.tx.Begin(ctx)
 	if err != nil {
+		u.logger.Error(ctx, operation, err.Error())
 		return CreateOutput{}, account.ErrCreating
 	}
 	defer u.tx.Rollback(ctx)
 
 	acc, err = u.ac.Create(ctx, acc)
 	if err != nil {
+		u.logger.Error(ctx, operation, err.Error())
 		return CreateOutput{}, err
 	}
 
 	err = u.tx.Commit(ctx)
 	if err != nil {
+		u.logger.Error(ctx, operation, err.Error())
 		return CreateOutput{}, account.ErrCreating
 	}
 
 	tok, err := u.tk.Create(acc.ExternalID)
 	if err != nil {
+		u.logger.Error(ctx, operation, err.Error())
 		return CreateOutput{}, err
 	}
+
+	u.logger.Trace(ctx, operation, "finished process successfully")
 
 	return CreateOutput{
 		AccountID: acc.ExternalID,

@@ -6,6 +6,7 @@ import (
 	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/entities/transaction"
 	"stonehenge/app/core/types/id"
+	"stonehenge/app/core/types/logger"
 )
 
 type Workspace interface {
@@ -23,6 +24,7 @@ type workspace struct {
 	ac account.Repository
 	tx transaction.Manager
 	tk access.Manager
+	logger logger.Logger
 }
 
 func New(ac account.Repository, tx transaction.Manager, tk access.Manager) *workspace {

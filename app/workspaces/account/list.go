@@ -6,13 +6,16 @@ import (
 )
 
 func (u *workspace) List(ctx context.Context, filter account.Filter) ([]Reference, error) {
+	const operation = "Workspaces.Account.List"
 	_, err := u.tk.GetAccessFromContext(ctx)
 	if err != nil {
+		u.logger.Error(ctx, operation, err.Error())
 		return []Reference{}, err
 	}
 
 	list, err := u.ac.List(ctx, filter)
 	if err != nil {
+		u.logger.Error(ctx, operation, err.Error())
 		return []Reference{}, err
 	}
 	refs := make([]Reference, len(list))
@@ -22,5 +25,6 @@ func (u *workspace) List(ctx context.Context, filter account.Filter) ([]Referenc
 			Name:       a.Name,
 		}
 	}
+	u.logger.Trace(ctx, operation, "finished process successfully")
 	return refs, nil
 }
