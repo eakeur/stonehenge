@@ -2,11 +2,13 @@ package authentication
 
 import (
 	"context"
+	"stonehenge/app/config"
 	"stonehenge/app/core/entities/access"
 	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/types/document"
 	"stonehenge/app/core/types/id"
 	"stonehenge/app/core/types/password"
+	"stonehenge/app/gateway/logger"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -24,6 +26,8 @@ func TestAuthentication(t *testing.T) {
 			AccountID: id.ExternalFrom(accountID),
 		},
 	}
+
+	log := logger.NewLogger(config.LoggerConfigurations{Environment: "development"})
 
 	type args struct {
 		ctx   context.Context
@@ -114,7 +118,7 @@ func TestAuthentication(t *testing.T) {
 	for _, test := range tests {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
-			u := New(test.fields.repo, test.fields.tk)
+			u := New(test.fields.repo, test.fields.tk, log)
 			got, err := u.Authenticate(test.args.ctx, test.args.input)
 			assert.ErrorIs(t, err, test.wantErr)
 			assert.Equal(t, test.want, got.AccountID)

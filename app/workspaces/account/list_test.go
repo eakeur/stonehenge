@@ -3,12 +3,14 @@ package account
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
+	"stonehenge/app/config"
 	"stonehenge/app/core/entities/access"
 	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/entities/transaction"
 	"stonehenge/app/core/types/audits"
 	"stonehenge/app/core/types/id"
 	"stonehenge/app/core/types/password"
+	"stonehenge/app/gateway/logger"
 	"testing"
 )
 
@@ -17,6 +19,7 @@ func TestList(t *testing.T) {
 
 	tx := &transaction.RepositoryMock{}
 	tk := &access.RepositoryMock{}
+	log := logger.NewLogger(config.LoggerConfigurations{Environment: "development"})
 
 	type args struct {
 		ctx    context.Context
@@ -101,7 +104,7 @@ func TestList(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			u := New(test.fields.repo, test.fields.tx, test.fields.tk)
+			u := New(test.fields.repo, test.fields.tx, test.fields.tk, log)
 			got, err := u.List(test.args.ctx, test.args.filter)
 			assert.ErrorIs(t, err, test.wantErr)
 			assert.Equal(t, test.want, got)

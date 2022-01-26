@@ -2,12 +2,14 @@ package account
 
 import (
 	"context"
+	"stonehenge/app/config"
 	"stonehenge/app/core/entities/access"
 	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/entities/transaction"
 	"stonehenge/app/core/types/document"
 	"stonehenge/app/core/types/id"
 	"stonehenge/app/core/types/password"
+	"stonehenge/app/gateway/logger"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -25,6 +27,7 @@ func TestAccountCreation(t *testing.T) {
 			return ctx, nil
 		},
 	}
+	log := logger.NewLogger(config.LoggerConfigurations{Environment: "development"})
 
 	tk := &access.RepositoryMock{
 		CreateResult: access.Access{
@@ -98,7 +101,7 @@ func TestAccountCreation(t *testing.T) {
 	for _, test := range tests {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
-			u := New(test.fields.repo, test.fields.tx, test.fields.tk)
+			u := New(test.fields.repo, test.fields.tx, test.fields.tk, log)
 			got, err := u.Create(test.args.ctx, test.args.input)
 			assert.ErrorIs(t, err, test.wantErr)
 			assert.Equal(t, test.want, got)

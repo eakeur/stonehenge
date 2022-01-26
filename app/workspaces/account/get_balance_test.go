@@ -3,10 +3,12 @@ package account
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
+	"stonehenge/app/config"
 	"stonehenge/app/core/entities/access"
 	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/entities/transaction"
 	"stonehenge/app/core/types/id"
+	"stonehenge/app/gateway/logger"
 	"testing"
 )
 
@@ -19,6 +21,7 @@ func TestGetBalance(t *testing.T) {
 		GetAccessFromContextResult: access.Access{AccountID: id.ExternalFrom(accountID)},
 	}
 
+	log := logger.NewLogger(config.LoggerConfigurations{Environment: "development"})
 	type args struct {
 		ctx context.Context
 		id  id.External
@@ -60,7 +63,7 @@ func TestGetBalance(t *testing.T) {
 	for _, test := range tests {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
-			u := New(test.fields.repo, test.fields.tx, test.fields.tk)
+			u := New(test.fields.repo, test.fields.tx, test.fields.tk, log)
 			got, err := u.GetBalance(test.args.ctx, test.args.id)
 			assert.ErrorIs(t, err, test.wantErr)
 			assert.Equal(t, test.want, got)

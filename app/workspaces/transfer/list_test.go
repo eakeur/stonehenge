@@ -3,16 +3,20 @@ package transfer
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
+	"stonehenge/app/config"
 	"stonehenge/app/core/entities/access"
 	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/entities/transaction"
 	"stonehenge/app/core/entities/transfer"
 	"stonehenge/app/core/types/id"
+	"stonehenge/app/gateway/logger"
 	"testing"
 )
 
 func TestList(t *testing.T) {
 	t.Parallel()
+	log := logger.NewLogger(config.LoggerConfigurations{Environment: "development"})
+
 	tx := &transaction.RepositoryMock{}
 	ac := &account.RepositoryMock{}
 	tk := &access.RepositoryMock{
@@ -126,7 +130,7 @@ func TestList(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			u := New(test.fields.ac, test.fields.tr, test.fields.tx, test.fields.tk)
+			u := New(test.fields.ac, test.fields.tr, test.fields.tx, test.fields.tk, log)
 			got, err := u.List(test.args.ctx, test.args.filter)
 			assert.ErrorIs(t, err, test.wantErr)
 			assert.Equal(t, test.want, got)
