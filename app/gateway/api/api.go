@@ -20,9 +20,9 @@ func New(application *app.Application) *Server {
 
 	m := middlewares.NewMiddleware(application.AccessManager)
 
-	aut := authentication.NewController(application.Authentication)
-	acc := accounts.NewController(application.Accounts)
-	trf := transfers.NewController(application.Transfers)
+	aut := authentication.NewController(application.Authentication, application.Logger)
+	acc := accounts.NewController(application.Accounts, application.Logger)
+	trf := transfers.NewController(application.Transfers, application.Logger)
 
 	router := chi.NewRouter()
 	router.Use(middleware.Logger)

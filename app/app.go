@@ -4,6 +4,7 @@ import (
 	"context"
 	"stonehenge/app/config"
 	"stonehenge/app/core/entities/access"
+	contracts "stonehenge/app/core/types/logger"
 	accessimpl "stonehenge/app/gateway/access"
 	"stonehenge/app/gateway/database/postgres"
 	"stonehenge/app/gateway/database/postgres/account"
@@ -25,6 +26,7 @@ type Application struct {
 	Transfers      transferworkspace.Workspace
 	Authentication authentication.Workspace
 	AccessManager  access.Manager
+	Logger 		   contracts.Logger
 }
 
 func NewApplication(ctx context.Context, cfg config.Config) (*Application, error) {
