@@ -10,8 +10,9 @@ type Controller struct {
 	logger logger.Logger
 }
 
-func NewController(workspace account.Workspace) Controller {
+func NewController(workspace account.Workspace, lg logger.Logger) Controller {
 	return Controller{
 		workspace: workspace,
+		logger: lg,
 	}
 }

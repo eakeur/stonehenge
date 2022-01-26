@@ -12,8 +12,8 @@ type controller struct {
 	logger logger.Logger
 }
 
-func NewController(workspace transfer.Workspace) Controller {
-	return controller{workspace: workspace}
+func NewController(workspace transfer.Workspace, lg logger.Logger) Controller {
+	return controller{workspace: workspace, logger: lg}
 }
 
 type Controller interface {
