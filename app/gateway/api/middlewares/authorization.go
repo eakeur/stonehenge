@@ -1,10 +1,7 @@
 package middlewares
 
 import (
-	"context"
-	"github.com/google/uuid"
 	"net/http"
-	"stonehenge/app/core/types/logger"
 	"stonehenge/app/gateway/api/rest"
 )
 
@@ -26,7 +23,6 @@ func (m middleware) Authorization(next http.Handler) http.Handler {
 				return rest.BuildErrorResult(err)
 			}
 			ctx = m.am.AssignAccessToContext(ctx, acc)
-			ctx = context.WithValue(ctx, logger.TraceKey, uuid.New())
 			m.logger.Trace(ctx, operation, "finished operation successfully")
 			return rest.Response{}.
 				AddHeaders("Authorization", "Bearer "+acc.Token)

@@ -12,6 +12,7 @@ func NewMiddleware(manager access.Manager, lg logger.Logger) Middleware {
 
 type Middleware interface {
 	Authorization(http.Handler) http.Handler
+	Logger(http.Handler) http.Handler
 }
 
 type middleware struct {
