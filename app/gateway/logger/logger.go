@@ -6,7 +6,6 @@ import (
 	"github.com/rs/zerolog/log"
 	"stonehenge/app/config"
 	contract "stonehenge/app/core/types/logger"
-	"time"
 )
 
 func NewLogger(cfg config.LoggerConfigurations) contract.Logger {
@@ -29,8 +28,7 @@ func (m logger) log(ctx context.Context, event *zerolog.Event, operation string,
 		traceID = res.(string)
 	}
 	event.
-		Time("time", time.Now()).
-		Str("context_id", traceID).
+		Str("req_id", traceID).
 		Str("operation", operation).
 		Msg(message)
 }
