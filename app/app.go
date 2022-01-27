@@ -54,6 +54,7 @@ func NewApplication(ctx context.Context, cfg config.Config) (*Application, error
 	return &Application{
 		Accounts: accountsWorkspace, Transfers: transferWorkspace,
 		AccessManager: am, Authentication: authenticationWorkspace,
+		Logger: log,
 	}, nil
 
 }

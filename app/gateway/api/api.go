@@ -27,6 +27,7 @@ func New(application *app.Application) *Server {
 	router := chi.NewRouter()
 	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
+	router.Use(m.Logger)
 	router.Group(func(r chi.Router) {
 		r.Use(m.Authorization)
 		router.Route("/accounts", func(r chi.Router) {
