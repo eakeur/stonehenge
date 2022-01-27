@@ -4,14 +4,14 @@ import "context"
 
 type TraceContextKey string
 
-const LoggerTraceKey TraceContextKey = "logger-trace-key"
+const TraceKey TraceContextKey = "logger-trace-key"
 
 type Logger interface {
-	Trace(context.Context, string, string)
-	Debug(context.Context, string, string)
-	Info(context.Context, string, string)
-	Warn(context.Context, string, string)
-	Error(context.Context, string, string)
-	Fatal(context.Context, string, string)
-	Panic(context.Context, string, string)
+	Trace(ctx context.Context, operation string, message string)
+	Debug(ctx context.Context, operation string, message string)
+	Info(ctx context.Context, operation string, message string)
+	Warn(ctx context.Context, operation string, message string)
+	Error(ctx context.Context, operation string, message string)
+	Fatal(ctx context.Context, operation string, message string)
+	Panic(ctx context.Context, operation string, message string)
 }

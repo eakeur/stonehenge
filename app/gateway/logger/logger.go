@@ -22,8 +22,8 @@ func NewLogger(cfg config.LoggerConfigurations) contract.Logger {
 type logger struct {
 }
 
-func (m logger) log(ctx context.Context, event *zerolog.Event, operation string, message string){
-	res := ctx.Value(contract.LoggerTraceKey)
+func (m logger) log(ctx context.Context, event *zerolog.Event, operation string, message string) {
+	res := ctx.Value(contract.TraceKey)
 	var traceID string
 	if res != nil {
 		traceID = res.(string)
