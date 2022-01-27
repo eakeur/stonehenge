@@ -20,5 +20,5 @@ func (c *Controller) GetBalance(r *http.Request) rest.Response {
 		return rest.BuildErrorResult(err)
 	}
 	c.logger.Trace(ctx, operation, "finished process successfully")
-	return rest.BuildOKResult(schema.GetBalanceResponse{Balance: float64(balance.Balance)})
+	return rest.BuildOKResult(schema.GetBalanceResponse{Balance: balance.Balance.ToStandardCurrency()})
 }
