@@ -18,7 +18,7 @@ type Server struct {
 
 func New(application *app.Application) *Server {
 
-	m := middlewares.NewMiddleware(application.AccessManager)
+	m := middlewares.NewMiddleware(application.AccessManager, application.Logger)
 
 	aut := authentication.NewController(application.Authentication, application.Logger)
 	acc := accounts.NewController(application.Accounts, application.Logger)
