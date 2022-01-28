@@ -5,10 +5,10 @@ import (
 	"stonehenge/app/gateway/database/postgres/common"
 )
 
-func (t *manager) Begin(ctx context.Context) (context.Context, error) {
+func (t *manager) Begin(ctx context.Context) context.Context {
 	tx, err := t.db.Begin(ctx)
 	if err != nil {
-		return ctx, err
+		return ctx
 	}
-	return context.WithValue(ctx, common.TXContextKey, tx), nil
+	return context.WithValue(ctx, common.TXContextKey, tx)
 }
