@@ -108,17 +108,11 @@ func TestCreate(t *testing.T) {
 					t.Fatalf("error running routine before: %v", err)
 				}
 			}
-			ctx, err := tx.Begin(test.args.ctx)
-			if err != nil {
-				t.Error(err)
-			}
-			defer tx.Rollback(ctx)
+			ctx := tx.Begin(test.args.ctx)
+			defer tx.End(ctx)
 
 			tr, err := repo.Create(ctx, test.args.transfer)
 			if err == nil {
-				if err := tx.Commit(ctx); err != nil {
-					assert.ErrorIs(t, test.wantErr, err)
-				}
 				test.want.ID = tr.ID
 				test.want.ExternalID = tr.ExternalID
 				test.want.CreatedAt = tr.CreatedAt

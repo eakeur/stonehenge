@@ -68,18 +68,11 @@ func TestCreate(t *testing.T) {
 					t.Fatalf("error running routine before: %v", err)
 				}
 			}
-			ctx, err := tx.Begin(test.args.ctx)
-			if err != nil {
-				t.Fatalf("could not start transaction: %v", err)
-			}
-			defer tx.Rollback(ctx)
+			ctx := tx.Begin(test.args.ctx)
+			defer tx.End(ctx)
 
 			acc, err := repo.Create(ctx, test.args.account)
 			if err == nil {
-				if err := tx.Commit(ctx); err != nil {
-					t.Fatalf("could not commit transaction: %v", err)
-				}
-
 				test.want.ID = acc.ID
 				test.want.ExternalID = acc.ExternalID
 				test.want.CreatedAt = acc.CreatedAt
