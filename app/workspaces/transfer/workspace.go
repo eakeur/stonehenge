@@ -6,13 +6,12 @@ import (
 	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/entities/transaction"
 	"stonehenge/app/core/entities/transfer"
-	"stonehenge/app/core/types/logger"
 )
 
 //go:generate moq -fmt goimports -out usecase_mock.go . UseCase:UseCaseMock
 
 type Workspace interface {
-	List(ctx context.Context, filter transfer.Filter) ([]Reference, error)
+	List(ctx context.Context, filter transfer.Filter) ([]transfer.Transfer, error)
 	Create(ctx context.Context, req CreateInput) (CreateOutput, error)
 }
 
@@ -21,15 +20,13 @@ type workspace struct {
 	tr transfer.Repository
 	tx transaction.Manager
 	tk access.Manager
-	logger logger.Logger
 }
 
-func New(ac account.Repository, tr transfer.Repository, tx transaction.Manager, tk access.Manager, lg logger.Logger) *workspace {
+func New(ac account.Repository, tr transfer.Repository, tx transaction.Manager, tk access.Manager) *workspace {
 	return &workspace{
 		ac: ac,
 		tr: tr,
 		tx: tx,
 		tk: tk,
-		logger: lg,
 	}
 }

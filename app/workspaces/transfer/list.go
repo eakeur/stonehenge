@@ -4,36 +4,31 @@ import (
 	"context"
 	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/entities/transfer"
+	"stonehenge/app/core/types/errors"
 )
 
-func (u *workspace) List(ctx context.Context, filter transfer.Filter) ([]Reference, error) {
+func (u *workspace) List(ctx context.Context, filter transfer.Filter) ([]transfer.Transfer, error) {
 	const operation = "Workspaces.Transfer.List"
+	callParams := errors.AdditionalData{Key: "filter", Value: filter}
+
 	actor, err := u.tk.GetAccessFromContext(ctx)
 	if err != nil {
-		u.logger.Error(ctx, operation, err.Error())
-		return []Reference{}, err
+		return []transfer.Transfer{}, errors.Wrap(err, operation, callParams)
 	}
 
 	if filter.OriginID != actor.AccountID && filter.DestinationID != actor.AccountID {
-		u.logger.Error(ctx, operation, "cannot access data that has nothing to do with the logged in user")
-		return []Reference{}, account.ErrCannotAccess
+		return []transfer.Transfer{}, errors.Wrap(
+			account.ErrCannotAccess,
+			operation,
+			callParams,
+			errors.AdditionalData{Key: "actor", Value: actor.AccountID.String()},
+		)
 	}
 
 	list, err := u.tr.List(ctx, filter)
 	if err != nil {
-		u.logger.Error(ctx, operation, err.Error())
-		return []Reference{}, err
+		return []transfer.Transfer{}, errors.Wrap(err, operation, callParams)
 	}
-	refs := make([]Reference, len(list))
-	for i, a := range list {
-		refs[i] = Reference{
-			ExternalID:    a.ExternalID,
-			OriginID:      a.OriginID,
-			DestinationID: a.DestinationID,
-			Amount:        a.Amount,
-			EffectiveDate: a.EffectiveDate,
-		}
-	}
-	u.logger.Trace(ctx, operation, "finished process successfully")
-	return refs, nil
+
+	return list, nil
 }

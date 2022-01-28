@@ -4,7 +4,6 @@ import (
 	"context"
 	"stonehenge/app/core/entities/access"
 	"stonehenge/app/core/entities/account"
-	"stonehenge/app/core/types/logger"
 )
 
 type Workspace interface {
@@ -15,13 +14,11 @@ type Workspace interface {
 type workspace struct {
 	ac     account.Repository
 	tk     access.Manager
-	logger logger.Logger
 }
 
-func New(ac account.Repository, tk access.Manager, lg logger.Logger) *workspace {
+func New(ac account.Repository, tk access.Manager) *workspace {
 	return &workspace{
 		ac: ac,
 		tk: tk,
-		logger: lg,
 	}
 }

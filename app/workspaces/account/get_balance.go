@@ -3,28 +3,32 @@ package account
 import (
 	"context"
 	"stonehenge/app/core/entities/account"
+	"stonehenge/app/core/types/errors"
 	"stonehenge/app/core/types/id"
 )
 
 func (u *workspace) GetBalance(ctx context.Context, id id.External) (GetBalanceResponse, error) {
 	const operation = "Workspaces.Account.GetBalance"
+	callParams := errors.AdditionalData{Key: "id", Value: id.String()}
+
 	actor, err := u.tk.GetAccessFromContext(ctx)
 	if err != nil {
-		u.logger.Error(ctx, operation, err.Error())
-		return GetBalanceResponse{}, err
+		return GetBalanceResponse{}, errors.Wrap(err, operation, callParams)
 	}
 
 	if id != actor.AccountID {
-		u.logger.Error(ctx, operation, err.Error())
-		return GetBalanceResponse{}, account.ErrCannotAccess
+		return GetBalanceResponse{}, errors.Wrap(
+			account.ErrCannotAccess,
+			operation,
+			callParams,
+			errors.AdditionalData{Key: "actor", Value: actor.AccountID.String()},
+		)
 	}
 
 	balance, err := u.ac.GetBalance(ctx, id)
 	if err != nil {
-		u.logger.Error(ctx, operation, err.Error())
-		return GetBalanceResponse{}, err
+		return GetBalanceResponse{}, errors.Wrap(err, operation, callParams)
 	}
 
-	u.logger.Trace(ctx, operation, "finished process successfully")
 	return GetBalanceResponse{Balance: balance}, nil
 }
