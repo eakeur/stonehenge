@@ -12,22 +12,22 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, 
 	const operation = "Workspaces.Transfer.Create"
 	callParams := errors.AdditionalData{Key: "request", Value: req}
 
-	actor, err := u.tk.GetAccessFromContext(ctx)
+	actor, err := u.access.GetAccessFromContext(ctx)
 	if err != nil {
 		return CreateOutput{}, errors.Wrap(err, operation, callParams)
 	}
 
-	ctx = u.tx.Begin(ctx)
-	defer u.tx.End(ctx)
+	ctx = u.transactions.Begin(ctx)
+	defer u.transactions.End(ctx)
 
 	// Fetches the origin account and checks for errors
-	origin, err := u.ac.GetByExternalID(ctx, actor.AccountID)
+	origin, err := u.accounts.GetByExternalID(ctx, actor.AccountID)
 	if err != nil {
 		return CreateOutput{}, errors.Wrap(transfer.ErrNonexistentOrigin, operation, callParams)
 	}
 
 	// Fetches the origin account and checks for errors
-	dest, err := u.ac.GetByExternalID(ctx, req.DestID)
+	dest, err := u.accounts.GetByExternalID(ctx, req.DestID)
 	if err != nil {
 		return CreateOutput{}, transfer.ErrNonexistentDestination
 	}
@@ -49,20 +49,20 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, 
 
 	// Updates the balance of the origin account after transaction
 	remaining := origin.Balance - req.Amount
-	err = u.ac.UpdateBalance(ctx, actor.AccountID, remaining)
+	err = u.accounts.UpdateBalance(ctx, actor.AccountID, remaining)
 	if err != nil {
 		return CreateOutput{}, errors.Wrap(account.ErrNoMoney, operation, callParams)
 	}
 
 	// Updates the balance of the destination account after transaction
-	err = u.ac.UpdateBalance(ctx, req.DestID, dest.Balance+req.Amount)
+	err = u.accounts.UpdateBalance(ctx, req.DestID, dest.Balance+req.Amount)
 	if err != nil {
 		return CreateOutput{}, errors.Wrap(account.ErrNoMoney, operation, callParams)
 	}
 
 	// Creates a transfer register on storage
 	t.EffectiveDate = time.Now()
-	t, err = u.tr.Create(ctx, t)
+	t, err = u.transfers.Create(ctx, t)
 	if err != nil {
 		return CreateOutput{}, errors.Wrap(account.ErrNoMoney, operation, callParams)
 	}

@@ -25,15 +25,15 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, 
 		return CreateOutput{}, errors.Wrap(err, operation, callParams)
 	}
 
-	ctx = u.tx.Begin(ctx)
-	defer u.tx.End(ctx)
+	ctx = u.transactions.Begin(ctx)
+	defer u.transactions.End(ctx)
 
-	acc, err := u.ac.Create(ctx, acc)
+	acc, err := u.accounts.Create(ctx, acc)
 	if err != nil {
 		return CreateOutput{}, errors.Wrap(err, operation, callParams)
 	}
 
-	tok, err := u.tk.Create(acc.ExternalID)
+	tok, err := u.access.Create(acc.ExternalID)
 	if err != nil {
 		return CreateOutput{}, errors.Wrap(err, operation, callParams)
 	}

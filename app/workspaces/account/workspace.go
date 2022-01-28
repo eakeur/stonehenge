@@ -20,15 +20,15 @@ type Workspace interface {
 }
 
 type workspace struct {
-	ac account.Repository
-	tx transaction.Manager
-	tk access.Manager
+	accounts     account.Repository
+	transactions transaction.Manager
+	access       access.Manager
 }
 
 func New(ac account.Repository, tx transaction.Manager, tk access.Manager) *workspace {
 	return &workspace{
-		ac: ac,
-		tx: tx,
-		tk: tk,
+		accounts:     ac,
+		transactions: tx,
+		access:       tk,
 	}
 }

@@ -11,7 +11,7 @@ func (u *workspace) List(ctx context.Context, filter transfer.Filter) ([]transfe
 	const operation = "Workspaces.Transfer.List"
 	callParams := errors.AdditionalData{Key: "filter", Value: filter}
 
-	actor, err := u.tk.GetAccessFromContext(ctx)
+	actor, err := u.access.GetAccessFromContext(ctx)
 	if err != nil {
 		return []transfer.Transfer{}, errors.Wrap(err, operation, callParams)
 	}
@@ -25,7 +25,7 @@ func (u *workspace) List(ctx context.Context, filter transfer.Filter) ([]transfe
 		)
 	}
 
-	list, err := u.tr.List(ctx, filter)
+	list, err := u.transfers.List(ctx, filter)
 	if err != nil {
 		return []transfer.Transfer{}, errors.Wrap(err, operation, callParams)
 	}

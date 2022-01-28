@@ -11,7 +11,7 @@ func (u *workspace) GetBalance(ctx context.Context, id id.External) (GetBalanceR
 	const operation = "Workspaces.Account.GetBalance"
 	callParams := errors.AdditionalData{Key: "id", Value: id.String()}
 
-	actor, err := u.tk.GetAccessFromContext(ctx)
+	actor, err := u.access.GetAccessFromContext(ctx)
 	if err != nil {
 		return GetBalanceResponse{}, errors.Wrap(err, operation, callParams)
 	}
@@ -25,7 +25,7 @@ func (u *workspace) GetBalance(ctx context.Context, id id.External) (GetBalanceR
 		)
 	}
 
-	balance, err := u.ac.GetBalance(ctx, id)
+	balance, err := u.accounts.GetBalance(ctx, id)
 	if err != nil {
 		return GetBalanceResponse{}, errors.Wrap(err, operation, callParams)
 	}

@@ -14,7 +14,7 @@ func (u *workspace) Authenticate(ctx context.Context, req AuthenticationRequest)
 		return access.Access{}, errors.Wrap(err, operation, callParams)
 	}
 
-	acc, err := u.ac.GetWithCPF(ctx, req.Document)
+	acc, err := u.accounts.GetWithCPF(ctx, req.Document)
 	if err != nil {
 		return access.Access{}, errors.Wrap(err, operation, callParams)
 	}
@@ -23,7 +23,7 @@ func (u *workspace) Authenticate(ctx context.Context, req AuthenticationRequest)
 		return access.Access{}, errors.Wrap(err, operation, callParams)
 	}
 
-	tok, err := u.tk.Create(acc.ExternalID)
+	tok, err := u.access.Create(acc.ExternalID)
 	if err != nil {
 		return access.Access{}, errors.Wrap(err, operation, callParams)
 	}

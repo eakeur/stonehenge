@@ -47,9 +47,9 @@ func NewApplication(ctx context.Context, cfg config.Config) (*Application, error
 	transfersRepository := transfer.NewRepository(p, log)
 	transactionManager := transaction.NewManager(p)
 
-	accountsWorkspace := accountworkspace.New(accountsRepository, transactionManager, am, log)
-	transferWorkspace := transferworkspace.New(accountsRepository, transfersRepository, transactionManager, am, log)
-	authenticationWorkspace := authentication.New(accountsRepository, am, log)
+	accountsWorkspace := accountworkspace.New(accountsRepository, transactionManager, am)
+	transferWorkspace := transferworkspace.New(accountsRepository, transfersRepository, transactionManager, am)
+	authenticationWorkspace := authentication.New(accountsRepository, am)
 
 	return &Application{
 		Accounts: accountsWorkspace, Transfers: transferWorkspace,
