@@ -3,26 +3,27 @@ package transfer
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
-	"stonehenge/app/config"
 	"stonehenge/app/core/entities/access"
 	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/entities/transaction"
 	"stonehenge/app/core/entities/transfer"
 	"stonehenge/app/core/types/id"
-	"stonehenge/app/gateway/logger"
 	"testing"
 )
 
 func TestList(t *testing.T) {
 	t.Parallel()
-	log := logger.NewLogger(config.LoggerConfigurations{Environment: "development"})
+	ctx := context.Background()
 
-	tx := &transaction.RepositoryMock{}
-	ac := &account.RepositoryMock{}
-	tk := &access.RepositoryMock{
-		CreateResult: access.Access{
-			AccountID: id.ExternalFrom(originID),
-		},
+	originID := id.ExternalFrom("d0052623-0695-4a3a-abf6-887f613dda8e")
+	//unknownID := id.ExternalFrom("17edb329-4b65-41ba-bb26-5060a1e157ab")
+
+	accounts := &account.RepositoryMock{}
+
+	transactions := &transaction.RepositoryMock{BeginResult: ctx}
+
+	accesses := &access.RepositoryMock{
+		GetAccessFromContextResult: access.Access{AccountID: originID},
 	}
 
 	type args struct {
@@ -31,98 +32,64 @@ func TestList(t *testing.T) {
 	}
 
 	type fields struct {
-		tx transaction.Manager
-		ac account.Repository
-		tr transfer.Repository
-		tk access.Manager
+		transactions transaction.Manager
+		accounts     account.Repository
+		transfers    transfer.Repository
+		access       access.Manager
 	}
 
 	type test struct {
 		name    string
 		fields  fields
 		args    args
-		want    []Reference
+		want    []transfer.Transfer
 		wantErr error
 	}
 
 	tests := []test{
-		// Should return []Reference populated with information of transfers that satisfies the filter
+
 		{
-			name: "return array of transfers satisfying filter",
-			fields: fields{tx: tx, tk: tk, ac: ac, tr: &transfer.RepositoryMock{ListResult: []transfer.Transfer{
-				{
-					ID:            1,
-					ExternalID:    id.ExternalFrom(transferID),
-					OriginID:      1,
-					DestinationID: 2,
-					Amount:        2500,
-				},
-				{
-					ID:            2,
-					ExternalID:    id.ExternalFrom(transferID),
-					OriginID:      1,
-					DestinationID: 3,
-					Amount:        440,
-				},
-				{
-					ID:            3,
-					ExternalID:    id.ExternalFrom(transferID),
-					OriginID:      1,
-					DestinationID: 4,
-					Amount:        50000,
-				},
-				{
-					ID:            4,
-					ExternalID:    id.ExternalFrom(transferID),
-					OriginID:      1,
-					DestinationID: 5,
-					Amount:        2660,
-				},
-			}}},
-			args: args{ctx: context.Background(), filter: transfer.Filter{OriginID: id.ExternalFrom(originID)}},
-			want: []Reference{
-				{
-					ExternalID:    id.ExternalFrom(transferID),
-					OriginID:      1,
-					DestinationID: 2,
-					Amount:        2500,
-				},
-				{
-					ExternalID:    id.ExternalFrom(transferID),
-					OriginID:      1,
-					DestinationID: 3,
-					Amount:        440,
-				},
-				{
-					ExternalID:    id.ExternalFrom(transferID),
-					OriginID:      1,
-					DestinationID: 4,
-					Amount:        50000,
-				},
-				{
-					ExternalID:    id.ExternalFrom(transferID),
-					OriginID:      1,
-					DestinationID: 5,
-					Amount:        2660,
-				},
-			},
+			name:   "return array of transfers",
+			fields: fields{transfers: &transfer.RepositoryMock{ListResult: transfer.GetFakeTransfers()}},
+			args:   args{ctx: context.Background(), filter: transfer.Filter{OriginID: originID}},
+			want:   transfer.GetFakeTransfers(),
 		},
 
-		// Should return []Reference empty due to no transfers satisfying filter
 		{
-			name:   "return empty array of transfers satisfying filter",
-			fields: fields{tx: tx, tk: tk, ac: ac, tr: &transfer.RepositoryMock{ListResult: []transfer.Transfer{}}},
-			args:   args{ctx: context.Background(), filter: transfer.Filter{OriginID: id.ExternalFrom(unknownID)}},
-			want:   []Reference{},
+			name:   "return empty array of transfers",
+			fields: fields{transfers: &transfer.RepositoryMock{ListResult: []transfer.Transfer{}}},
+			args:   args{ctx: context.Background(), filter: transfer.Filter{OriginID: originID}},
+			want:   []transfer.Transfer{},
 		},
 
 		// Should return ErrFetching on repository error
 		{
 			name:    "return ErrFetching on repository error",
-			fields:  fields{tx: tx, tk: tk, ac: ac, tr: &transfer.RepositoryMock{Error: transfer.ErrFetching}},
-			args:    args{ctx: context.Background(), filter: transfer.Filter{OriginID: id.ExternalFrom(unknownID)}},
-			want:    []Reference{},
+			fields:  fields{transfers: &transfer.RepositoryMock{Error: transfer.ErrFetching}},
+			args:    args{ctx: context.Background(), filter: transfer.Filter{OriginID: originID}},
+			want:    []transfer.Transfer{},
 			wantErr: transfer.ErrFetching,
+		},
+
+		{
+			name: "return ErrNoAccessInContext on no logged in user",
+			fields: fields{
+				access:    access.RepositoryMock{Error: access.ErrNoAccessInContext},
+				transfers: &transfer.RepositoryMock{},
+			},
+			args:    args{ctx: context.Background(), filter: transfer.Filter{OriginID: originID}},
+			want:    []transfer.Transfer{},
+			wantErr: access.ErrNoAccessInContext,
+		},
+
+		{
+			name: "return ErrCannotAccess on not authorized user",
+			fields: fields{
+				transfers: &transfer.RepositoryMock{},
+			},
+			args:    args{ctx: context.Background(), filter: transfer.Filter{}},
+			want:    []transfer.Transfer{},
+			wantErr: account.ErrCannotAccess,
 		},
 	}
 
@@ -130,7 +97,23 @@ func TestList(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			u := New(test.fields.ac, test.fields.tr, test.fields.tx, test.fields.tk, log)
+
+			tx := test.fields.transactions
+			if tx == nil {
+				tx = transactions
+			}
+
+			tk := test.fields.access
+			if tk == nil {
+				tk = accesses
+			}
+
+			ac := test.fields.accounts
+			if ac == nil {
+				ac = accounts
+			}
+
+			u := New(ac, test.fields.transfers, tx, tk)
 			got, err := u.List(test.args.ctx, test.args.filter)
 			assert.ErrorIs(t, err, test.wantErr)
 			assert.Equal(t, test.want, got)

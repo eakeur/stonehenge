@@ -51,20 +51,20 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, 
 	remaining := origin.Balance - req.Amount
 	err = u.accounts.UpdateBalance(ctx, actor.AccountID, remaining)
 	if err != nil {
-		return CreateOutput{}, errors.Wrap(account.ErrNoMoney, operation, callParams)
+		return CreateOutput{}, errors.Wrap(err, operation, callParams)
 	}
 
 	// Updates the balance of the destination account after transaction
 	err = u.accounts.UpdateBalance(ctx, req.DestID, dest.Balance+req.Amount)
 	if err != nil {
-		return CreateOutput{}, errors.Wrap(account.ErrNoMoney, operation, callParams)
+		return CreateOutput{}, errors.Wrap(err, operation, callParams)
 	}
 
 	// Creates a transfer register on storage
 	t.EffectiveDate = time.Now()
 	t, err = u.transfers.Create(ctx, t)
 	if err != nil {
-		return CreateOutput{}, errors.Wrap(account.ErrNoMoney, operation, callParams)
+		return CreateOutput{}, errors.Wrap(err, operation, callParams)
 	}
 
 	return CreateOutput{
