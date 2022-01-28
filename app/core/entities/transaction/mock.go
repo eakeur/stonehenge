@@ -4,6 +4,7 @@ import (
 	"context"
 )
 
+var _ Manager = &RepositoryMock{}
 
 type RepositoryMock struct {
 	BeginFunc    func(ctx context.Context) context.Context

@@ -18,6 +18,10 @@ func (e Error) Error() string {
 	return fmt.Sprintf("message: %s | operation: %s", e.err.Error(), e.operation)
 }
 
+func (e Error) Unwrap() error {
+	return e.err
+}
+
 func Wrap(err error, operation string, parameters ...AdditionalData) *Error {
 	if err == nil {
 		return nil
