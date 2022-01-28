@@ -5,7 +5,7 @@ import (
 )
 
 
-type ManagerMock struct {
+type RepositoryMock struct {
 	BeginFunc    func(ctx context.Context) (context.Context, error)
 	BeginResult context.Context
 	CommitFunc   func(ctx context.Context) error
@@ -14,27 +14,27 @@ type ManagerMock struct {
 	Error error
 }
 
-func (r *ManagerMock) Begin(ctx context.Context) (context.Context, error) {
+func (r *RepositoryMock) Begin(ctx context.Context) (context.Context, error) {
 	if r.BeginFunc == nil {
 		return r.BeginResult, r.Error
 	}
 	return r.BeginFunc(ctx)
 }
 
-func (r *ManagerMock) Commit(ctx context.Context) error {
+func (r *RepositoryMock) Commit(ctx context.Context) error {
 	if r.CommitFunc == nil {
 		return r.Error
 	}
 	return r.CommitFunc(ctx)
 }
 
-func (r *ManagerMock) Rollback(ctx context.Context) {
+func (r *RepositoryMock) Rollback(ctx context.Context) {
 	if r.RollbackFunc != nil {
 		r.RollbackFunc(ctx)
 	}
 }
 
-func (r *ManagerMock) End(ctx context.Context){
+func (r *RepositoryMock) End(ctx context.Context){
 	if r.EndFunc != nil {
 		r.EndFunc(ctx)
 	}
