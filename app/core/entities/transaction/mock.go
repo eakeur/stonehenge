@@ -6,7 +6,7 @@ import (
 
 
 type RepositoryMock struct {
-	BeginFunc    func(ctx context.Context) (context.Context, error)
+	BeginFunc    func(ctx context.Context) context.Context
 	BeginResult context.Context
 	CommitFunc   func(ctx context.Context) error
 	RollbackFunc func(ctx context.Context)
@@ -14,9 +14,9 @@ type RepositoryMock struct {
 	Error error
 }
 
-func (r *RepositoryMock) Begin(ctx context.Context) (context.Context, error) {
+func (r *RepositoryMock) Begin(ctx context.Context) context.Context{
 	if r.BeginFunc == nil {
-		return r.BeginResult, r.Error
+		return r.BeginResult
 	}
 	return r.BeginFunc(ctx)
 }
