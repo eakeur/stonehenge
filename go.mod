@@ -13,6 +13,8 @@ require (
 	github.com/stretchr/testify v1.7.0
 )
 
+require github.com/joho/godotenv v1.4.0
+
 require (
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
 	github.com/Microsoft/go-winio v0.5.1 // indirect
