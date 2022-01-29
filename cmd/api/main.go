@@ -11,25 +11,12 @@ import (
 
 func main() {
 	ctx := context.Background()
-	cfg := config.Config{
-		Database: config.DatabaseConfigurations{
-			User:           "postgres",
-			Password:       "postgres",
-			Host:           "localhost",
-			Port:           "5432",
-			Name:           "stonehenge",
-			SSLMode:        "disable",
-			MigrationsPath: "/home/igor/go/src/stonehenge/app/gateway/postgres/migrations",
-		},
-		Access: config.AccessConfigurations{
-			ExpirationTime: "15",
-			SigningKey:     "EB4CKU35",
-		},
-		Server: config.ServerConfigurations{
-			ListenPort: "8080",
-			Hostname:   "localhost",
-		},
+
+	cfg, err := config.LoadConfigurations()
+	if err != nil {
+		log.Fatalf("Could not load environment: %v", err)
 	}
+
 	application, err := app.NewApplication(ctx, cfg)
 	if err != nil {
 		log.Fatalf("Could not set up application: %v", err)
