@@ -1,4 +1,5 @@
 /.vscode
 /.idea
 sa.json
+.env
 /cmd/local
