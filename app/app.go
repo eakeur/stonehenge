@@ -2,15 +2,15 @@ package app
 
 import (
 	"context"
+	"github.com/rs/zerolog"
+	"os"
 	"stonehenge/app/config"
 	"stonehenge/app/core/entities/access"
-	contracts "stonehenge/app/core/types/logger"
 	accessimpl "stonehenge/app/gateway/access"
-	"stonehenge/app/gateway/database/postgres"
-	"stonehenge/app/gateway/database/postgres/account"
-	"stonehenge/app/gateway/database/postgres/transaction"
-	"stonehenge/app/gateway/database/postgres/transfer"
-	"stonehenge/app/gateway/logger"
+	"stonehenge/app/gateway/postgres"
+	"stonehenge/app/gateway/postgres/account"
+	"stonehenge/app/gateway/postgres/transaction"
+	"stonehenge/app/gateway/postgres/transfer"
 	accountworkspace "stonehenge/app/workspaces/account"
 	"stonehenge/app/workspaces/authentication"
 	transferworkspace "stonehenge/app/workspaces/transfer"
@@ -26,7 +26,7 @@ type Application struct {
 	Transfers      transferworkspace.Workspace
 	Authentication authentication.Workspace
 	AccessManager  access.Manager
-	Logger 		   contracts.Logger
+	Logger         zerolog.Logger
 }
 
 func NewApplication(ctx context.Context, cfg config.Config) (*Application, error) {
@@ -41,8 +41,7 @@ func NewApplication(ctx context.Context, cfg config.Config) (*Application, error
 		return &Application{}, err
 	}
 
-	log := logger.NewLogger(cfg.Logger)
-
+	log := setupLogger(cfg.Logger)
 	accountsRepository := account.NewRepository(p, log)
 	transfersRepository := transfer.NewRepository(p, log)
 	transactionManager := transaction.NewManager(p)
@@ -57,6 +56,18 @@ func NewApplication(ctx context.Context, cfg config.Config) (*Application, error
 		Logger: log,
 	}, nil
 
+}
+
+func setupLogger(cfg config.LoggerConfigurations) zerolog.Logger {
+	var lvl zerolog.Level
+
+	if cfg.Environment == "development" {
+		lvl = zerolog.TraceLevel
+	}
+	if cfg.Environment == "production" {
+		lvl = zerolog.InfoLevel
+	}
+	return zerolog.New(os.Stdout).Level(lvl)
 }
 
 func setupAccessManager(cfg config.AccessConfigurations) (access.Manager, error) {

@@ -3,19 +3,19 @@ package middlewares
 import (
 	"net/http"
 	"stonehenge/app/core/entities/access"
-	"stonehenge/app/core/types/logger"
+	"stonehenge/app/gateway/api/rest"
 )
 
-func NewMiddleware(manager access.Manager, lg logger.Logger) Middleware {
-	return middleware{am: manager, logger: lg}
+func NewMiddleware(manager access.Manager, builder rest.ResponseBuilder) Middleware {
+	return middleware{access: manager, builder: builder}
 }
 
 type Middleware interface {
 	Authorization(http.Handler) http.Handler
-	Logger(http.Handler) http.Handler
+	RequestTracer(http.Handler) http.Handler
 }
 
 type middleware struct {
-	am access.Manager
-	logger logger.Logger
+	access  access.Manager
+	builder rest.ResponseBuilder
 }

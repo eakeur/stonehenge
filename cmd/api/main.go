@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net/http"
 	"stonehenge/app"
 	"stonehenge/app/config"
 	"stonehenge/app/gateway/api"
@@ -20,7 +19,7 @@ func main() {
 			Port:           "5432",
 			Name:           "stonehenge",
 			SSLMode:        "disable",
-			MigrationsPath: "/home/igor/go/src/stonehenge/app/gateway/database/postgres/migrations",
+			MigrationsPath: "/home/igor/go/src/stonehenge/app/gateway/postgres/migrations",
 		},
 		Access: config.AccessConfigurations{
 			ExpirationTime: "15",
@@ -36,10 +35,10 @@ func main() {
 		log.Fatalf("Could not set up application: %v", err)
 	}
 
-	stonehenge := api.New(application)
+	stonehenge := api.NewServer(application)
 	addr := fmt.Sprintf("%s:%s", cfg.Server.Hostname, cfg.Server.ListenPort)
 	log.Printf("Listening on http://%v", addr)
-	err = http.ListenAndServe(addr, stonehenge.Router)
+	err = stonehenge.Serve(addr)
 	if err != nil {
 		log.Fatalf("Server shut down: %v", err)
 	}

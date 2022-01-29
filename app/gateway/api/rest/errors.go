@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"errors"
 	"net/http"
 	"stonehenge/app/core/entities/access"
 	"stonehenge/app/core/entities/account"
@@ -123,9 +124,10 @@ var mappedErrors = map[error]Error{
 }
 
 func FindMatchingDomainError(err error) Error {
-	e := mappedErrors[err]
-	if e.Code == "" && e.Message == "" {
-		return ErrGeneral
+	for errKey, errValue := range mappedErrors {
+		if errors.Is(err, errKey) {
+			return errValue
+		}
 	}
-	return e
+	return ErrGeneral
 }
