@@ -1,18 +1,23 @@
 package authentication
 
 import (
-	"stonehenge/app/core/types/logger"
+	"net/http"
+	"stonehenge/app/gateway/api/rest"
 	"stonehenge/app/workspaces/authentication"
 )
 
-type Controller struct {
+type controller struct {
 	workspace authentication.Workspace
-	logger logger.Logger
+	builder   rest.ResponseBuilder
 }
 
-func NewController(workspace authentication.Workspace, lg logger.Logger) Controller {
-	return Controller{
+func NewController(workspace authentication.Workspace, builder rest.ResponseBuilder) Controller {
+	return &controller{
 		workspace: workspace,
-		logger: lg,
+		builder:   builder,
 	}
+}
+
+type Controller interface {
+	Authenticate(r *http.Request) rest.Response
 }

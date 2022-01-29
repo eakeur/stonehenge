@@ -1,15 +1,19 @@
 package rest
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
+	logger "stonehenge/app/core/types/logger"
 )
 
 type Handler func(*http.Request) Response
 
-func (h Handler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
+func (handler Handler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
-	res := h(r)
+	ch := make(chan Response)
+	go func() { ch <- handler(r) }()
+	res := <-ch
 
 	if res.headers != nil {
 		header := rw.Header()
@@ -34,4 +38,8 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+}
+
+func GetRequestID(ctx context.Context) string {
+	return ctx.Value(logger.RequestTracerContextKey).(string)
 }

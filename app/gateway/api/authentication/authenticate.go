@@ -1,26 +1,23 @@
 package authentication
 
 import (
+	"fmt"
 	"net/http"
 	"stonehenge/app/core/types/document"
+	"stonehenge/app/core/types/erring"
 	"stonehenge/app/gateway/api/authentication/schema"
 	"stonehenge/app/gateway/api/rest"
 	"stonehenge/app/workspaces/authentication"
 )
 
-type LoginRequestBody struct {
-	Document document.Document
-	Secret   string
-}
-
 // Authenticate logs an applicant in
-func (c *Controller) Authenticate(r *http.Request) rest.Response {
+func (c *controller) Authenticate(r *http.Request) rest.Response {
 	const operation = "Controller.Authentication.Authenticate"
 	ctx := r.Context()
 	body, err := schema.NewAuthenticationRequest(r.Body)
 	if err != nil {
-		c.logger.Error(ctx, operation, err.Error())
-		return rest.BuildErrorResult(err)
+		err = erring.Wrap(err, operation)
+		return c.builder.BuildErrorResult(err).WithErrorLog(ctx)
 	}
 
 	acc, err := c.workspace.Authenticate(ctx, authentication.AuthenticationRequest{
@@ -28,12 +25,11 @@ func (c *Controller) Authenticate(r *http.Request) rest.Response {
 		Secret:   body.Secret,
 	})
 	if err != nil {
-		c.logger.Error(ctx, operation, err.Error())
-		return rest.BuildErrorResult(err)
+		err = erring.Wrap(err, operation)
+		return c.builder.BuildErrorResult(err).WithErrorLog(ctx)
 	}
-
-	c.logger.Trace(ctx, operation, "finished process successfully")
-	return rest.
+	return c.builder.
 		BuildOKResult(schema.AuthenticationResponse{Token: acc.Token}).
-		AddHeaders("Authorization", "Bearer "+acc.Token)
+		AddHeaders("Authorization", "Bearer "+acc.Token).
+		WithSuccessLog(ctx, fmt.Sprintf("authenticated to API user %s", acc.AccountID.String()))
 }
