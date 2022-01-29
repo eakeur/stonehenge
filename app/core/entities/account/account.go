@@ -39,6 +39,10 @@ func (a Account) Validate() error {
 		return err
 	}
 
+	if err := a.Secret.Validate(); err != nil {
+		return err
+	}
+
 	return nil
 
 }

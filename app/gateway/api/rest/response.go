@@ -1,7 +1,9 @@
 package rest
 
 import (
+	"context"
 	"fmt"
+	"github.com/rs/zerolog"
 )
 
 type Response struct {
@@ -16,6 +18,31 @@ type Response struct {
 
 	// headers stores information to be set on header
 	headers map[string]string
+
+	// err is the domain error that caused this error response
+	err error
+
+	// logger is the instrumentation that logs the process involved in this response
+	logger zerolog.Logger
+}
+
+func (r Response) WithErrorLog(ctx context.Context) Response {
+	id := GetRequestID(ctx)
+	r.logger.Warn().
+		Str("request_id", id).
+		Int("http_status", r.HTTPStatus).
+		Err(r.err).
+		Send()
+	return r
+}
+
+func (r Response) WithSuccessLog(ctx context.Context, message string) Response {
+	id := GetRequestID(ctx)
+	r.logger.Info().
+		Str("request_id", id).
+		Int("http_status", r.HTTPStatus).
+		Msg(message)
+	return r
 }
 
 func (r Response) AddHeaders(key, value string) Response {

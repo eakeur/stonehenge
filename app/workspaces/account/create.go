@@ -4,7 +4,7 @@ import (
 	"context"
 	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/types/currency"
-	"stonehenge/app/core/types/errors"
+	"stonehenge/app/core/types/erring"
 )
 
 // initialBalance expressed in cents
@@ -12,7 +12,6 @@ const initialBalance currency.Currency = 5000
 
 func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, error) {
 	const operation = "Workspaces.Account.Create"
-	callParams := errors.AdditionalData{Key: "request", Value: req}
 
 	acc := account.Account{
 		Name:     req.Name,
@@ -22,7 +21,7 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, 
 	}
 
 	if err := acc.Validate(); err != nil {
-		return CreateOutput{}, errors.Wrap(err, operation, callParams)
+		return CreateOutput{}, erring.Wrap(err, operation)
 	}
 
 	ctx = u.transactions.Begin(ctx)
@@ -30,12 +29,12 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, 
 
 	acc, err := u.accounts.Create(ctx, acc)
 	if err != nil {
-		return CreateOutput{}, errors.Wrap(err, operation, callParams)
+		return CreateOutput{}, erring.Wrap(err, operation)
 	}
 
 	tok, err := u.access.Create(acc.ExternalID)
 	if err != nil {
-		return CreateOutput{}, errors.Wrap(err, operation, callParams)
+		return CreateOutput{}, erring.Wrap(err, operation)
 	}
 
 	return CreateOutput{

@@ -2,47 +2,65 @@ package api
 
 import (
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	"net/http"
 
 	"stonehenge/app"
-	"stonehenge/app/gateway/api/accounts"
+	"stonehenge/app/gateway/api/account"
 	"stonehenge/app/gateway/api/authentication"
 	"stonehenge/app/gateway/api/middlewares"
 	"stonehenge/app/gateway/api/rest"
-	"stonehenge/app/gateway/api/transfers"
+	"stonehenge/app/gateway/api/transfer"
 )
 
 type Server struct {
-	Router *chi.Mux
+	Router         *chi.Mux
+	accounts       account.Controller
+	transfers      transfer.Controller
+	authentication authentication.Controller
+	middlewares    middlewares.Middleware
 }
 
-func New(application *app.Application) *Server {
+func (s *Server) Serve(address string) error {
+	return http.ListenAndServe(address, s.Router)
+}
 
-	m := middlewares.NewMiddleware(application.AccessManager, application.Logger)
+func (s *Server) AssignRoutes() {
 
-	aut := authentication.NewController(application.Authentication, application.Logger)
-	acc := accounts.NewController(application.Accounts, application.Logger)
-	trf := transfers.NewController(application.Transfers, application.Logger)
+	s.Router.Use(s.middlewares.RequestTracer)
 
-	router := chi.NewRouter()
-	router.Use(middleware.Logger)
-	router.Use(middleware.Recoverer)
-	router.Use(m.Logger)
-	router.Group(func(r chi.Router) {
-		r.Use(m.Authorization)
-		router.Route("/accounts", func(r chi.Router) {
-			r.Method("GET", "/", rest.Handler(acc.List))
-			r.Method("GET", "/{accountID}/balance", rest.Handler(acc.GetBalance))
+	s.Router.Route("/accounts", func(r chi.Router) {
+		r.Group(func(r chi.Router) {
+			r.Use(s.middlewares.Authorization)
+			r.Method("GET", "/", rest.Handler(s.accounts.List))
+			r.Method("GET", "/{accountID}/balance", rest.Handler(s.accounts.GetBalance))
 		})
-		router.Route("/transfers", func(r chi.Router) {
-			r.Method("POST", "/", rest.Handler(trf.Create))
-			r.Method("GET", "/", rest.Handler(trf.List))
-		})
+		r.Method("POST", "/", rest.Handler(s.accounts.Create))
 	})
-	router.Method("POST", "/login", rest.Handler(aut.Authenticate))
-	router.Method("POST", "/accounts", rest.Handler(acc.Create))
 
-	return &Server{
-		Router: router,
+	s.Router.Route("/transfers", func(r chi.Router) {
+		r.Use(s.middlewares.Authorization)
+		r.Method("POST", "/", rest.Handler(s.transfers.Create))
+		r.Method("GET", "/", rest.Handler(s.transfers.List))
+	})
+
+	s.Router.Method("POST", "/login", rest.Handler(s.authentication.Authenticate))
+}
+
+func NewServer(application *app.Application) *Server {
+
+	responseBuilder := rest.ResponseBuilder{
+		Access: application.AccessManager,
+		Logger: application.Logger,
 	}
+
+	srv := &Server{
+		Router:         chi.NewRouter(),
+		accounts:       account.NewController(application.Accounts, responseBuilder),
+		transfers:      transfer.NewController(application.Transfers, responseBuilder),
+		authentication: authentication.NewController(application.Authentication, responseBuilder),
+		middlewares:    middlewares.NewMiddleware(application.AccessManager, responseBuilder),
+	}
+
+	srv.AssignRoutes()
+	return srv
 }
