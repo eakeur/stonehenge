@@ -3,12 +3,13 @@ package account
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
+	"stonehenge/app/config"
 	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/types/document"
 	"stonehenge/app/gateway/database/postgres/postgrestest"
+	"stonehenge/app/gateway/logger"
 	"testing"
 )
-
 
 func TestGetWithExternalID(t *testing.T) {
 
@@ -16,6 +17,8 @@ func TestGetWithExternalID(t *testing.T) {
 	if err != nil {
 		t.Fatalf("could not get database: %v", err)
 	}
+
+	log := logger.NewLogger(config.LoggerConfigurations{Environment: "development"})
 
 	type args struct {
 		ctx      context.Context
@@ -56,7 +59,7 @@ func TestGetWithExternalID(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			defer postgrestest.RecycleDatabase(test.args.ctx)
-			repo := NewRepository(db)
+			repo := NewRepository(db, log)
 
 			if test.before != nil {
 				acc, err := test.before(test)

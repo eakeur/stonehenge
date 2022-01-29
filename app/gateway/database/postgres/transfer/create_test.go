@@ -3,9 +3,11 @@ package transfer
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
+	"stonehenge/app/config"
 	"stonehenge/app/core/entities/transfer"
 	"stonehenge/app/gateway/database/postgres/postgrestest"
 	"stonehenge/app/gateway/database/postgres/transaction"
+	"stonehenge/app/gateway/logger"
 	"testing"
 	"time"
 )
@@ -17,6 +19,8 @@ func TestCreate(t *testing.T) {
 	}
 
 	tx := transaction.NewManager(db)
+
+	log := logger.NewLogger(config.LoggerConfigurations{Environment: "development"})
 
 	type args struct {
 		ctx      context.Context
@@ -96,7 +100,7 @@ func TestCreate(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			defer postgrestest.RecycleDatabase(test.args.ctx)
 
-			repo := NewRepository(db)
+			repo := NewRepository(db, log)
 
 			if test.before != nil {
 				err := test.before(test)
@@ -104,17 +108,11 @@ func TestCreate(t *testing.T) {
 					t.Fatalf("error running routine before: %v", err)
 				}
 			}
-			ctx, err := tx.Begin(test.args.ctx)
-			if err != nil {
-				t.Error(err)
-			}
-			defer tx.Rollback(ctx)
+			ctx := tx.Begin(test.args.ctx)
+			defer tx.End(ctx)
 
 			tr, err := repo.Create(ctx, test.args.transfer)
 			if err == nil {
-				if err := tx.Commit(ctx); err != nil {
-					assert.ErrorIs(t, test.wantErr, err)
-				}
 				test.want.ID = tr.ID
 				test.want.ExternalID = tr.ExternalID
 				test.want.CreatedAt = tr.CreatedAt

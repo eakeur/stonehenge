@@ -11,10 +11,14 @@ import (
 
 // GetBalance gets the balance of the account specified
 func (c *Controller) GetBalance(r *http.Request) rest.Response {
+	const operation = "Controller.Account.GetBalance"
+	ctx := r.Context()
 	accountID := id.ExternalFrom(chi.URLParam(r, "id"))
-	balance, err := c.workspace.GetBalance(r.Context(), accountID)
+	balance, err := c.workspace.GetBalance(ctx, accountID)
 	if err != nil {
+		c.logger.Error(ctx, operation, err.Error())
 		return rest.BuildErrorResult(err)
 	}
-	return rest.BuildOKResult(schema.GetBalanceResponse{Balance: float64(balance.Balance)})
+	c.logger.Trace(ctx, operation, "finished process successfully")
+	return rest.BuildOKResult(schema.GetBalanceResponse{Balance: balance.Balance.ToStandardCurrency()})
 }

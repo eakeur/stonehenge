@@ -25,6 +25,6 @@ func (d Document) Validate() error {
 }
 
 // Normalize removes all special characters from a document string
-func Normalize(document string) string {
-	return exp.ReplaceAllString(document, "")
+func (d Document) Normalize() Document {
+	return Document(exp.ReplaceAllString(string(d), ""))
 }

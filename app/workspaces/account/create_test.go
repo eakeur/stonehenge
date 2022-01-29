@@ -13,23 +13,18 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const (
-	accountID = "d0052623-0695-4a3a-abf6-887f613dda8e"
-)
-
 func TestAccountCreation(t *testing.T) {
 	t.Parallel()
+	ctx := context.Background()
 
-	tx := &transaction.RepositoryMock{
-		BeginFunc: func(ctx context.Context) (context.Context, error) {
-			return ctx, nil
-		},
-	}
+	accountID := id.ExternalFrom("d0052623-0695-4a3a-abf6-887f613dda8e")
 
-	tk := &access.RepositoryMock{
-		CreateResult: access.Access{
-			AccountID: id.ExternalFrom(accountID),
-		},
+	singleInstancePassword := password.From("D@V@C@O@")
+
+	transactions := &transaction.RepositoryMock{BeginResult: ctx}
+
+	accesses := &access.RepositoryMock{
+		CreateResult: access.Access{AccountID: accountID},
 	}
 
 	type args struct {
@@ -38,9 +33,9 @@ func TestAccountCreation(t *testing.T) {
 	}
 
 	type fields struct {
-		tx   transaction.Manager
-		tk   access.Manager
-		repo account.Repository
+		transactions transaction.Manager
+		access       access.Manager
+		repo         account.Repository
 	}
 
 	type test struct {
@@ -53,41 +48,76 @@ func TestAccountCreation(t *testing.T) {
 
 	tests := []test{
 
-		// Should return CreateOutput with filled fields for successfully created account
 		{
-			name: "return CreateOutput for created account",
-			fields: fields{tx: tx, tk: tk, repo: &account.RepositoryMock{
-				CreateFunc: func(ctx context.Context, account account.Account) (account.Account, error) {
-					account.ExternalID = id.ExternalFrom(accountID)
-					return account, nil
+			name: "return ErrTokenFailedCreation for unsuccessful token encryption",
+			fields: fields{repo: &account.RepositoryMock{
+				CreateResult: account.Account{
+					ExternalID: accountID,
+					Document:   "97662062015",
+					Secret:     singleInstancePassword,
+					Name:       "Lina Pereira",
+					Balance:    5000,
+				}},
+				access: access.RepositoryMock{
+					Error: access.ErrTokenFailedCreation,
 				},
-			}},
+			},
 			args: args{ctx: context.Background(), input: CreateInput{
 				Document: "97662062015",
-				Secret:   password.From("D@V@C@O@"),
+				Secret:   singleInstancePassword,
 				Name:     "Lina Pereira",
 			}},
-			want: CreateOutput{AccountID: id.ExternalFrom(accountID), Access: access.Access{AccountID: id.ExternalFrom(accountID)}},
+			wantErr: access.ErrTokenFailedCreation,
 		},
 
-		// Should return ErrAlreadyExists for document related to another account already
 		{
-			name:   "return ErrAlreadyExists for duplicate document",
-			fields: fields{tx: tx, tk: tk, repo: &account.RepositoryMock{Error: account.ErrAlreadyExist}},
+			name: "return CreateOutput for created account",
+			fields: fields{repo: &account.RepositoryMock{
+				CreateResult: account.Account{
+					ExternalID: accountID,
+					Document:   "97662062015",
+					Secret:     singleInstancePassword,
+					Name:       "Lina Pereira",
+					Balance:    5000,
+				}},
+			},
 			args: args{ctx: context.Background(), input: CreateInput{
 				Document: "97662062015",
-				Secret:   password.From("D@V@C@O@"),
+				Secret:   singleInstancePassword,
+				Name:     "Lina Pereira",
+			}},
+			want: CreateOutput{
+				AccountID: accountID,
+				Access:    access.Access{AccountID: accountID}},
+		},
+
+		{
+			name:   "return ErrAlreadyExists for duplicate document",
+			fields: fields{repo: &account.RepositoryMock{Error: account.ErrAlreadyExist}},
+			args: args{ctx: context.Background(), input: CreateInput{
+				Document: "97662062015",
+				Secret:   singleInstancePassword,
 				Name:     "Lina Pereira",
 			}},
 			wantErr: account.ErrAlreadyExist,
 		},
 
-		// Should return ErrInvalidDocument for applying with corrupted CPF
 		{
 			name:   "return ErrInvalidDocument for corrupted CPF",
-			fields: fields{tx: tx, tk: tk, repo: &account.RepositoryMock{}},
+			fields: fields{repo: &account.RepositoryMock{}},
 			args: args{ctx: context.Background(), input: CreateInput{
 				Document: "9766206201",
+				Secret:   singleInstancePassword,
+				Name:     "Lina Pereira",
+			}},
+			wantErr: document.ErrInvalidDocument,
+		},
+
+		{
+			name:   "return ErrInvalidDocument for valid CPF with symbols",
+			fields: fields{repo: &account.RepositoryMock{}},
+			args: args{ctx: context.Background(), input: CreateInput{
+				Document: "976.620.620-10",
 				Secret:   password.From("D@V@C@O@"),
 				Name:     "Lina Pereira",
 			}},
@@ -98,7 +128,19 @@ func TestAccountCreation(t *testing.T) {
 	for _, test := range tests {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
-			u := New(test.fields.repo, test.fields.tx, test.fields.tk)
+			t.Parallel()
+
+			tx := test.fields.transactions
+			if tx == nil {
+				tx = transactions
+			}
+
+			tk := test.fields.access
+			if tk == nil {
+				tk = accesses
+			}
+
+			u := New(test.fields.repo, tx, tk)
 			got, err := u.Create(test.args.ctx, test.args.input)
 			assert.ErrorIs(t, err, test.wantErr)
 			assert.Equal(t, test.want, got)

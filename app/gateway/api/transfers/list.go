@@ -12,9 +12,12 @@ import (
 
 // List gets all transfers of this actual account
 func (c controller) List(r *http.Request) rest.Response {
+	const operation = "Controller.Transfer.Create"
+	ctx := r.Context()
 	filters := filter(r.URL.Query())
-	list, err := c.workspace.List(r.Context(), filters)
+	list, err := c.workspace.List(ctx, filters)
 	if err != nil {
+		c.logger.Error(ctx, operation, err.Error())
 		return rest.BuildErrorResult(err)
 	}
 	res := make([]schema.ListResponse, len(list))
@@ -28,6 +31,7 @@ func (c controller) List(r *http.Request) rest.Response {
 			EffectiveDate: ref.EffectiveDate,
 		}
 	}
+	c.logger.Trace(ctx, operation, "finished process successfully")
 	return rest.BuildOKResult(list)
 }
 

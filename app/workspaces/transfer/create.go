@@ -4,76 +4,67 @@ import (
 	"context"
 	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/entities/transfer"
+	"stonehenge/app/core/types/errors"
 	"time"
 )
 
 func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, error) {
-	actor, err := u.tk.GetAccessFromContext(ctx)
+	const operation = "Workspaces.Transfer.Create"
+	callParams := errors.AdditionalData{Key: "request", Value: req}
+
+	actor, err := u.access.GetAccessFromContext(ctx)
 	if err != nil {
-		return CreateOutput{}, err
+		return CreateOutput{}, errors.Wrap(err, operation, callParams)
 	}
 
-	t := transfer.Transfer{Amount: req.Amount}
+	ctx = u.transactions.Begin(ctx)
+	defer u.transactions.End(ctx)
 
-	// Checks if the amount is valid (bigger than 0)
-	if t.Amount <= 0 {
-		return CreateOutput{}, transfer.ErrAmountInvalid
-	}
-
-	// Checks if the origin and destination accounts are the same
-	if req.DestID == actor.AccountID {
-		return CreateOutput{}, transfer.ErrSameAccount
+	// Fetches the origin account and checks for errors
+	origin, err := u.accounts.GetByExternalID(ctx, actor.AccountID)
+	if err != nil {
+		return CreateOutput{}, errors.Wrap(transfer.ErrNonexistentOrigin, operation, callParams)
 	}
 
 	// Fetches the origin account and checks for errors
-	origin, err := u.ac.GetByExternalID(ctx, actor.AccountID)
-	if err != nil {
-		return CreateOutput{}, transfer.ErrNonexistentOrigin
-	}
-
-	// Validates if the balance of the origin is zero and if it's sufficient to accomplish the operation
-	if origin.Balance <= 0 || req.Amount > origin.Balance {
-		return CreateOutput{}, account.ErrNoMoney
-	}
-
-	// Fetches the origin account and checks for errors
-	dest, err := u.ac.GetByExternalID(ctx, req.DestID)
+	dest, err := u.accounts.GetByExternalID(ctx, req.DestID)
 	if err != nil {
 		return CreateOutput{}, transfer.ErrNonexistentDestination
 	}
 
-	ctx, err = u.tx.Begin(ctx)
-	if err != nil {
-		return CreateOutput{}, transfer.ErrRegistering
+	t := transfer.Transfer{Amount: req.Amount, OriginID: origin.ID, DestinationID: dest.ID}
+	if err := t.Validate(); err != nil {
+		return CreateOutput{}, errors.Wrap(
+			err,
+			operation,
+			callParams,
+			errors.AdditionalData{Key: "actor", Value: actor.AccountID.String()},
+		)
 	}
-	defer u.tx.Rollback(ctx)
 
-	t.OriginID = origin.ID
-	t.DestinationID = dest.ID
+	// Validates if the balance of the origin is zero and if it's sufficient to accomplish the operation
+	if origin.Balance <= 0 || req.Amount > origin.Balance {
+		return CreateOutput{}, errors.Wrap(account.ErrNoMoney, operation, callParams, errors.AdditionalData{Key: "origin_balance", Value: origin.Balance})
+	}
 
 	// Updates the balance of the origin account after transaction
 	remaining := origin.Balance - req.Amount
-	err = u.ac.UpdateBalance(ctx, actor.AccountID, remaining)
+	err = u.accounts.UpdateBalance(ctx, actor.AccountID, remaining)
 	if err != nil {
-		return CreateOutput{}, err
+		return CreateOutput{}, errors.Wrap(err, operation, callParams)
 	}
 
 	// Updates the balance of the destination account after transaction
-	err = u.ac.UpdateBalance(ctx, req.DestID, dest.Balance+req.Amount)
+	err = u.accounts.UpdateBalance(ctx, req.DestID, dest.Balance+req.Amount)
 	if err != nil {
-		return CreateOutput{}, err
+		return CreateOutput{}, errors.Wrap(err, operation, callParams)
 	}
 
 	// Creates a transfer register on storage
 	t.EffectiveDate = time.Now()
-	t, err = u.tr.Create(ctx, t)
+	t, err = u.transfers.Create(ctx, t)
 	if err != nil {
-		return CreateOutput{}, err
-	}
-
-	err = u.tx.Commit(ctx)
-	if err != nil {
-		return CreateOutput{}, transfer.ErrRegistering
+		return CreateOutput{}, errors.Wrap(err, operation, callParams)
 	}
 
 	return CreateOutput{

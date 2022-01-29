@@ -32,3 +32,15 @@ type Transfer struct {
 
 	audits.Audit
 }
+
+func (t Transfer) Validate() error {
+	if t.Amount <= 0 {
+		return ErrAmountInvalid
+	}
+
+	if t.OriginID == t.DestinationID {
+		return ErrSameAccount
+	}
+
+	return nil
+}

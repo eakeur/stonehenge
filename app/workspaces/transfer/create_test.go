@@ -12,27 +12,22 @@ import (
 	"testing"
 )
 
-const (
-	originID      string = "d0052623-0695-4a3a-abf6-887f613dda8e"
-	destinationID string = "17edb329-4b65-41ba-bb26-5060a1e157ab"
-	transferID    string = "b8d11928-3eab-45a8-8be3-31411bd120f2"
-	unknownID     string = "b8d11928-3eab-45a2-8be3-31411bd12a34"
-)
-
 func TestCreate(t *testing.T) {
 	t.Parallel()
 
-	tx := &transaction.RepositoryMock{
-		BeginFunc: func(ctx context.Context) (context.Context, error) {
-			return ctx, nil
-		},
-	}
+	var (
+		originID      = id.ExternalFrom("d0052623-0695-4a3a-abf6-887f613dda8e")
+		destinationID = id.ExternalFrom("17edb329-4b65-41ba-bb26-5060a1e157ab")
+		transferID    = id.ExternalFrom("b8d11928-3eab-45a8-8be3-31411bd120f2")
+		unknownID     = id.ExternalFrom("b8d11928-3eab-45a2-8be3-31411bd12a34")
+	)
 
-	tk := &access.RepositoryMock{
-		CreateResult: access.Access{
-			AccountID: id.ExternalFrom(originID),
-		},
-		GetAccessFromContextResult: access.Access{AccountID: id.ExternalFrom(originID)},
+	ctx := context.Background()
+
+	transactions := &transaction.RepositoryMock{BeginResult: ctx}
+
+	accesses := &access.RepositoryMock{
+		GetAccessFromContextResult: access.Access{AccountID: originID},
 	}
 
 	type args struct {
@@ -41,10 +36,10 @@ func TestCreate(t *testing.T) {
 	}
 
 	type fields struct {
-		tx transaction.Manager
-		tk access.Manager
-		ac account.Repository
-		tr transfer.Repository
+		transactions transaction.Manager
+		access       access.Manager
+		accounts     account.Repository
+		transfers    transfer.Repository
 	}
 
 	type test struct {
@@ -61,20 +56,18 @@ func TestCreate(t *testing.T) {
 		{
 			name: "return CreateOutput for created transfer",
 			fields: fields{
-				tx: tx,
-				tk: tk,
-				tr: &transfer.RepositoryMock{
+				transfers: &transfer.RepositoryMock{
 					CreateFunc: func(ctx context.Context, transfer transfer.Transfer) (transfer.Transfer, error) {
-						transfer.ExternalID = id.ExternalFrom(transferID)
+						transfer.ExternalID = transferID
 						return transfer, nil
 					},
 				},
-				ac: &account.RepositoryMock{
+				accounts: &account.RepositoryMock{
 					GetByExternalIDFunc: func(ctx context.Context, ext id.External) (account.Account, error) {
 						switch ext {
-						case id.ExternalFrom(originID):
+						case originID:
 							return account.Account{ID: 1, ExternalID: ext, Balance: 5000}, nil
-						case id.ExternalFrom(destinationID):
+						case destinationID:
 							return account.Account{ID: 2, ExternalID: ext, Balance: 5000}, nil
 						default:
 							return account.Account{}, account.ErrNotFound
@@ -83,25 +76,23 @@ func TestCreate(t *testing.T) {
 				},
 			},
 			args: args{ctx: context.Background(), input: CreateInput{
-				DestID: id.ExternalFrom(destinationID),
+				DestID: destinationID,
 				Amount: 2500,
 			}},
-			want: CreateOutput{RemainingBalance: 2500, TransferId: id.ExternalFrom(transferID)},
+			want: CreateOutput{RemainingBalance: 2500, TransferId: transferID},
 		},
 
 		// Should return ErrNoMoney because origin account had no money to complete the operation
 		{
 			name: "return ErrNoMoney because origin has not enough budget",
 			fields: fields{
-				tx: tx,
-				tk: tk,
-				tr: &transfer.RepositoryMock{},
-				ac: &account.RepositoryMock{
+				transfers: &transfer.RepositoryMock{},
+				accounts: &account.RepositoryMock{
 					GetByExternalIDFunc: func(ctx context.Context, ext id.External) (account.Account, error) {
 						switch ext {
-						case id.ExternalFrom(originID):
+						case originID:
 							return account.Account{ID: 1, ExternalID: ext, Balance: 1200}, nil
-						case id.ExternalFrom(destinationID):
+						case destinationID:
 							return account.Account{ID: 2, ExternalID: ext, Balance: 5000}, nil
 						default:
 							return account.Account{}, account.ErrNotFound
@@ -110,7 +101,7 @@ func TestCreate(t *testing.T) {
 				},
 			},
 			args: args{ctx: context.Background(), input: CreateInput{
-				DestID: id.ExternalFrom(destinationID),
+				DestID: destinationID,
 				Amount: 2500,
 			}},
 			wantErr: account.ErrNoMoney,
@@ -120,29 +111,39 @@ func TestCreate(t *testing.T) {
 		{
 			name: "return ErrSameAccount because origin equals destination",
 			fields: fields{
-				tx: tx,
-				tk: tk,
-				tr: &transfer.RepositoryMock{},
-				ac: &account.RepositoryMock{},
+				transfers: &transfer.RepositoryMock{},
+				accounts:  &account.RepositoryMock{},
 			},
 			args: args{ctx: context.Background(), input: CreateInput{
-				DestID: id.ExternalFrom(originID),
+				DestID: originID,
 				Amount: 2500,
 			}},
 			wantErr: transfer.ErrSameAccount,
+		},
+
+		{
+			name: "return ErrNoAccessInContext because there is no account logged",
+			fields: fields{
+				transfers: &transfer.RepositoryMock{},
+				accounts:  &account.RepositoryMock{},
+				access:    access.RepositoryMock{Error: access.ErrNoAccessInContext},
+			},
+			args: args{ctx: context.Background(), input: CreateInput{
+				DestID: originID,
+				Amount: 2500,
+			}},
+			wantErr: access.ErrNoAccessInContext,
 		},
 
 		// Should return ErrAmountInvalid because amount to be transferred is 0
 		{
 			name: "return ErrAmountInvalid because amount equals zero",
 			fields: fields{
-				tx: tx,
-				tk: tk,
-				tr: &transfer.RepositoryMock{},
-				ac: &account.RepositoryMock{},
+				transfers: &transfer.RepositoryMock{},
+				accounts:  &account.RepositoryMock{},
 			},
 			args: args{ctx: context.Background(), input: CreateInput{
-				DestID: id.ExternalFrom(destinationID),
+				DestID: destinationID,
 				Amount: 0,
 			}},
 			wantErr: transfer.ErrAmountInvalid,
@@ -152,19 +153,18 @@ func TestCreate(t *testing.T) {
 		{
 			name: "return ErrNonexistentOrigin",
 			fields: fields{
-				tx: tx,
-				tr: &transfer.RepositoryMock{},
-				tk: &access.RepositoryMock{
+				transfers: &transfer.RepositoryMock{},
+				access: &access.RepositoryMock{
 					CreateResult: access.Access{
-						AccountID: id.ExternalFrom(unknownID),
+						AccountID: unknownID,
 					},
 				},
-				ac: &account.RepositoryMock{
+				accounts: &account.RepositoryMock{
 					GetByExternalIDFunc: func(ctx context.Context, ext id.External) (account.Account, error) {
 						switch ext {
-						case id.ExternalFrom(originID):
+						case originID:
 							return account.Account{ID: 1, ExternalID: ext, Balance: 5000}, nil
-						case id.ExternalFrom(destinationID):
+						case destinationID:
 							return account.Account{ID: 2, ExternalID: ext, Balance: 5000}, nil
 						default:
 							return account.Account{}, account.ErrNotFound
@@ -173,7 +173,7 @@ func TestCreate(t *testing.T) {
 				},
 			},
 			args: args{ctx: context.Background(), input: CreateInput{
-				DestID: id.ExternalFrom(destinationID),
+				DestID: destinationID,
 				Amount: 2500,
 			}},
 			wantErr: transfer.ErrNonexistentOrigin,
@@ -183,15 +183,13 @@ func TestCreate(t *testing.T) {
 		{
 			name: "return ErrNonexistentDestination",
 			fields: fields{
-				tx: tx,
-				tk: tk,
-				tr: &transfer.RepositoryMock{},
-				ac: &account.RepositoryMock{
+				transfers: &transfer.RepositoryMock{},
+				accounts: &account.RepositoryMock{
 					GetByExternalIDFunc: func(ctx context.Context, ext id.External) (account.Account, error) {
 						switch ext {
-						case id.ExternalFrom(originID):
+						case originID:
 							return account.Account{ID: 1, ExternalID: ext, Balance: 5000}, nil
-						case id.ExternalFrom(destinationID):
+						case destinationID:
 							return account.Account{ID: 2, ExternalID: ext, Balance: 5000}, nil
 						default:
 							return account.Account{}, account.ErrNotFound
@@ -200,7 +198,7 @@ func TestCreate(t *testing.T) {
 				},
 			},
 			args: args{ctx: context.Background(), input: CreateInput{
-				DestID: id.ExternalFrom(unknownID),
+				DestID: unknownID,
 				Amount: 2500,
 			}},
 			wantErr: transfer.ErrNonexistentDestination,
@@ -210,15 +208,13 @@ func TestCreate(t *testing.T) {
 		{
 			name: "return repository error on updating origin account",
 			fields: fields{
-				tx: tx,
-				tk: tk,
-				tr: &transfer.RepositoryMock{},
-				ac: &account.RepositoryMock{
+				transfers: &transfer.RepositoryMock{},
+				accounts: &account.RepositoryMock{
 					GetByExternalIDFunc: func(ctx context.Context, ext id.External) (account.Account, error) {
 						switch ext {
-						case id.ExternalFrom(originID):
+						case originID:
 							return account.Account{ID: 1, ExternalID: ext, Balance: 5000}, nil
-						case id.ExternalFrom(destinationID):
+						case destinationID:
 							return account.Account{ID: 2, ExternalID: ext, Balance: 5000}, nil
 						default:
 							return account.Account{}, account.ErrNotFound
@@ -226,9 +222,9 @@ func TestCreate(t *testing.T) {
 					},
 					UpdateBalanceFunc: func(ctx context.Context, ext id.External, balance currency.Currency) error {
 						switch ext {
-						case id.ExternalFrom(originID):
+						case originID:
 							return account.ErrUpdating
-						case id.ExternalFrom(destinationID):
+						case destinationID:
 							return nil
 						default:
 							return account.ErrNotFound
@@ -237,7 +233,7 @@ func TestCreate(t *testing.T) {
 				},
 			},
 			args: args{ctx: context.Background(), input: CreateInput{
-				DestID: id.ExternalFrom(destinationID),
+				DestID: destinationID,
 				Amount: 2500,
 			}},
 			wantErr: account.ErrUpdating,
@@ -247,15 +243,13 @@ func TestCreate(t *testing.T) {
 		{
 			name: "return repository error on updating destination account",
 			fields: fields{
-				tx: tx,
-				tk: tk,
-				tr: &transfer.RepositoryMock{},
-				ac: &account.RepositoryMock{
+				transfers: &transfer.RepositoryMock{},
+				accounts: &account.RepositoryMock{
 					GetByExternalIDFunc: func(ctx context.Context, ext id.External) (account.Account, error) {
 						switch ext {
-						case id.ExternalFrom(originID):
+						case originID:
 							return account.Account{ID: 1, ExternalID: ext, Balance: 5000}, nil
-						case id.ExternalFrom(destinationID):
+						case destinationID:
 							return account.Account{ID: 2, ExternalID: ext, Balance: 5000}, nil
 						default:
 							return account.Account{}, account.ErrNotFound
@@ -263,9 +257,9 @@ func TestCreate(t *testing.T) {
 					},
 					UpdateBalanceFunc: func(ctx context.Context, ext id.External, balance currency.Currency) error {
 						switch ext {
-						case id.ExternalFrom(originID):
+						case originID:
 							return nil
-						case id.ExternalFrom(destinationID):
+						case destinationID:
 							return account.ErrUpdating
 						default:
 							return account.ErrNotFound
@@ -274,7 +268,7 @@ func TestCreate(t *testing.T) {
 				},
 			},
 			args: args{ctx: context.Background(), input: CreateInput{
-				DestID: id.ExternalFrom(destinationID),
+				DestID: destinationID,
 				Amount: 2500,
 			}},
 			wantErr: account.ErrUpdating,
@@ -284,15 +278,13 @@ func TestCreate(t *testing.T) {
 		{
 			name: "return repository error for creating transfer",
 			fields: fields{
-				tx: tx,
-				tk: tk,
-				tr: &transfer.RepositoryMock{Error: transfer.ErrRegistering},
-				ac: &account.RepositoryMock{
+				transfers: &transfer.RepositoryMock{Error: transfer.ErrRegistering},
+				accounts: &account.RepositoryMock{
 					GetByExternalIDFunc: func(ctx context.Context, ext id.External) (account.Account, error) {
 						switch ext {
-						case id.ExternalFrom(originID):
+						case originID:
 							return account.Account{ID: 1, ExternalID: ext, Balance: 5000}, nil
-						case id.ExternalFrom(destinationID):
+						case destinationID:
 							return account.Account{ID: 2, ExternalID: ext, Balance: 5000}, nil
 						default:
 							return account.Account{}, account.ErrNotFound
@@ -301,7 +293,7 @@ func TestCreate(t *testing.T) {
 				},
 			},
 			args: args{ctx: context.Background(), input: CreateInput{
-				DestID: id.ExternalFrom(destinationID),
+				DestID: destinationID,
 				Amount: 2500,
 			}},
 			wantErr: transfer.ErrRegistering,
@@ -312,7 +304,18 @@ func TestCreate(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			u := New(test.fields.ac, test.fields.tr, test.fields.tx, test.fields.tk)
+
+			tx := test.fields.transactions
+			if tx == nil {
+				tx = transactions
+			}
+
+			tk := test.fields.access
+			if tk == nil {
+				tk = accesses
+			}
+
+			u := New(test.fields.accounts, test.fields.transfers, tx, tk)
 			got, err := u.Create(test.args.ctx, test.args.input)
 			assert.ErrorIs(t, err, test.wantErr)
 			assert.Equal(t, test.want, got)

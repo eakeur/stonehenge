@@ -12,17 +12,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const (
-	accountID = "d0052623-0695-4a3a-abf6-887f613dda8e"
-)
-
 func TestAuthentication(t *testing.T) {
 	t.Parallel()
 
-	tk := &access.RepositoryMock{
-		CreateResult: access.Access{
-			AccountID: id.ExternalFrom(accountID),
-		},
+	accountID := id.ExternalFrom("d0052623-0695-4a3a-abf6-887f613dda8e")
+
+	accesses := &access.RepositoryMock{
+		CreateResult: access.Access{AccountID: accountID},
 	}
 
 	type args struct {
@@ -31,93 +27,104 @@ func TestAuthentication(t *testing.T) {
 	}
 
 	type fields struct {
-		tk   access.Manager
-		repo account.Repository
+		access access.Manager
+		repo   account.Repository
 	}
 
 	type test struct {
 		name    string
 		fields  fields
 		args    args
-		want    id.External
+		want    access.Access
 		wantErr error
 	}
 
 	var tests = []test{
 
-		// Should return External of the successfully authenticated account
 		{
 			name: "return External of authenticated account",
-			fields: fields{tk: tk, repo: &account.RepositoryMock{
-				GetWithCPFResult: account.Account{
-					ID:         1,
-					ExternalID: id.ExternalFrom(accountID),
-					Document:   "97662062015",
-					Secret:     password.From("D@V@C@O@"),
-					Name:       "Lina Pereira",
-					Balance:    5000,
-				},
+			fields: fields{repo: &account.RepositoryMock{
+				GetWithCPFResult: func() account.Account {
+					ac := account.GetFakeAccount()
+					ac.ExternalID = accountID
+					return ac
+				}(),
 			}},
 			args: args{ctx: context.Background(), input: AuthenticationRequest{
-				Document: "97662062015",
-				Secret:   "D@V@C@O@",
+				Document: "24788516002",
+				Secret:   "12345678",
 			}},
-			want: id.ExternalFrom(accountID),
+			want: access.Access{AccountID: accountID},
 		},
 
-		// Should return ErrWrongPassword authenticating with unmatching password
 		{
 			name: "return ErrWrongPassword on unmatching password",
-			fields: fields{tk: tk, repo: &account.RepositoryMock{
-				GetWithCPFResult: account.Account{
-					ID:         1,
-					ExternalID: id.ExternalFrom(accountID),
-					Document:   "97662062015",
-					Secret:     password.From("D@V@C@O@"),
-					Name:       "Lina Pereira",
-					Balance:    5000,
-				},
+			fields: fields{repo: &account.RepositoryMock{
+				GetWithCPFResult: account.GetFakeAccount(),
 			}},
 			args: args{ctx: context.Background(), input: AuthenticationRequest{
-				Document: "97662062015",
-				Secret:   "D@V@C@A@",
+				Document: "24788516002",
+				Secret:   "12345677",
 			}},
-			want:    id.Zero,
 			wantErr: password.ErrWrongPassword,
 		},
 
-		// Should return ErrInvalidDocument authenticating with corrupted CPF
 		{
 			name:   "return ErrInvalidDocument on corrupted CPF",
-			fields: fields{tk: tk, repo: &account.RepositoryMock{}},
+			fields: fields{repo: &account.RepositoryMock{}},
 			args: args{ctx: context.Background(), input: AuthenticationRequest{
-				Document: "9766206201",
-				Secret:   "D@V@C@O@",
+				Document: "2478851600",
+				Secret:   "12345678",
 			}},
-			want:    id.Zero,
 			wantErr: document.ErrInvalidDocument,
 		},
 
-		// Should return ErrNotFound when authenticating a nonexistent account
 		{
 			name:   "return ErrNotFound authenticating nonexistent account",
-			fields: fields{tk: tk, repo: &account.RepositoryMock{Error: account.ErrNotFound}},
+			fields: fields{repo: &account.RepositoryMock{Error: account.ErrNotFound}},
 			args: args{ctx: context.Background(), input: AuthenticationRequest{
-				Document: "97662062015",
-				Secret:   "D@V@C@O@",
+				Document: "24788516002",
+				Secret:   "12345678",
 			}},
-			want:    id.Zero,
 			wantErr: account.ErrNotFound,
+		},
+
+		{
+			name: "return ErrTokenFailedCreation for unsuccessful token encryption",
+			fields: fields{
+				access: access.RepositoryMock{
+					Error: access.ErrTokenFailedCreation,
+				},
+				repo: &account.RepositoryMock{
+					GetWithCPFResult: func() account.Account {
+						ac := account.GetFakeAccount()
+						ac.ExternalID = accountID
+						return ac
+					}(),
+				},
+			},
+			args: args{ctx: context.Background(), input: AuthenticationRequest{
+				Document: "24788516002",
+				Secret:   "12345678",
+			}},
+			wantErr: access.ErrTokenFailedCreation,
 		},
 	}
 
 	for _, test := range tests {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
-			u := New(test.fields.repo, test.fields.tk)
+			t.Parallel()
+
+			tk := test.fields.access
+			if tk == nil {
+				tk = accesses
+			}
+
+			u := New(test.fields.repo, tk)
 			got, err := u.Authenticate(test.args.ctx, test.args.input)
 			assert.ErrorIs(t, err, test.wantErr)
-			assert.Equal(t, test.want, got.AccountID)
+			assert.Equal(t, test.want, got)
 		})
 	}
 

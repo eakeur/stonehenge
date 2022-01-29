@@ -1,16 +1,20 @@
 package account
 
 import (
-	"github.com/jackc/pgx/v4/pgxpool"
 	"stonehenge/app/core/entities/account"
+	"stonehenge/app/core/types/logger"
+
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type repository struct {
-	db *pgxpool.Pool
+	db     *pgxpool.Pool
+	logger logger.Logger
 }
 
-func NewRepository(db *pgxpool.Pool) account.Repository {
+func NewRepository(db *pgxpool.Pool, lg logger.Logger) account.Repository {
 	return &repository{
 		db: db,
+		logger: lg,
 	}
 }

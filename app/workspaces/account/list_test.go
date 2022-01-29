@@ -6,7 +6,6 @@ import (
 	"stonehenge/app/core/entities/access"
 	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/entities/transaction"
-	"stonehenge/app/core/types/audits"
 	"stonehenge/app/core/types/id"
 	"stonehenge/app/core/types/password"
 	"testing"
@@ -15,8 +14,15 @@ import (
 func TestList(t *testing.T) {
 	t.Parallel()
 
-	tx := &transaction.RepositoryMock{}
-	tk := &access.RepositoryMock{}
+	accountID := id.ExternalFrom("d0052623-0695-4a3a-abf6-887f613dda8e")
+
+	singleInstancePassword := password.From("D@V@C@O@")
+
+	transactions := &transaction.RepositoryMock{}
+
+	accesses := &access.RepositoryMock{
+		GetAccessFromContextResult: access.Access{AccountID: accountID},
+	}
 
 	type args struct {
 		ctx    context.Context
@@ -24,76 +30,70 @@ func TestList(t *testing.T) {
 	}
 
 	type fields struct {
-		tx   transaction.Manager
-		tk   access.Manager
-		repo account.Repository
+		transactions transaction.Manager
+		access       access.Manager
+		repo         account.Repository
 	}
 
 	type test struct {
 		name    string
 		fields  fields
 		args    args
-		want    []Reference
+		want    []account.Account
 		wantErr error
 	}
 
 	tests := []test{
 
-		// Should return []Reference populated with information of accounts that satisfies the filter
 		{
-			name: "return array of accounts satisfying filter",
-			fields: fields{tx: tx, tk: tk, repo: &account.RepositoryMock{ListResult: []account.Account{
-				{
-					ID:         1,
-					ExternalID: id.ExternalFrom(accountID),
-					Document:   "70830052062",
-					Secret:     password.From("12345678"),
-					Name:       "John Reis",
-					Balance:    2500,
-					Audit:      audits.Audit{},
+			name: "return array of accounts",
+			fields: fields{
+				repo: &account.RepositoryMock{
+					ListFunc: func(ctx context.Context, filter account.Filter) ([]account.Account, error) {
+						list := make([]account.Account, 0)
+						for _, a := range account.GetFakeAccounts() {
+							a.Secret = singleInstancePassword
+							list = append(list, a)
+						}
+						return list, nil
+					},
 				},
-				{
-					ID:         2,
-					ExternalID: id.ExternalFrom(accountID),
-					Document:   "24388516007",
-					Secret:     password.From("12345678"),
-					Name:       "Wagner Reis",
-					Balance:    4500,
-					Audit:      audits.Audit{},
-				},
-				{
-					ID:         3,
-					ExternalID: id.ExternalFrom(accountID),
-					Document:   "05161964057",
-					Secret:     password.From("12345678"),
-					Name:       "Spencer Reis",
-					Balance:    5000,
-					Audit:      audits.Audit{},
-				},
-			}}},
-			args: args{ctx: context.Background(), filter: account.Filter{Name: "Reis"}},
-			want: []Reference{
-				{ExternalID: id.ExternalFrom(accountID), Name: "John Reis"},
-				{ExternalID: id.ExternalFrom(accountID), Name: "Wagner Reis"},
-				{ExternalID: id.ExternalFrom(accountID), Name: "Spencer Reis"},
 			},
+			args: args{ctx: context.Background(), filter: account.Filter{}},
+			want: func() []account.Account {
+				list := make([]account.Account, 0)
+				for _, a := range account.GetFakeAccounts() {
+					a.Secret = singleInstancePassword
+					list = append(list, a)
+				}
+				return list
+			}(),
 		},
 
-		// Should return []Reference empty due to no accounts satisfying filter
 		{
-			name:   "return empty array of accounts satisfying filter",
-			fields: fields{tx: tx, tk: tk, repo: &account.RepositoryMock{ListResult: []account.Account{}}},
-			args:   args{ctx: context.Background(), filter: account.Filter{Name: "Rise"}},
-			want:   []Reference{},
+			name:   "return empty array",
+			fields: fields{repo: &account.RepositoryMock{ListResult: []account.Account{}}},
+			args:   args{ctx: context.Background()},
+			want:   []account.Account{},
 		},
 
-		// Should return ErrFetching on repository error
 		{
-			name:    "return ErrFetching on repository error",
-			fields:  fields{tx: tx, tk: tk, repo: &account.RepositoryMock{Error: account.ErrFetching}},
-			args:    args{ctx: context.Background(), filter: account.Filter{Name: "Reis"}},
-			want:    []Reference{},
+			name:    "return error on repository return error",
+			fields:  fields{repo: &account.RepositoryMock{Error: account.ErrFetching}},
+			args:    args{ctx: context.Background()},
+			want:    []account.Account{},
 			wantErr: account.ErrFetching,
+		},
+
+		{
+			name:   "return ErrNoAccessInContext for not signed in actor",
+			fields: fields{
+				repo: &account.RepositoryMock{},
+				access: access.RepositoryMock{Error: access.ErrNoAccessInContext},
+			},
+			args:   args{ctx: context.Background()},
+			want:   []account.Account{},
+			wantErr: access.ErrNoAccessInContext,
 		},
 	}
 
@@ -101,7 +101,17 @@ func TestList(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			u := New(test.fields.repo, test.fields.tx, test.fields.tk)
+
+			tx := test.fields.transactions
+			if tx == nil {
+				tx = transactions
+			}
+
+			tk := test.fields.access
+			if tk == nil {
+				tk = accesses
+			}
+			u := New(test.fields.repo, tx, tk)
 			got, err := u.List(test.args.ctx, test.args.filter)
 			assert.ErrorIs(t, err, test.wantErr)
 			assert.Equal(t, test.want, got)

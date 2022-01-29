@@ -11,22 +11,22 @@ import (
 //go:generate moq -fmt goimports -out usecase_mock.go . UseCase:UseCaseMock
 
 type Workspace interface {
-	List(ctx context.Context, filter transfer.Filter) ([]Reference, error)
+	List(ctx context.Context, filter transfer.Filter) ([]transfer.Transfer, error)
 	Create(ctx context.Context, req CreateInput) (CreateOutput, error)
 }
 
 type workspace struct {
-	ac account.Repository
-	tr transfer.Repository
-	tx transaction.Manager
-	tk access.Manager
+	accounts  account.Repository
+	transfers    transfer.Repository
+	transactions transaction.Manager
+	access       access.Manager
 }
 
 func New(ac account.Repository, tr transfer.Repository, tx transaction.Manager, tk access.Manager) *workspace {
 	return &workspace{
-		ac: ac,
-		tr: tr,
-		tx: tx,
-		tk: tk,
+		accounts:     ac,
+		transfers:    tr,
+		transactions: tx,
+		access:       tk,
 	}
 }

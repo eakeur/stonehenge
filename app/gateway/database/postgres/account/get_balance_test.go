@@ -3,9 +3,11 @@ package account
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
+	"stonehenge/app/config"
 	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/types/currency"
 	"stonehenge/app/gateway/database/postgres/postgrestest"
+	"stonehenge/app/gateway/logger"
 	"testing"
 )
 
@@ -16,6 +18,7 @@ func TestGetBalance(t *testing.T) {
 		t.Fatalf("could not get database: %v", err)
 	}
 
+	log := logger.NewLogger(config.LoggerConfigurations{Environment: "development"})
 	type args struct {
 		ctx context.Context
 	}
@@ -58,7 +61,7 @@ func TestGetBalance(t *testing.T) {
 
 		t.Run(test.name, func(t *testing.T) {
 			defer postgrestest.RecycleDatabase(test.args.ctx)
-			repo := NewRepository(db)
+			repo := NewRepository(db, log)
 
 			acc, err := test.before(test)
 			if err != nil {

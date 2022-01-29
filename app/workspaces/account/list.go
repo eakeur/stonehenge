@@ -3,24 +3,22 @@ package account
 import (
 	"context"
 	"stonehenge/app/core/entities/account"
+	"stonehenge/app/core/types/errors"
 )
 
-func (u *workspace) List(ctx context.Context, filter account.Filter) ([]Reference, error) {
-	_, err := u.tk.GetAccessFromContext(ctx)
+func (u *workspace) List(ctx context.Context, filter account.Filter) ([]account.Account, error) {
+	const operation = "Workspaces.Account.List"
+	callParams := errors.AdditionalData{Key: "filter", Value: filter}
+
+	_, err := u.access.GetAccessFromContext(ctx)
 	if err != nil {
-		return []Reference{}, err
+		return []account.Account{}, errors.Wrap(err, operation, callParams)
 	}
 
-	list, err := u.ac.List(ctx, filter)
+	list, err := u.accounts.List(ctx, filter)
 	if err != nil {
-		return []Reference{}, err
+		return []account.Account{}, errors.Wrap(err, operation, callParams)
 	}
-	refs := make([]Reference, len(list))
-	for i, a := range list {
-		refs[i] = Reference{
-			ExternalID: a.ExternalID,
-			Name:       a.Name,
-		}
-	}
-	return refs, nil
+
+	return list, nil
 }

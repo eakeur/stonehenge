@@ -24,8 +24,3 @@ type CreateOutput struct {
 type GetBalanceResponse struct {
 	Balance currency.Currency
 }
-
-type Reference struct {
-	ExternalID id.External
-	Name       string
-}

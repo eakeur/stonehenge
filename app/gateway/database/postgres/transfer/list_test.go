@@ -3,8 +3,10 @@ package transfer
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
+	"stonehenge/app/config"
 	"stonehenge/app/core/entities/transfer"
 	"stonehenge/app/gateway/database/postgres/postgrestest"
+	"stonehenge/app/gateway/logger"
 	"testing"
 )
 
@@ -14,6 +16,7 @@ func TestList(t *testing.T) {
 	if err != nil {
 		t.Fatalf("could not get database: %v", err)
 	}
+	log := logger.NewLogger(config.LoggerConfigurations{Environment: "development"})
 
 	type args struct {
 		ctx context.Context
@@ -74,7 +77,7 @@ func TestList(t *testing.T) {
 
 		t.Run(test.name, func(t *testing.T) {
 			defer postgrestest.RecycleDatabase(test.args.ctx)
-			repo := NewRepository(db)
+			repo := NewRepository(db, log)
 
 			filter, err := test.before(test)
 			if err != nil {

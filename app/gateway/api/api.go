@@ -18,15 +18,16 @@ type Server struct {
 
 func New(application *app.Application) *Server {
 
-	m := middlewares.NewMiddleware(application.AccessManager)
+	m := middlewares.NewMiddleware(application.AccessManager, application.Logger)
 
-	aut := authentication.NewController(application.Authentication)
-	acc := accounts.NewController(application.Accounts)
-	trf := transfers.NewController(application.Transfers)
+	aut := authentication.NewController(application.Authentication, application.Logger)
+	acc := accounts.NewController(application.Accounts, application.Logger)
+	trf := transfers.NewController(application.Transfers, application.Logger)
 
 	router := chi.NewRouter()
 	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
+	router.Use(m.Logger)
 	router.Group(func(r chi.Router) {
 		r.Use(m.Authorization)
 		router.Route("/accounts", func(r chi.Router) {
