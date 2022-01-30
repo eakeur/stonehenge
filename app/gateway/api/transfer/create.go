@@ -19,16 +19,17 @@ func (c *controller) Create(r *http.Request) rest.Response {
 		return c.builder.BuildErrorResult(err).WithErrorLog(ctx)
 	}
 
-	create, err := c.workspace.Create(ctx, transfer.CreateInput{
+	waiter := c.worker.AddToQueue(ctx, transfer.CreateInput{
 		DestID: id.ExternalFrom(body.DestinationID),
 		Amount: currency.FromStandardCurrency(body.Amount),
 	})
-	if err != nil {
-		err = erring.Wrap(err, operation)
+	result := <-waiter
+	if result.Error != nil {
+		err = erring.Wrap(result.Error, operation)
 		return c.builder.BuildErrorResult(err).WithErrorLog(ctx)
 	}
 	return c.builder.BuildCreatedResult(schema.CreateResponse{
-		RemainingBalance: create.RemainingBalance.ToStandardCurrency(),
-		TransferID:       create.TransferId.String(),
+		RemainingBalance: result.Output.RemainingBalance.ToStandardCurrency(),
+		TransferID:       result.Output.TransferId.String(),
 	}).WithSuccessLog(ctx, "transfer created successfully")
 }

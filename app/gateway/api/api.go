@@ -56,7 +56,7 @@ func NewServer(application *app.Application) *Server {
 	srv := &Server{
 		Router:         chi.NewRouter(),
 		accounts:       account.NewController(application.Accounts, responseBuilder),
-		transfers:      transfer.NewController(application.Transfers, responseBuilder),
+		transfers:      transfer.NewController(application.Transfers, application.TransfersWorker, responseBuilder),
 		authentication: authentication.NewController(application.Authentication, responseBuilder),
 		middlewares:    middlewares.NewMiddleware(application.AccessManager, responseBuilder),
 	}
