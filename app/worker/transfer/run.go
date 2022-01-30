@@ -16,8 +16,10 @@ func (w worker) Run() {
 				err = erring.Wrap(err, operation)
 			}
 			req.output <- result{Output: res, Error: err}
-		case <-w.stop:
-			break
+		case op := <-w.stop:
+			if op == "stop" {
+				break
+			}
 		}
 	}
 }
