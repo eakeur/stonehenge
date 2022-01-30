@@ -53,6 +53,7 @@ func NewApplication(ctx context.Context, cfg config.Config) (*Application, error
 	authenticationWorkspace := authentication.New(accountsRepository, am)
 
 	worker := transferWorker.NewWorker(100, transferWorkspace, log)
+	go worker.Run()
 
 	return &Application{
 		Accounts: accountsWorkspace, Transfers: transferWorkspace,
