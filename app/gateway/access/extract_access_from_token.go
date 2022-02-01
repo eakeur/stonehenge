@@ -32,7 +32,8 @@ func (f Manager) ExtractAccessFromToken(token string) (access.Access, error) {
 	}
 
 	return access.Access{
-		AccountID: ext,
-		Token:     token,
+		AccountID:   ext,
+		AccountName: claims.Subject,
+		Token:       token,
 	}, nil
 }
