@@ -3,10 +3,11 @@ package account
 import (
 	"context"
 	"errors"
-	"github.com/jackc/pgconn"
 	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/types/erring"
 	"stonehenge/app/gateway/postgres/common"
+
+	"github.com/jackc/pgconn"
 )
 
 func (r *repository) Create(ctx context.Context, acc account.Account) (account.Account, error) {
@@ -34,7 +35,7 @@ func (r *repository) Create(ctx context.Context, acc account.Account) (account.A
 	)
 	if err != nil {
 		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) && pgErr.Code == common.PostgresDuplicateError && pgErr.ConstraintName == "accounts_document_key"{
+		if errors.As(err, &pgErr) && pgErr.Code == common.PostgresDuplicateError && pgErr.ConstraintName == common.AccountDocumentUniquenessKey {
 			return account.Account{}, erring.Wrap(account.ErrAlreadyExist, operation)
 		}
 

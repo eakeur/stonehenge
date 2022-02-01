@@ -6,8 +6,11 @@ import (
 )
 
 const (
-	PostgresDuplicateError = "23505"
-	PostgresNonexistentFK = "23503"
+	PostgresDuplicateError       = "23505"
+	PostgresNonexistentFK        = "23503"
+	AccountDocumentUniquenessKey = "accounts_document_key"
+	TransferOriginFK             = "transfers_account_origin_id_fkey"
+	TransferDestinationFK        = "transfers_account_destination_id_fkey"
 )
 
 func AppendCondition(query string, logic string, condition string, paramNumbers ...int) string {
