@@ -1,24 +1,17 @@
 package common
 
 import (
-	"database/sql"
 	"fmt"
 	"strings"
 )
 
-// Scanner is meant to standardize both sql.Row and sql.Row objects that have the Scan method
-type Scanner interface {
-	Scan(dest ...interface{}) error
-}
-
-// Executor  is meant to standardize both sql.tx and sql.db objects that has the Exec method
-type Executor interface {
-	Exec(query string, args ...interface{}) (sql.Result, error)
-
-	QueryRow(query string, args ...interface{}) *sql.Row
-
-	Query(query string, args ...interface{}) (*sql.Rows, error)
-}
+const (
+	PostgresDuplicateError       = "23505"
+	PostgresNonexistentFK        = "23503"
+	AccountDocumentUniquenessKey = "accounts_document_key"
+	TransferOriginFK             = "transfers_account_origin_id_fkey"
+	TransferDestinationFK        = "transfers_account_destination_id_fkey"
+)
 
 func AppendCondition(query string, logic string, condition string, paramNumbers ...int) string {
 	for _, number := range paramNumbers {
