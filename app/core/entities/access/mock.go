@@ -15,7 +15,7 @@ type RepositoryMock struct {
 	Error                        error
 }
 
-func (f RepositoryMock) Create(_ id.External) (Access, error) {
+func (f RepositoryMock) Create(_ id.External, _ string) (Access, error) {
 	return f.CreateResult, f.Error
 }
 

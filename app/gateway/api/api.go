@@ -26,7 +26,7 @@ func (s *Server) Serve(address string) error {
 
 func (s *Server) AssignRoutes() {
 
-	s.Router.Use(s.middlewares.RequestTracer)
+	s.Router.Use(s.middlewares.CORS, s.middlewares.RequestTracer)
 
 	s.Router.Route("/accounts", func(r chi.Router) {
 		r.Group(func(r chi.Router) {

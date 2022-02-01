@@ -13,6 +13,7 @@ func NewMiddleware(manager access.Manager, builder rest.ResponseBuilder) Middlew
 type Middleware interface {
 	Authorization(http.Handler) http.Handler
 	RequestTracer(http.Handler) http.Handler
+	CORS(http.Handler) http.Handler
 }
 
 type middleware struct {

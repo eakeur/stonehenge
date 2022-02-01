@@ -20,7 +20,7 @@ func (m middleware) Authorization(next http.Handler) http.Handler {
 				err = erring.Wrap(err, operation)
 				return m.builder.BuildErrorResult(err).WithErrorLog(ctx)
 			}
-			acc, err = m.access.Create(acc.AccountID)
+			acc, err = m.access.Create(acc.AccountID, acc.AccountName)
 			if err != nil {
 				failed = true
 				err = erring.Wrap(err, operation, erring.AdditionalData{Key: "actor", Value: acc.AccountID.String()})

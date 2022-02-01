@@ -8,7 +8,7 @@ import (
 // Manager is an interface with useful actions to create and manage access token and objects
 type Manager interface {
 	// Create creates an Access object containing the account's external ID and its correspondent access token.
-	Create(id.External) (Access, error)
+	Create(id.External, string) (Access, error)
 
 	// ExtractAccessFromToken extracts an access object from the given token. It may return an error if the token
 	// is invalid or expired

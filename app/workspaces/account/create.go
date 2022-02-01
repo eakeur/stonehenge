@@ -32,7 +32,7 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, 
 		return CreateOutput{}, erring.Wrap(err, operation)
 	}
 
-	tok, err := u.access.Create(acc.ExternalID)
+	tok, err := u.access.Create(acc.ExternalID, acc.Name)
 	if err != nil {
 		return CreateOutput{}, erring.Wrap(err, operation)
 	}
