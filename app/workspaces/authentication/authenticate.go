@@ -22,7 +22,7 @@ func (u *workspace) Authenticate(ctx context.Context, req AuthenticationRequest)
 		return access.Access{}, erring.Wrap(err, operation)
 	}
 
-	tok, err := u.access.Create(acc.ExternalID)
+	tok, err := u.access.Create(acc.ExternalID, acc.Name)
 	if err != nil {
 		return access.Access{}, erring.Wrap(err, operation)
 	}
