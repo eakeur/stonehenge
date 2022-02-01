@@ -34,7 +34,7 @@ func (r *repository) Create(ctx context.Context, acc account.Account) (account.A
 	)
 	if err != nil {
 		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+		if errors.As(err, &pgErr) && pgErr.Code == common.PostgresDuplicateError && pgErr.ConstraintName == "accounts_document_key"{
 			return account.Account{}, erring.Wrap(account.ErrAlreadyExist, operation)
 		}
 

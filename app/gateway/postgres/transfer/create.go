@@ -33,11 +33,11 @@ func (r *repository) Create(ctx context.Context, tr transfer.Transfer) (transfer
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
-			if pgErr.Code == "23503" && pgErr.ConstraintName == "transfers_account_origin_id_fkey" {
+			if pgErr.Code == common.PostgresNonexistentFK && pgErr.ConstraintName == "transfers_account_origin_id_fkey" {
 				return transfer.Transfer{}, erring.Wrap(transfer.ErrNonexistentOrigin, operation)
 			}
 
-			if pgErr.Code == "23503" && pgErr.ConstraintName == "transfers_account_destination_id_fkey" {
+			if pgErr.Code == common.PostgresNonexistentFK && pgErr.ConstraintName == "transfers_account_destination_id_fkey" {
 				return transfer.Transfer{}, erring.Wrap(transfer.ErrNonexistentDestination, operation)
 			}
 		}
