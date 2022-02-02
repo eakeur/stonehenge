@@ -17,7 +17,7 @@ func (w worker) Run() {
 			}
 			req.output <- result{Output: res, Error: err}
 		case op := <-w.stop:
-			if op == "stop" {
+			if op == CloseCommand {
 				break
 			}
 		}

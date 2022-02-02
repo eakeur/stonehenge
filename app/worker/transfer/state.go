@@ -16,5 +16,5 @@ func (w worker) AddToQueue(ctx context.Context, input transferworkspace.CreateIn
 }
 
 func (w worker) Close() {
-	w.stop <- "close"
+	w.stop <- CloseCommand
 }
