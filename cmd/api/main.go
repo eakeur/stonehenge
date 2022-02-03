@@ -9,6 +9,13 @@ import (
 	"stonehenge/app/gateway/api"
 )
 
+// @title Stonehenge API
+// @version 1.0
+// @contact.name Igor Reis (@eakeur)
+// @contact.email igor.reisleandro@gmail.com
+// @securityDefinitions.apikey AuthKey
+// @in header
+// @name Authorization
 func main() {
 	ctx := context.Background()
 

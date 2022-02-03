@@ -10,6 +10,18 @@ import (
 	"stonehenge/app/workspaces/transfer"
 )
 
+// Create godoc
+// @Summary      Creates transfer
+// @Description  Creates a transfer with values specified on body
+// @Tags         Transfers
+// @Param        transfer body schema.CreateRequest true "Transfer info"
+// @Accept       json
+// @Produce      json
+// @Success      201  {object}  schema.CreateResponse
+// @Failure      400  {object}  rest.Error
+// @Failure      500  {object}  rest.Error
+// @Security     AuthKey
+// @Router       /transfers [post]
 func (c *controller) Create(r *http.Request) rest.Response {
 	const operation = "Controller.Transfer.Create"
 	ctx := r.Context()

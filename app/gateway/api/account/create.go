@@ -11,7 +11,17 @@ import (
 	"stonehenge/app/workspaces/account"
 )
 
-// Create creates a new account with the data passed in
+// Create godoc
+// @Summary      Creates account
+// @Description  Creates an account with values specified on body
+// @Tags         Accounts
+// @Param        account body schema.CreateAccountRequest true "Account info"
+// @Accept       json
+// @Produce      json
+// @Success      201  {object}  schema.CreateAccountResponse
+// @Failure      400  {object}  rest.Error
+// @Failure      500  {object}  rest.Error
+// @Router       /accounts [post]
 func (c *controller) Create(r *http.Request) rest.Response {
 	const operation = "Controller.Account.Create"
 	ctx := r.Context()

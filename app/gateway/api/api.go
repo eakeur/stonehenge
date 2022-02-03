@@ -2,6 +2,9 @@ package api
 
 import (
 	"github.com/go-chi/chi/v5"
+	"github.com/swaggo/http-swagger"
+
+	"io/ioutil"
 	"net/http"
 
 	"stonehenge/app"
@@ -10,6 +13,7 @@ import (
 	"stonehenge/app/gateway/api/middlewares"
 	"stonehenge/app/gateway/api/rest"
 	"stonehenge/app/gateway/api/transfer"
+	_ "stonehenge/docs"
 )
 
 type Server struct {
@@ -44,6 +48,18 @@ func (s *Server) AssignRoutes() {
 	})
 
 	s.Router.Method("POST", "/login", rest.Handler(s.authentication.Authenticate))
+
+	s.Router.Method("GET", "/swagger/{*}", httpSwagger.WrapHandler)
+
+	s.Router.Get("/swagger/swagger.json", func(rw http.ResponseWriter, _ *http.Request) {
+		rw.Header().Set("Content-Type", "application/json")
+		doc, _ := ioutil.ReadFile("docs/swagger.json")
+		rw.Write(doc)
+	})
+
+	s.Router.Get("/", func(writer http.ResponseWriter, request *http.Request) {
+		http.Redirect(writer, request, "/swagger", http.StatusSeeOther)
+	})
 }
 
 func NewServer(application *app.Application) *Server {

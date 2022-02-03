@@ -10,7 +10,18 @@ import (
 	"stonehenge/app/workspaces/authentication"
 )
 
-// Authenticate logs an applicant in
+// Authenticate godoc
+// @Summary      Authenticates account
+// @Description  Authenticates an account with its credentials
+// @Tags         Login
+// @Param        account body schema.AuthenticationRequest true "Account info"
+// @Accept       json
+// @Produce      json
+// @Success      201  {object}  schema.AuthenticationResponse
+// @Failure      400  {object}  rest.Error
+// @Failure      404  {object}  rest.Error
+// @Failure      500  {object}  rest.Error
+// @Router       /login [post]
 func (c *controller) Authenticate(r *http.Request) rest.Response {
 	const operation = "Controller.Authentication.Authenticate"
 	ctx := r.Context()

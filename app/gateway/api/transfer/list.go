@@ -12,7 +12,20 @@ import (
 	"time"
 )
 
-// List gets all transfers of this actual account
+// List godoc
+// @Summary      List transfers
+// @Description  List all transfers that match the given filter
+// @Tags         Transfers
+// @Param       originID  query string  false  "Account origin id"
+// @Param       destinationID  query string  false  "Account destination id"
+// @Param       initialDate  query string  false  "Initial date"
+// @Param       finalDate  query string  false  "Final date"
+// @Produce      json
+// @Success      200  {object}  []schema.ListResponse
+// @Failure      400  {object}  rest.Error
+// @Failure      500  {object}  rest.Error
+// @Security     AuthKey
+// @Router       /transfers [get]
 func (c *controller) List(r *http.Request) rest.Response {
 	const operation = "Controller.Transfer.Create"
 	ctx := r.Context()
