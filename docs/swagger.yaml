@@ -1,0 +1,311 @@
+definitions:
+  rest.Error:
+    properties:
+      code:
+        description: Code is a unique identifier of this error
+        type: string
+      message:
+        description: Message is a description of this error context
+        type: string
+    type: object
+  schema.AccountListResponse:
+    properties:
+      account_id:
+        type: string
+      owner_name:
+        type: string
+    type: object
+  schema.AuthenticationRequest:
+    properties:
+      cpf:
+        description: Document is the CPF of the applicant. Must be numbers only
+        example: "23100299900"
+        type: string
+      secret:
+        description: Secret is the password of the account the applicant wants to
+          authenticate to
+        type: string
+    type: object
+  schema.AuthenticationResponse:
+    properties:
+      token:
+        type: string
+    type: object
+  schema.CreateAccountRequest:
+    properties:
+      cpf:
+        description: Document is the applicant's CPF. Must be numbers only
+        example: "23100299900"
+        type: string
+      name:
+        description: Name is the applicant's full name
+        example: Alan Turing
+        type: string
+      secret:
+        description: Secret is the account's password. It will be used to authenticate
+          afterwards
+        type: string
+    type: object
+  schema.CreateAccountResponse:
+    properties:
+      account_id:
+        description: AccountID is the id generated that represents this account
+        type: string
+      token:
+        description: Token is a JWT token containing claims about the logged in account
+          owner
+        type: string
+    type: object
+  schema.CreateTransferRequest:
+    properties:
+      account_destination_id:
+        description: DestinationID is the ID of the transfer that wil receive the
+          money
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      amount:
+        description: Amount is the quantity that is going to be attempted to transfer
+        example: 15.99
+        type: number
+    type: object
+  schema.CreateTransferResponse:
+    properties:
+      remaining_balance:
+        description: RemainingBalance is how much budget the logged-in user still
+          has after the transfer occurred
+        type: number
+      transfer_id:
+        description: TransferID is the generated id that represents this transfer
+        type: string
+    type: object
+  schema.GetBalanceResponse:
+    properties:
+      balance:
+        type: number
+    type: object
+  schema.ListTransferResponse:
+    properties:
+      account_destination_id:
+        type: string
+      account_origin_id:
+        type: string
+      amount:
+        type: number
+      effective_date:
+        type: string
+      id:
+        type: string
+    type: object
+info:
+  contact:
+    email: igor.reisleandro@gmail.com
+    name: Igor Reis (@eakeur)
+  title: Stonehenge API
+  version: "1.0"
+paths:
+  /accounts:
+    get:
+      description: List all accounts that match the given filter
+      parameters:
+      - description: Account owner name
+        in: query
+        name: accountName
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/schema.AccountListResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.Error'
+      security:
+      - AuthKey: []
+      summary: List accounts
+      tags:
+      - Accounts
+    post:
+      consumes:
+      - application/json
+      description: Creates an account with values specified on body
+      parameters:
+      - description: Account info
+        in: body
+        name: account
+        required: true
+        schema:
+          $ref: '#/definitions/schema.CreateAccountRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/schema.CreateAccountResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.Error'
+      summary: Creates account
+      tags:
+      - Accounts
+  /accounts/{accountID}/balance:
+    get:
+      description: Gets the balance of the account specified, if it's the logged in
+        account
+      parameters:
+      - description: Account ID
+        in: path
+        name: accountID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schema.GetBalanceResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/rest.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.Error'
+      security:
+      - AuthKey: []
+      summary: Gets account balance
+      tags:
+      - Accounts
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates an account with its credentials
+      parameters:
+      - description: Account info
+        in: body
+        name: account
+        required: true
+        schema:
+          $ref: '#/definitions/schema.AuthenticationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/schema.AuthenticationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/rest.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.Error'
+      summary: Authenticates account
+      tags:
+      - Login
+  /transfers:
+    get:
+      description: List all transfers that match the given filter
+      parameters:
+      - description: Account origin id
+        in: query
+        name: originID
+        type: string
+      - description: Account destination id
+        in: query
+        name: destinationID
+        type: string
+      - description: Initial date
+        in: query
+        name: initialDate
+        type: string
+      - description: Final date
+        in: query
+        name: finalDate
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/schema.ListTransferResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.Error'
+      security:
+      - AuthKey: []
+      summary: List transfers
+      tags:
+      - Transfers
+    post:
+      consumes:
+      - application/json
+      description: Creates a transfer with values specified on body
+      parameters:
+      - description: Transfer info
+        in: body
+        name: transfer
+        required: true
+        schema:
+          $ref: '#/definitions/schema.CreateTransferRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/schema.CreateTransferResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.Error'
+      security:
+      - AuthKey: []
+      summary: Creates transfer
+      tags:
+      - Transfers
+securityDefinitions:
+  AuthKey:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
