@@ -26,7 +26,7 @@ func (c *controller) Create(r *http.Request) rest.Response {
 	const operation = "Controller.Account.Create"
 	ctx := r.Context()
 
-	req, err := schema.NewCreateRequest(r.Body)
+	req, err := schema.NewCreateAccountRequest(r.Body)
 	if err != nil {
 		err = erring.Wrap(err, operation)
 		return c.builder.BuildErrorResult(err).WithErrorLog(ctx)
@@ -45,7 +45,7 @@ func (c *controller) Create(r *http.Request) rest.Response {
 	}
 
 	return c.builder.
-		BuildCreatedResult(schema.CreateResponse{AccountID: acc.AccountID.String(), Token: acc.Access.Token}).
+		BuildCreatedResult(schema.CreateAccountResponse{AccountID: acc.AccountID.String(), Token: acc.Access.Token}).
 		AddHeaders("Authorization", "Bearer "+acc.Access.Token).
 		WithSuccessLog(ctx, fmt.Sprintf("account created successfully with id %s", acc.Access.AccountID.String()))
 

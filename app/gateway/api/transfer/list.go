@@ -21,7 +21,7 @@ import (
 // @Param       initialDate  query string  false  "Initial date"
 // @Param       finalDate  query string  false  "Final date"
 // @Produce      json
-// @Success      200  {object}  []schema.ListResponse
+// @Success      200  {object}  []schema.ListTransferResponse
 // @Failure      400  {object}  rest.Error
 // @Failure      500  {object}  rest.Error
 // @Security     AuthKey
@@ -36,9 +36,9 @@ func (c *controller) List(r *http.Request) rest.Response {
 		return c.builder.BuildErrorResult(err).WithErrorLog(ctx)
 	}
 	length := len(list)
-	res := make([]schema.ListResponse, length)
+	res := make([]schema.ListTransferResponse, length)
 	for i, ref := range list {
-		res[i] = schema.ListResponse{
+		res[i] = schema.ListTransferResponse{
 			ExternalID:    ref.ExternalID.String(),
 			OriginID:      ref.Details.OriginExternalID.String(),
 			DestinationID: ref.Details.DestinationExternalID.String(),

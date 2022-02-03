@@ -16,7 +16,7 @@ import (
 // @Tags         Accounts
 // @Param       accountName  query string  false  "Account owner name"
 // @Produce      json
-// @Success      200  {object}  []schema.ListResponse
+// @Success      200  {object}  []schema.AccountListResponse
 // @Failure      400  {object}  rest.Error
 // @Failure      500  {object}  rest.Error
 // @Security     AuthKey
@@ -31,9 +31,9 @@ func (c *controller) List(r *http.Request) rest.Response {
 		return c.builder.BuildErrorResult(err).WithErrorLog(ctx)
 	}
 	length := len(list)
-	res := make([]schema.ListResponse, len(list))
+	res := make([]schema.AccountListResponse, len(list))
 	for i := 0; i < len(list); i++ {
-		res[i] = schema.ListResponse{
+		res[i] = schema.AccountListResponse{
 			AccountID: list[i].ExternalID.String(),
 			OwnerName: list[i].Name,
 		}

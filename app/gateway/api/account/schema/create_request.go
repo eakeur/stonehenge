@@ -5,7 +5,7 @@ import (
 	"io"
 )
 
-type CreateRequest struct {
+type CreateAccountRequest struct {
 	// Document is the applicant's CPF. Must be numbers only
 	Document string `json:"cpf" example:"23100299900"`
 
@@ -16,12 +16,12 @@ type CreateRequest struct {
 	Name string `json:"name" example:"Alan Turing"`
 }
 
-func NewCreateRequest(body io.ReadCloser) (CreateRequest, error){
+func NewCreateAccountRequest(body io.ReadCloser) (CreateAccountRequest, error) {
 	defer body.Close()
-	var req CreateRequest
+	var req CreateAccountRequest
 	err := json.NewDecoder(body).Decode(&req)
 	if err != nil {
-		return CreateRequest{}, err
+		return CreateAccountRequest{}, err
 	}
 	return req, nil
 }
