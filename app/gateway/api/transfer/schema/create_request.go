@@ -5,7 +5,7 @@ import (
 	"io"
 )
 
-type CreateRequest struct {
+type CreateTransferRequest struct {
 	// DestinationID is the ID of the transfer that wil receive the money
 	DestinationID string `json:"account_destination_id" example:"123e4567-e89b-12d3-a456-426614174000"`
 
@@ -13,12 +13,12 @@ type CreateRequest struct {
 	Amount float64 `json:"amount" example:"15.99"`
 }
 
-func NewCreateRequest(body io.ReadCloser) (CreateRequest, error) {
+func NewCreateTransferRequest(body io.ReadCloser) (CreateTransferRequest, error) {
 	defer body.Close()
-	req := CreateRequest{}
+	req := CreateTransferRequest{}
 	err := json.NewDecoder(body).Decode(&req)
 	if err != nil {
-		return CreateRequest{}, err
+		return CreateTransferRequest{}, err
 	}
 	return req, nil
 }

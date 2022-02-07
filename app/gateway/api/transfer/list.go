@@ -12,9 +12,22 @@ import (
 	"time"
 )
 
-// List gets all transfers of this actual account
+// List godoc
+// @Summary      List transfers
+// @Description  List all transfers that match the given filter
+// @Tags         Transfers
+// @Param       originID  query string  false  "Account origin id"
+// @Param       destinationID  query string  false  "Account destination id"
+// @Param       initialDate  query string  false  "Initial date"
+// @Param       finalDate  query string  false  "Final date"
+// @Produce      json
+// @Success      200  {object}  []schema.ListTransferResponse
+// @Failure      400  {object}  rest.Error
+// @Failure      500  {object}  rest.Error
+// @Security     AuthKey
+// @Router       /api/v1/transfers [get]
 func (c *controller) List(r *http.Request) rest.Response {
-	const operation = "Controller.Transfer.Create"
+	const operation = "Controller.Transfer.List"
 	ctx := r.Context()
 	filters := filter(r.URL.Query())
 	list, err := c.workspace.List(ctx, filters)
@@ -23,9 +36,9 @@ func (c *controller) List(r *http.Request) rest.Response {
 		return c.builder.BuildErrorResult(err).WithErrorLog(ctx)
 	}
 	length := len(list)
-	res := make([]schema.ListResponse, length)
+	res := make([]schema.ListTransferResponse, length)
 	for i, ref := range list {
-		res[i] = schema.ListResponse{
+		res[i] = schema.ListTransferResponse{
 			ExternalID:    ref.ExternalID.String(),
 			OriginID:      ref.Details.OriginExternalID.String(),
 			DestinationID: ref.Details.DestinationExternalID.String(),

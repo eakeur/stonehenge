@@ -11,7 +11,18 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-// GetBalance gets the balance of the account specified
+// GetBalance godoc
+// @Summary      Gets account balance
+// @Description  Gets the balance of the account specified, if it's the logged in account
+// @Tags         Accounts
+// @Param       accountID   path string  true  "Account ID"
+// @Produce      json
+// @Success      200  {object}  schema.GetBalanceResponse
+// @Failure      400  {object}  rest.Error
+// @Failure      404  {object}  rest.Error
+// @Failure      500  {object}  rest.Error
+// @Security     AuthKey
+// @Router       /api/v1/accounts/{accountID}/balance [get]
 func (c *controller) GetBalance(r *http.Request) rest.Response {
 	const operation = "Controller.Account.GetBalance"
 	ctx := r.Context()

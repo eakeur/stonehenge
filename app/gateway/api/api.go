@@ -2,6 +2,9 @@ package api
 
 import (
 	"github.com/go-chi/chi/v5"
+	httpSwagger "github.com/swaggo/http-swagger"
+
+	"io/ioutil"
 	"net/http"
 
 	"stonehenge/app"
@@ -10,6 +13,7 @@ import (
 	"stonehenge/app/gateway/api/middlewares"
 	"stonehenge/app/gateway/api/rest"
 	"stonehenge/app/gateway/api/transfer"
+	_ "stonehenge/docs"
 )
 
 type Server struct {
@@ -28,22 +32,37 @@ func (s *Server) AssignRoutes() {
 
 	s.Router.Use(s.middlewares.CORS, s.middlewares.RequestTracer)
 
-	s.Router.Route("/accounts", func(r chi.Router) {
-		r.Group(func(r chi.Router) {
-			r.Use(s.middlewares.Authorization)
-			r.Method("GET", "/", rest.Handler(s.accounts.List))
-			r.Method("GET", "/{accountID}/balance", rest.Handler(s.accounts.GetBalance))
+	s.Router.Route("/api/v1", func(r chi.Router) {
+		s.Router.Route("/accounts", func(r chi.Router) {
+			r.Group(func(r chi.Router) {
+				r.Use(s.middlewares.Authorization)
+				r.Method("GET", "/", rest.Handler(s.accounts.List))
+				r.Method("GET", "/{accountID}/balance", rest.Handler(s.accounts.GetBalance))
+			})
+			r.Method("POST", "/", rest.Handler(s.accounts.Create))
 		})
-		r.Method("POST", "/", rest.Handler(s.accounts.Create))
+
+		s.Router.Route("/transfers", func(r chi.Router) {
+			r.Use(s.middlewares.Authorization)
+			r.Method("POST", "/", rest.Handler(s.transfers.Create))
+			r.Method("GET", "/", rest.Handler(s.transfers.List))
+		})
+
+		s.Router.Method("POST", "/login", rest.Handler(s.authentication.Authenticate))
+
+		s.Router.Method("GET", "/swagger/{*}", httpSwagger.WrapHandler)
+
+		s.Router.Get("/swagger/swagger.json", func(rw http.ResponseWriter, _ *http.Request) {
+			rw.Header().Set("Content-Type", "application/json")
+			doc, _ := ioutil.ReadFile("docs/swagger.json")
+			rw.Write(doc)
+		})
+
+		s.Router.Get("/", func(writer http.ResponseWriter, request *http.Request) {
+			http.Redirect(writer, request, "/swagger/index.html", http.StatusSeeOther)
+		})
 	})
 
-	s.Router.Route("/transfers", func(r chi.Router) {
-		r.Use(s.middlewares.Authorization)
-		r.Method("POST", "/", rest.Handler(s.transfers.Create))
-		r.Method("GET", "/", rest.Handler(s.transfers.List))
-	})
-
-	s.Router.Method("POST", "/login", rest.Handler(s.authentication.Authenticate))
 }
 
 func NewServer(application *app.Application) *Server {

@@ -10,9 +10,19 @@ import (
 	"stonehenge/app/gateway/api/rest"
 )
 
-// List gets all accounts that satisfy the filter passed
+// List godoc
+// @Summary      List accounts
+// @Description  List all accounts that match the given filter
+// @Tags         Accounts
+// @Param       accountName  query string  false  "Account owner name"
+// @Produce      json
+// @Success      200  {object}  []schema.AccountListResponse
+// @Failure      400  {object}  rest.Error
+// @Failure      500  {object}  rest.Error
+// @Security     AuthKey
+// @Router       /api/v1/accounts [get]
 func (c *controller) List(r *http.Request) rest.Response {
-	const operation = "Controller.Account.Create"
+	const operation = "Controller.Account.List"
 	ctx := r.Context()
 	filters := filter(r.URL.Query())
 	list, err := c.workspace.List(ctx, filters)
@@ -21,9 +31,9 @@ func (c *controller) List(r *http.Request) rest.Response {
 		return c.builder.BuildErrorResult(err).WithErrorLog(ctx)
 	}
 	length := len(list)
-	res := make([]schema.ListResponse, len(list))
+	res := make([]schema.AccountListResponse, len(list))
 	for i := 0; i < len(list); i++ {
-		res[i] = schema.ListResponse{
+		res[i] = schema.AccountListResponse{
 			AccountID: list[i].ExternalID.String(),
 			OwnerName: list[i].Name,
 		}

@@ -11,12 +11,22 @@ import (
 	"stonehenge/app/workspaces/account"
 )
 
-// Create creates a new account with the data passed in
+// Create godoc
+// @Summary      Creates account
+// @Description  Creates an account with values specified on body
+// @Tags         Accounts
+// @Param        account body schema.CreateAccountRequest true "Account info"
+// @Accept       json
+// @Produce      json
+// @Success      201  {object}  schema.CreateAccountResponse
+// @Failure      400  {object}  rest.Error
+// @Failure      500  {object}  rest.Error
+// @Router       /api/v1/accounts [post]
 func (c *controller) Create(r *http.Request) rest.Response {
 	const operation = "Controller.Account.Create"
 	ctx := r.Context()
 
-	req, err := schema.NewCreateRequest(r.Body)
+	req, err := schema.NewCreateAccountRequest(r.Body)
 	if err != nil {
 		err = erring.Wrap(err, operation)
 		return c.builder.BuildErrorResult(err).WithErrorLog(ctx)
@@ -35,7 +45,7 @@ func (c *controller) Create(r *http.Request) rest.Response {
 	}
 
 	return c.builder.
-		BuildCreatedResult(schema.CreateResponse{AccountID: acc.AccountID.String(), Token: acc.Access.Token}).
+		BuildCreatedResult(schema.CreateAccountResponse{AccountID: acc.AccountID.String(), Token: acc.Access.Token}).
 		AddHeaders("Authorization", "Bearer "+acc.Access.Token).
 		WithSuccessLog(ctx, fmt.Sprintf("account created successfully with id %s", acc.Access.AccountID.String()))
 
