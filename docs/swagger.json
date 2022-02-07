@@ -9,7 +9,7 @@
         "version": "1.0"
     },
     "paths": {
-        "/accounts": {
+        "/api/v1/accounts": {
             "get": {
                 "security": [
                     {
@@ -101,7 +101,7 @@
                 }
             }
         },
-        "/accounts/{accountID}/balance": {
+        "/api/v1/accounts/{accountID}/balance": {
             "get": {
                 "security": [
                     {
@@ -153,7 +153,7 @@
                 }
             }
         },
-        "/login": {
+        "/api/v1/login": {
             "post": {
                 "description": "Authenticates an account with its credentials",
                 "consumes": [
@@ -205,7 +205,7 @@
                 }
             }
         },
-        "/transfers": {
+        "/api/v1/transfers": {
             "get": {
                 "security": [
                     {

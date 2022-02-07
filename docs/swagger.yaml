@@ -103,7 +103,7 @@ info:
   title: Stonehenge API
   version: "1.0"
 paths:
-  /accounts:
+  /api/v1/accounts:
     get:
       description: List all accounts that match the given filter
       parameters:
@@ -162,7 +162,7 @@ paths:
       summary: Creates account
       tags:
       - Accounts
-  /accounts/{accountID}/balance:
+  /api/v1/accounts/{accountID}/balance:
     get:
       description: Gets the balance of the account specified, if it's the logged in
         account
@@ -196,7 +196,7 @@ paths:
       summary: Gets account balance
       tags:
       - Accounts
-  /login:
+  /api/v1/login:
     post:
       consumes:
       - application/json
@@ -230,7 +230,7 @@ paths:
       summary: Authenticates account
       tags:
       - Login
-  /transfers:
+  /api/v1/transfers:
     get:
       description: List all transfers that match the given filter
       parameters:

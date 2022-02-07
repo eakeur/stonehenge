@@ -20,7 +20,7 @@ import (
 // @Failure      400  {object}  rest.Error
 // @Failure      500  {object}  rest.Error
 // @Security     AuthKey
-// @Router       /accounts [get]
+// @Router       /api/v1/accounts [get]
 func (c *controller) List(r *http.Request) rest.Response {
 	const operation = "Controller.Account.List"
 	ctx := r.Context()

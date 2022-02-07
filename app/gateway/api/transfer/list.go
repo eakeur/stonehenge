@@ -25,9 +25,9 @@ import (
 // @Failure      400  {object}  rest.Error
 // @Failure      500  {object}  rest.Error
 // @Security     AuthKey
-// @Router       /transfers [get]
+// @Router       /api/v1/transfers [get]
 func (c *controller) List(r *http.Request) rest.Response {
-	const operation = "Controller.Transfer.Create"
+	const operation = "Controller.Transfer.List"
 	ctx := r.Context()
 	filters := filter(r.URL.Query())
 	list, err := c.workspace.List(ctx, filters)

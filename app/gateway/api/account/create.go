@@ -21,7 +21,7 @@ import (
 // @Success      201  {object}  schema.CreateAccountResponse
 // @Failure      400  {object}  rest.Error
 // @Failure      500  {object}  rest.Error
-// @Router       /accounts [post]
+// @Router       /api/v1/accounts [post]
 func (c *controller) Create(r *http.Request) rest.Response {
 	const operation = "Controller.Account.Create"
 	ctx := r.Context()

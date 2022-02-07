@@ -26,7 +26,7 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/accounts": {
+        "/api/v1/accounts": {
             "get": {
                 "security": [
                     {
@@ -118,7 +118,7 @@ var doc = `{
                 }
             }
         },
-        "/accounts/{accountID}/balance": {
+        "/api/v1/accounts/{accountID}/balance": {
             "get": {
                 "security": [
                     {
@@ -170,7 +170,7 @@ var doc = `{
                 }
             }
         },
-        "/login": {
+        "/api/v1/login": {
             "post": {
                 "description": "Authenticates an account with its credentials",
                 "consumes": [
@@ -222,7 +222,7 @@ var doc = `{
                 }
             }
         },
-        "/transfers": {
+        "/api/v1/transfers": {
             "get": {
                 "security": [
                     {

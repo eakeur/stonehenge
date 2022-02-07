@@ -22,7 +22,7 @@ import (
 // @Failure      404  {object}  rest.Error
 // @Failure      500  {object}  rest.Error
 // @Security     AuthKey
-// @Router       /accounts/{accountID}/balance [get]
+// @Router       /api/v1/accounts/{accountID}/balance [get]
 func (c *controller) GetBalance(r *http.Request) rest.Response {
 	const operation = "Controller.Account.GetBalance"
 	ctx := r.Context()

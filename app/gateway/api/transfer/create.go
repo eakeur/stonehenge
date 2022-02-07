@@ -21,7 +21,7 @@ import (
 // @Failure      400  {object}  rest.Error
 // @Failure      500  {object}  rest.Error
 // @Security     AuthKey
-// @Router       /transfers [post]
+// @Router       /api/v1/transfers [post]
 func (c *controller) Create(r *http.Request) rest.Response {
 	const operation = "Controller.Transfer.Create"
 	ctx := r.Context()

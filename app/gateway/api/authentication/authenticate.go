@@ -21,7 +21,7 @@ import (
 // @Failure      400  {object}  rest.Error
 // @Failure      404  {object}  rest.Error
 // @Failure      500  {object}  rest.Error
-// @Router       /login [post]
+// @Router       /api/v1/login [post]
 func (c *controller) Authenticate(r *http.Request) rest.Response {
 	const operation = "Controller.Authentication.Authenticate"
 	ctx := r.Context()
