@@ -5,18 +5,18 @@ import (
 	"stonehenge/app/core/entities/transfer"
 )
 
-var _ Workspace = workspaceMock{}
-type workspaceMock struct {
-	ListResult []transfer.Transfer
+var _ Workspace = WorkspaceMock{}
+
+type WorkspaceMock struct {
+	ListResult   []transfer.Transfer
 	CreateResult CreateOutput
-	Error error
+	Error        error
 }
 
-func (w workspaceMock) List(_ context.Context, _ transfer.Filter) ([]transfer.Transfer, error) {
+func (w WorkspaceMock) List(_ context.Context, _ transfer.Filter) ([]transfer.Transfer, error) {
 	return w.ListResult, w.Error
 }
 
-func (w workspaceMock) Create(_ context.Context, _ CreateInput) (CreateOutput, error) {
+func (w WorkspaceMock) Create(_ context.Context, _ CreateInput) (CreateOutput, error) {
 	return w.CreateResult, w.Error
 }
-

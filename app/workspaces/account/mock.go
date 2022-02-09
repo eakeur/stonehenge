@@ -6,24 +6,23 @@ import (
 	"stonehenge/app/core/types/id"
 )
 
-var _ Workspace = workspaceMock{}
+var _ Workspace = WorkspaceMock{}
 
-
-type workspaceMock struct {
-	CreateResult CreateOutput
+type WorkspaceMock struct {
+	CreateResult     CreateOutput
 	GetBalanceResult GetBalanceResponse
-	ListResult []account.Account
-	Error error
+	ListResult       []account.Account
+	Error            error
 }
 
-func (w workspaceMock) Create(_ context.Context, _ CreateInput) (CreateOutput, error) {
+func (w WorkspaceMock) Create(_ context.Context, _ CreateInput) (CreateOutput, error) {
 	return w.CreateResult, w.Error
 }
 
-func (w workspaceMock) GetBalance(_ context.Context, _ id.External) (GetBalanceResponse, error) {
+func (w WorkspaceMock) GetBalance(_ context.Context, _ id.External) (GetBalanceResponse, error) {
 	return w.GetBalanceResult, w.Error
 }
 
-func (w workspaceMock) List(_ context.Context, _ account.Filter) ([]account.Account, error) {
+func (w WorkspaceMock) List(_ context.Context, _ account.Filter) ([]account.Account, error) {
 	return w.ListResult, w.Error
 }

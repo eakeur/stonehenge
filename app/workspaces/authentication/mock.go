@@ -5,14 +5,13 @@ import (
 	"stonehenge/app/core/entities/access"
 )
 
-var _ Workspace = workspaceMock{}
+var _ Workspace = WorkspaceMock{}
 
-type workspaceMock struct {
+type WorkspaceMock struct {
 	AuthenticateResult access.Access
-	Error error
+	Error              error
 }
 
-func (w workspaceMock) Authenticate(_ context.Context, _ AuthenticationRequest) (access.Access, error) {
+func (w WorkspaceMock) Authenticate(_ context.Context, _ AuthenticationRequest) (access.Access, error) {
 	return w.AuthenticateResult, w.Error
 }
-
