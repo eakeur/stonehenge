@@ -68,7 +68,6 @@ func (s *Server) AssignRoutes() {
 func NewServer(application *app.Application) *Server {
 
 	responseBuilder := rest.ResponseBuilder{
-		Access: application.AccessManager,
 		Logger: application.Logger,
 	}
 
