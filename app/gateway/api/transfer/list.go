@@ -18,8 +18,8 @@ import (
 // @Tags         Transfers
 // @Param       originID  query string  false  "Account origin id"
 // @Param       destinationID  query string  false  "Account destination id"
-// @Param       initialDate  query string  false  "Initial date"
-// @Param       finalDate  query string  false  "Final date"
+// @Param       made_since  query string  false  "Initial date"
+// @Param       made_until  query string  false  "Final date"
 // @Produce      json
 // @Success      200  {object}  []schema.ListTransferResponse
 // @Failure      400  {object}  rest.Error
@@ -46,7 +46,7 @@ func (c *controller) List(r *http.Request) rest.Response {
 			EffectiveDate: ref.EffectiveDate,
 		}
 	}
-	return c.builder.BuildOKResult(list).
+	return c.builder.BuildOKResult(res).
 		AddHeaders("X-Total-Count", fmt.Sprint(length)).
 		WithSuccessLog(ctx, fmt.Sprintf("listed accounts with %d results", length))
 }
@@ -59,7 +59,7 @@ func filter(values url.Values) transfer.Filter {
 	}
 
 	if dest := id.ExternalFrom(values.Get("destination")); dest != id.Zero {
-		f.OriginID = dest
+		f.DestinationID = dest
 	}
 
 	if ini := values.Get("made_since"); ini != "" {
@@ -72,7 +72,7 @@ func filter(values url.Values) transfer.Filter {
 	if fin := values.Get("made_until"); fin != "" {
 		date, err := time.Parse("2006-01-02", fin)
 		if err == nil {
-			f.InitialDate = date
+			f.FinalDate = date
 		}
 	}
 
