@@ -253,13 +253,13 @@ var doc = `{
                     {
                         "type": "string",
                         "description": "Initial date",
-                        "name": "initialDate",
+                        "name": "made_since",
                         "in": "query"
                     },
                     {
                         "type": "string",
                         "description": "Final date",
-                        "name": "finalDate",
+                        "name": "made_until",
                         "in": "query"
                     }
                 ],
