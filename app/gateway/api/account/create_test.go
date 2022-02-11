@@ -1,48 +1,25 @@
 package account
 
 import (
-	"bytes"
-	"context"
 	"encoding/json"
 	"net/http"
-	"net/http/httptest"
-	"os"
 	"stonehenge/app/core/entities/access"
 	accountErrors "stonehenge/app/core/entities/account"
 	"stonehenge/app/core/types/id"
-	loggerDomain "stonehenge/app/core/types/logger"
 	"stonehenge/app/gateway/api/account/schema"
 	"stonehenge/app/gateway/api/rest"
+	testutils "stonehenge/app/test_utils"
 	"stonehenge/app/workspaces/account"
 	"testing"
 	"time"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/google/uuid"
-	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCreate(t *testing.T) {
 	t.Parallel()
-	type fields struct {
-		accounts account.Workspace
-	}
-
-	type args struct {
-		body schema.CreateAccountRequest
-	}
-
-	type test struct {
-		name     string
-		fields   fields
-		args     args
-		wantCode int
-		wantBody rest.Response
-	}
 
 	accountIDMock := id.ExternalFrom("d0052623-0695-4a3a-abf6-887f613dda8e")
-	accountTokenMock := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
 	createdAtMock := time.Now()
 
 	accounts := account.WorkspaceMock{
@@ -51,13 +28,25 @@ func TestCreate(t *testing.T) {
 			CreatedAt: createdAtMock,
 			Access: access.Access{
 				AccountID: accountIDMock,
-				Token:     accountTokenMock,
+				Token:     testutils.JWTTokenMock,
 			},
 		},
 	}
-	logger := zerolog.New(os.Stdout)
-	builder := rest.ResponseBuilder{
-		Logger: logger,
+
+	type fields struct {
+		accounts account.Workspace
+	}
+
+	type args struct {
+		body interface{}
+	}
+
+	type test struct {
+		name     string
+		fields   fields
+		args     args
+		wantCode int
+		wantBody rest.Response
 	}
 
 	var tests = []test{
@@ -76,7 +65,7 @@ func TestCreate(t *testing.T) {
 				HTTPStatus: http.StatusCreated,
 				Content: schema.CreateAccountResponse{
 					AccountID: accountIDMock.String(),
-					Token:     accountTokenMock,
+					Token:     testutils.JWTTokenMock,
 				},
 			},
 		},
@@ -106,26 +95,16 @@ func TestCreate(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			ac := test.fields.accounts
-			if ac == nil {
-				ac = accounts
-			}
-			controller := NewController(ac, builder)
+			controller := NewController(
+				testutils.EvaluateDep(test.fields.accounts, accounts).(account.Workspace),
+				testutils.GetResponseBuilder(),
+			)
 
-			body, _ := json.Marshal(test.args.body)
-			req := httptest.NewRequest(http.MethodPost, "/accounts", bytes.NewReader(body))
-
-			router := chi.NewRouter()
-			router.Method("POST", "/accounts", rest.Handler(controller.Create))
-
-			reqID := uuid.NewString()
-			req = req.WithContext(context.WithValue(req.Context(), loggerDomain.RequestTracerContextKey, reqID))
-
-			rec := httptest.NewRecorder()
-			router.ServeHTTP(rec, req)
+			req := testutils.CreateRequestWithBody(http.MethodPost, "/accounts", test.args.body)
+			rec := testutils.Route{Method: http.MethodPost, Pattern: "/accounts", Handler: controller.Create}.
+				ServeHTTP(req)
 
 			assert.Equal(t, test.wantCode, rec.Code)
-
 			wantJSONBody, _ := json.Marshal(test.wantBody)
 			assert.JSONEq(t, string(wantJSONBody), rec.Body.String())
 		})

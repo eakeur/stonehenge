@@ -1,27 +1,27 @@
 package account
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
-	"net/http/httptest"
-	"os"
 	accountErrors "stonehenge/app/core/entities/account"
 	"stonehenge/app/core/types/id"
-	loggerDomain "stonehenge/app/core/types/logger"
 	"stonehenge/app/gateway/api/account/schema"
 	"stonehenge/app/gateway/api/rest"
+	testutils "stonehenge/app/test_utils"
 	"stonehenge/app/workspaces/account"
 	"testing"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/google/uuid"
-	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGetBalance(t *testing.T) {
 	t.Parallel()
+
+	accountIDMock := id.ExternalFrom("d0052623-0695-4a3a-abf6-887f613dda8e")
+	accounts := account.WorkspaceMock{
+		GetBalanceResult: account.GetBalanceResponse{Balance: 500},
+	}
+
 	type fields struct {
 		accounts account.Workspace
 	}
@@ -31,29 +31,18 @@ func TestGetBalance(t *testing.T) {
 	}
 
 	type test struct {
-		name     string
-		fields   fields
-		args     args
-		wantCode int
-		wantBody rest.Response
-	}
-
-	accountIDMock := id.ExternalFrom("d0052623-0695-4a3a-abf6-887f613dda8e")
-	accounts := account.WorkspaceMock{
-		GetBalanceResult: account.GetBalanceResponse{Balance: 500},
-	}
-	logger := zerolog.New(os.Stdout)
-	builder := rest.ResponseBuilder{
-		Logger: logger,
+		name   string
+		fields fields
+		args   args
+		want   rest.Response
 	}
 
 	var tests = []test{
 		{
-			name:     "return 200 for successfully found account",
-			fields:   fields{},
-			args:     args{id: accountIDMock.String()},
-			wantCode: http.StatusOK,
-			wantBody: rest.Response{
+			name:   "return 200 for successfully found account",
+			fields: fields{},
+			args:   args{id: accountIDMock.String()},
+			want: rest.Response{
 				HTTPStatus: http.StatusOK,
 				Content: schema.GetBalanceResponse{
 					Balance: 5.00,
@@ -67,9 +56,8 @@ func TestGetBalance(t *testing.T) {
 					Error: accountErrors.ErrNotFound,
 				},
 			},
-			args:     args{id: accountIDMock.String()},
-			wantCode: http.StatusNotFound,
-			wantBody: rest.Response{
+			args: args{id: accountIDMock.String()},
+			want: rest.Response{
 				HTTPStatus: http.StatusNotFound,
 				Error:      rest.ErrAccountNotFound,
 			},
@@ -80,26 +68,20 @@ func TestGetBalance(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			ac := test.fields.accounts
-			if ac == nil {
-				ac = accounts
-			}
-			controller := NewController(ac, builder)
+			controller := NewController(
+				testutils.EvaluateDep(test.fields.accounts, accounts).(account.Workspace),
+				testutils.GetResponseBuilder(),
+			)
 
-			req := httptest.NewRequest(http.MethodGet, "/accounts/"+test.args.id+"/balance", nil)
+			req := testutils.CreateRequestWithParams(http.MethodGet, "/accounts/"+test.args.id+"/balance", nil)
+			req = testutils.AuthenticateRequest(req, id.NewExternal())
+			rec := testutils.Route{
+				Method: http.MethodGet, Pattern: "/accounts/{accountID}/balance",
+				Handler: controller.GetBalance, RequiresAuth: true,
+			}.ServeHTTP(req)
 
-			router := chi.NewRouter()
-			router.Method("GET", "/accounts/{accountID}/balance", rest.Handler(controller.GetBalance))
-
-			reqID := uuid.NewString()
-			req = req.WithContext(context.WithValue(req.Context(), loggerDomain.RequestTracerContextKey, reqID))
-
-			rec := httptest.NewRecorder()
-			router.ServeHTTP(rec, req)
-
-			assert.Equal(t, test.wantCode, rec.Code)
-
-			wantJSONBody, _ := json.Marshal(test.wantBody)
+			assert.Equal(t, test.want.HTTPStatus, rec.Code)
+			wantJSONBody, _ := json.Marshal(test.want)
 			assert.JSONEq(t, string(wantJSONBody), rec.Body.String())
 		})
 	}
