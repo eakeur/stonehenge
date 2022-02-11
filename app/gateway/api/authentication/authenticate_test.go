@@ -22,7 +22,7 @@ import (
 )
 
 func TestCreate(t *testing.T) {
-
+	t.Parallel()
 	type fields struct {
 		auth authentication.Workspace
 	}

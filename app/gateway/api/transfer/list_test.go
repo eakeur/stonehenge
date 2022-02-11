@@ -21,7 +21,7 @@ import (
 )
 
 func TestList(t *testing.T) {
-
+	t.Parallel()
 	const testWorkerTimeout = 5
 
 	type fields struct {
@@ -73,9 +73,9 @@ func TestList(t *testing.T) {
 			},
 		},
 		{
-			name:     "return 200 for successfully found transfers with filter",
-			fields:   fields{},
-			args:     args{
+			name:   "return 200 for successfully found transfers with filter",
+			fields: fields{},
+			args: args{
 				params: map[string]string{
 					"made_since": "2020-01-02",
 					"made_until": "2020-02-02",

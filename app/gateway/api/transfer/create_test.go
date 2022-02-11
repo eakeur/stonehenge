@@ -25,7 +25,7 @@ import (
 )
 
 func TestCreate(t *testing.T) {
-
+	t.Parallel()
 	const testWorkerTimeout = 5
 
 	type fields struct {
