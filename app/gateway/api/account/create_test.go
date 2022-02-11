@@ -8,7 +8,7 @@ import (
 	"stonehenge/app/core/types/id"
 	"stonehenge/app/gateway/api/account/schema"
 	"stonehenge/app/gateway/api/rest"
-	"stonehenge/app/tests"
+	"stonehenge/app/gateway/api/tests"
 	"stonehenge/app/workspaces/account"
 	"testing"
 	"time"

@@ -83,3 +83,10 @@ func AuthenticateRequest(r *http.Request, accountID id.External) *http.Request {
 	r.Header.Add("Authorization", fmt.Sprintf("Bearer %v", acc.Token))
 	return r
 }
+
+func EvaluateDep(specific, generic interface{}) interface{} {
+	if specific != nil {
+		return specific
+	}
+	return generic
+}
