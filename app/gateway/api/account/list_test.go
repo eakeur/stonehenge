@@ -3,11 +3,11 @@ package account
 import (
 	"encoding/json"
 	"net/http"
-	accountsDomain "stonehenge/app/core/entities/account"
+	accountDomain "stonehenge/app/core/entities/account"
 	"stonehenge/app/core/types/id"
 	"stonehenge/app/gateway/api/account/schema"
 	"stonehenge/app/gateway/api/rest"
-	testutils "stonehenge/app/test_utils"
+	"stonehenge/app/tests"
 	"stonehenge/app/workspaces/account"
 	"testing"
 
@@ -18,7 +18,7 @@ func TestList(t *testing.T) {
 	t.Parallel()
 
 	accounts := account.WorkspaceMock{
-		ListResult: accountsDomain.GetFakeAccounts(),
+		ListResult: accountDomain.GetFakeAccounts(),
 	}
 
 	type fields struct {
@@ -37,7 +37,7 @@ func TestList(t *testing.T) {
 		wantBody rest.Response
 	}
 
-	var tests = []test{
+	var cases = []test{
 		{
 			name:     "return 200 for successfully found account",
 			fields:   fields{},
@@ -47,7 +47,7 @@ func TestList(t *testing.T) {
 				HTTPStatus: http.StatusOK,
 				Content: func() []schema.AccountListResponse {
 					var res []schema.AccountListResponse
-					for _, v := range accountsDomain.GetFakeAccounts() {
+					for _, v := range accountDomain.GetFakeAccounts() {
 						res = append(res, schema.AccountListResponse{
 							AccountID: v.ExternalID.String(),
 							OwnerName: v.Name,
@@ -70,7 +70,7 @@ func TestList(t *testing.T) {
 				HTTPStatus: http.StatusOK,
 				Content: func() []schema.AccountListResponse {
 					var res []schema.AccountListResponse
-					for _, v := range accountsDomain.GetFakeAccounts() {
+					for _, v := range accountDomain.GetFakeAccounts() {
 						res = append(res, schema.AccountListResponse{
 							AccountID: v.ExternalID.String(),
 							OwnerName: v.Name,
@@ -82,18 +82,18 @@ func TestList(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, test := range cases {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			controller := NewController(
-				testutils.EvaluateDep(test.fields.accounts, accounts).(account.Workspace),
-				testutils.GetResponseBuilder(),
+				tests.EvaluateDep(test.fields.accounts, accounts).(account.Workspace),
+				tests.GetResponseBuilder(),
 			)
 
-			req := testutils.CreateRequestWithParams(http.MethodGet, "/accounts", test.args.params)
-			req = testutils.AuthenticateRequest(req, id.NewExternal())
-			rec := testutils.Route{
+			req := tests.CreateRequestWithParams(http.MethodGet, "/accounts", test.args.params)
+			req = tests.AuthenticateRequest(req, id.NewExternal())
+			rec := tests.Route{
 				Method: http.MethodGet, Pattern: "/accounts",
 				Handler: controller.List, RequiresAuth: true,
 			}.ServeHTTP(req)

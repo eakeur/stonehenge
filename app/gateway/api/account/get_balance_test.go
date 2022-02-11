@@ -3,11 +3,11 @@ package account
 import (
 	"encoding/json"
 	"net/http"
-	accountErrors "stonehenge/app/core/entities/account"
+	accountDomain "stonehenge/app/core/entities/account"
 	"stonehenge/app/core/types/id"
 	"stonehenge/app/gateway/api/account/schema"
 	"stonehenge/app/gateway/api/rest"
-	testutils "stonehenge/app/test_utils"
+	"stonehenge/app/tests"
 	"stonehenge/app/workspaces/account"
 	"testing"
 
@@ -37,7 +37,7 @@ func TestGetBalance(t *testing.T) {
 		want   rest.Response
 	}
 
-	var tests = []test{
+	var cases = []test{
 		{
 			name:   "return 200 for successfully found account",
 			fields: fields{},
@@ -53,7 +53,7 @@ func TestGetBalance(t *testing.T) {
 			name: "return 404 for not found account",
 			fields: fields{
 				accounts: account.WorkspaceMock{
-					Error: accountErrors.ErrNotFound,
+					Error: accountDomain.ErrNotFound,
 				},
 			},
 			args: args{id: accountIDMock.String()},
@@ -64,18 +64,18 @@ func TestGetBalance(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, test := range cases {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			controller := NewController(
-				testutils.EvaluateDep(test.fields.accounts, accounts).(account.Workspace),
-				testutils.GetResponseBuilder(),
+				tests.EvaluateDep(test.fields.accounts, accounts).(account.Workspace),
+				tests.GetResponseBuilder(),
 			)
 
-			req := testutils.CreateRequestWithParams(http.MethodGet, "/accounts/"+test.args.id+"/balance", nil)
-			req = testutils.AuthenticateRequest(req, id.NewExternal())
-			rec := testutils.Route{
+			req := tests.CreateRequestWithParams(http.MethodGet, "/accounts/"+test.args.id+"/balance", nil)
+			req = tests.AuthenticateRequest(req, id.NewExternal())
+			rec := tests.Route{
 				Method: http.MethodGet, Pattern: "/accounts/{accountID}/balance",
 				Handler: controller.GetBalance, RequiresAuth: true,
 			}.ServeHTTP(req)

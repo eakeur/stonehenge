@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"net/http"
 	"stonehenge/app/core/entities/access"
-	accountErrors "stonehenge/app/core/entities/account"
+	accountDomain "stonehenge/app/core/entities/account"
 	"stonehenge/app/core/types/id"
 	"stonehenge/app/gateway/api/account/schema"
 	"stonehenge/app/gateway/api/rest"
-	testutils "stonehenge/app/test_utils"
+	"stonehenge/app/tests"
 	"stonehenge/app/workspaces/account"
 	"testing"
 	"time"
@@ -28,7 +28,7 @@ func TestCreate(t *testing.T) {
 			CreatedAt: createdAtMock,
 			Access: access.Access{
 				AccountID: accountIDMock,
-				Token:     testutils.JWTTokenMock,
+				Token:     tests.JWTTokenMock,
 			},
 		},
 	}
@@ -49,7 +49,7 @@ func TestCreate(t *testing.T) {
 		wantBody rest.Response
 	}
 
-	var tests = []test{
+	var cases = []test{
 		{
 			name:   "return 201 for successfully created account",
 			fields: fields{},
@@ -65,7 +65,7 @@ func TestCreate(t *testing.T) {
 				HTTPStatus: http.StatusCreated,
 				Content: schema.CreateAccountResponse{
 					AccountID: accountIDMock.String(),
-					Token:     testutils.JWTTokenMock,
+					Token:     tests.JWTTokenMock,
 				},
 			},
 		},
@@ -73,7 +73,7 @@ func TestCreate(t *testing.T) {
 			name: "return 400 for already existing account",
 			fields: fields{
 				accounts: account.WorkspaceMock{
-					Error: accountErrors.ErrAlreadyExist,
+					Error: accountDomain.ErrAlreadyExist,
 				},
 			},
 			args: args{
@@ -91,17 +91,17 @@ func TestCreate(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, test := range cases {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			controller := NewController(
-				testutils.EvaluateDep(test.fields.accounts, accounts).(account.Workspace),
-				testutils.GetResponseBuilder(),
+				tests.EvaluateDep(test.fields.accounts, accounts).(account.Workspace),
+				tests.GetResponseBuilder(),
 			)
 
-			req := testutils.CreateRequestWithBody(http.MethodPost, "/accounts", test.args.body)
-			rec := testutils.Route{Method: http.MethodPost, Pattern: "/accounts", Handler: controller.Create}.
+			req := tests.CreateRequestWithBody(http.MethodPost, "/accounts", test.args.body)
+			rec := tests.Route{Method: http.MethodPost, Pattern: "/accounts", Handler: controller.Create}.
 				ServeHTTP(req)
 
 			assert.Equal(t, test.wantCode, rec.Code)
