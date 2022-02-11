@@ -1,4 +1,4 @@
-package testutils
+package tests
 
 import (
 	"bytes"
@@ -27,11 +27,10 @@ var (
 	access = accessManager.NewManager(testTokenExpirationTime, []byte(testTokenKey))
 )
 
-
 type Route struct {
-	Method string
-	Pattern string
-	Handler rest.Handler
+	Method       string
+	Pattern      string
+	Handler      rest.Handler
 	RequiresAuth bool
 }
 
