@@ -1,19 +1,12 @@
 package transfer
 
 import (
-	"context"
 	"encoding/json"
-	"github.com/go-chi/chi/v5"
-	"github.com/google/uuid"
-	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"net/http"
-	"net/http/httptest"
-	"net/url"
-	"os"
 	"stonehenge/app/core/entities/transfer"
-	loggerDomain "stonehenge/app/core/types/logger"
 	"stonehenge/app/gateway/api/rest"
+	"stonehenge/app/gateway/api/tests"
 	"stonehenge/app/gateway/api/transfer/schema"
 	transferWorker "stonehenge/app/worker/transfer"
 	transferworkspace "stonehenge/app/workspaces/transfer"
@@ -36,7 +29,7 @@ func TestList(t *testing.T) {
 		name     string
 		fields   fields
 		args     args
-		wantCode int
+		noAuth   bool
 		wantBody rest.Response
 	}
 
@@ -44,17 +37,11 @@ func TestList(t *testing.T) {
 		ListResult: transfer.GetFakeTransfers(),
 	}
 
-	logger := zerolog.New(os.Stdout)
-	builder := rest.ResponseBuilder{
-		Logger: logger,
-	}
-
-	var tests = []test{
+	var cases = []test{
 		{
 			name:     "return 200 for successfully found transfers",
 			fields:   fields{},
 			args:     args{},
-			wantCode: http.StatusOK,
 			wantBody: rest.Response{
 				HTTPStatus: http.StatusOK,
 				Content: func() []schema.ListTransferResponse {
@@ -81,7 +68,6 @@ func TestList(t *testing.T) {
 					"made_until": "2020-02-02",
 				},
 			},
-			wantCode: http.StatusOK,
 			wantBody: rest.Response{
 				HTTPStatus: http.StatusOK,
 				Content: func() []schema.ListTransferResponse {
@@ -101,39 +87,30 @@ func TestList(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, test := range cases {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			tr := test.fields.transfers
-			if tr == nil {
-				tr = transfers
-			}
 
-			worker := transferWorker.NewWorker(testWorkerTimeout, tr, logger)
-			controller := NewController(tr, worker, builder)
+			worker := transferWorker.NewWorker(
+				testWorkerTimeout,
+				tests.EvaluateDep(test.fields.transfers, transfers).(transferworkspace.Workspace),
+				tests.GetResponseBuilder().Logger,
+			)
+			go worker.Run()
+			defer worker.Close()
 
-			var query string
-			if test.args.params != nil {
-				q := url.Values{}
-				for k, v := range test.args.params {
-					q.Add(k, v)
-				}
-				query = "?" + q.Encode()
-			}
-			req := httptest.NewRequest(http.MethodGet, "/transfers"+query, nil)
+			controller := NewController(
+				tests.EvaluateDep(test.fields.transfers, transfers).(transferworkspace.Workspace),
+				worker,
+				tests.GetResponseBuilder(),
+			)
 
-			router := chi.NewRouter()
-			router.Method("GET", "/transfers", rest.Handler(controller.List))
+			req := tests.CreateRequestWithParams(http.MethodGet, "/transfers", test.args.params)
+			rec := tests.Route{Method: http.MethodGet, Pattern: "/transfers", Handler: controller.List}.
+				ServeHTTP(req)
 
-			reqID := uuid.NewString()
-			req = req.WithContext(context.WithValue(req.Context(), loggerDomain.RequestTracerContextKey, reqID))
-
-			rec := httptest.NewRecorder()
-			router.ServeHTTP(rec, req)
-
-			assert.Equal(t, test.wantCode, rec.Code)
-
+			assert.Equal(t, test.wantBody.HTTPStatus, rec.Code)
 			wantJSONBody, _ := json.Marshal(test.wantBody)
 			assert.JSONEq(t, string(wantJSONBody), rec.Body.String())
 		})

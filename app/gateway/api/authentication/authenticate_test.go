@@ -1,22 +1,15 @@
 package authentication
 
 import (
-	"bytes"
-	"context"
 	"encoding/json"
-	"github.com/go-chi/chi/v5"
-	"github.com/google/uuid"
-	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"net/http"
-	"net/http/httptest"
-	"os"
 	"stonehenge/app/core/entities/access"
 	"stonehenge/app/core/types/id"
-	loggerDomain "stonehenge/app/core/types/logger"
 	"stonehenge/app/core/types/password"
 	"stonehenge/app/gateway/api/authentication/schema"
 	"stonehenge/app/gateway/api/rest"
+	"stonehenge/app/gateway/api/tests"
 	"stonehenge/app/workspaces/authentication"
 	"testing"
 )
@@ -50,12 +43,7 @@ func TestCreate(t *testing.T) {
 		},
 	}
 
-	logger := zerolog.New(os.Stdout)
-	builder := rest.ResponseBuilder{
-		Logger: logger,
-	}
-
-	var tests = []test{
+	var cases = []test{
 		{
 			name:   "return 200 for successfully authenticated account",
 			fields: fields{},
@@ -92,30 +80,21 @@ func TestCreate(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, test := range cases {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			ac := test.fields.auth
-			if ac == nil {
-				ac = accounts
-			}
-			controller := NewController(ac, builder)
 
-			body, _ := json.Marshal(test.args.body)
-			req := httptest.NewRequest(http.MethodPost, "/login", bytes.NewReader(body))
+			controller := NewController(
+				tests.EvaluateDep(test.fields.auth, accounts).(authentication.Workspace),
+				tests.GetResponseBuilder(),
+			)
 
-			router := chi.NewRouter()
-			router.Method("POST", "/login", rest.Handler(controller.Authenticate))
+			req := tests.CreateRequestWithBody(http.MethodPost, "/login", test.args.body)
+			rec := tests.Route{Method: http.MethodPost, Pattern: "/login", Handler: controller.Authenticate}.
+				ServeHTTP(req)
 
-			reqID := uuid.NewString()
-			req = req.WithContext(context.WithValue(req.Context(), loggerDomain.RequestTracerContextKey, reqID))
-
-			rec := httptest.NewRecorder()
-			router.ServeHTTP(rec, req)
-
-			assert.Equal(t, test.wantCode, rec.Code)
-
+			assert.Equal(t, test.wantBody.HTTPStatus, rec.Code)
 			wantJSONBody, _ := json.Marshal(test.wantBody)
 			assert.JSONEq(t, string(wantJSONBody), rec.Body.String())
 		})

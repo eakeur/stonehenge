@@ -68,7 +68,7 @@ func TestGetBalance(t *testing.T) {
 			noAuth: true,
 			want: rest.Response{
 				HTTPStatus: http.StatusUnauthorized,
-				Error:      rest.ErrAccessNonexistent,
+				Error:      rest.ErrAccessExpired,
 			},
 		},
 	}
