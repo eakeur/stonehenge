@@ -32,6 +32,7 @@ func TestList(t *testing.T) {
 	type test struct {
 		name     string
 		fields   fields
+		noAuth   bool
 		args     args
 		wantCode int
 		wantBody rest.Response
@@ -92,7 +93,9 @@ func TestList(t *testing.T) {
 			)
 
 			req := tests.CreateRequestWithParams(http.MethodGet, "/accounts", test.args.params)
-			req = tests.AuthenticateRequest(req, id.NewExternal())
+			if !test.noAuth {
+				req = tests.AuthenticateRequest(req, id.NewExternal())
+			}
 			rec := tests.Route{
 				Method: http.MethodGet, Pattern: "/accounts",
 				Handler: controller.List, RequiresAuth: true,

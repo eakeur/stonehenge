@@ -33,15 +33,15 @@ func TestGetBalance(t *testing.T) {
 	type test struct {
 		name   string
 		fields fields
+		noAuth bool
 		args   args
 		want   rest.Response
 	}
 
 	var cases = []test{
 		{
-			name:   "return 200 for successfully found account",
-			fields: fields{},
-			args:   args{id: accountIDMock.String()},
+			name: "return 200 for successfully found account",
+			args: args{id: accountIDMock.String()},
 			want: rest.Response{
 				HTTPStatus: http.StatusOK,
 				Content: schema.GetBalanceResponse{
@@ -62,6 +62,15 @@ func TestGetBalance(t *testing.T) {
 				Error:      rest.ErrAccountNotFound,
 			},
 		},
+		{
+			name:   "return 401 for account not authenticated",
+			args:   args{id: accountIDMock.String()},
+			noAuth: true,
+			want: rest.Response{
+				HTTPStatus: http.StatusUnauthorized,
+				Error:      rest.ErrAccessNonexistent,
+			},
+		},
 	}
 
 	for _, test := range cases {
@@ -74,7 +83,9 @@ func TestGetBalance(t *testing.T) {
 			)
 
 			req := tests.CreateRequestWithParams(http.MethodGet, "/accounts/"+test.args.id+"/balance", nil)
-			req = tests.AuthenticateRequest(req, id.NewExternal())
+			if !test.noAuth {
+				req = tests.AuthenticateRequest(req, id.NewExternal())
+			}
 			rec := tests.Route{
 				Method: http.MethodGet, Pattern: "/accounts/{accountID}/balance",
 				Handler: controller.GetBalance, RequiresAuth: true,
