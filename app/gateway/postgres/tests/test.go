@@ -1,34 +1,27 @@
-package postgrestest
+package tests
 
 import (
-	"context"
 	"fmt"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/ory/dockertest/v3"
 	"github.com/pkg/errors"
 	"log"
-	"os"
+	"stonehenge/app/config"
 	"testing"
 )
 
-const (
-	testUser     = "postgres"
-	testPassword = "password"
-	testHost     = "localhost"
-	testDatabase = "stonehenge"
-)
-
-var port string
-var db *pgxpool.Pool
-
-func NewCleanDatabase() (*pgxpool.Pool, error) {
-	ctx := context.Background()
-	err := RecycleDatabase(ctx)
-	if err != nil {
-		return nil, err
+var (
+	port string
+	db   *pgxpool.Pool
+	env  = config.DatabaseConfigurations{
+		User:           "postgres",
+		Password:       "postgres",
+		Host:           "localhost",
+		Port:           "5432",
+		SSLMode:        "disable",
+		MigrationsPath: "../migrations",
 	}
-	return db, nil
-}
+)
 
 func SetupTest(m *testing.M) int {
 	teardown, err := createContainer()
@@ -37,13 +30,12 @@ func SetupTest(m *testing.M) int {
 	}
 
 	defer teardown()
-
 	return m.Run()
 }
 
 func createContainer() (func(), error) {
-
-	pool, res, err := createResource(testUser, testDatabase, testPassword)
+	dbName := createRandomName()
+	pool, res, err := createResource(env.User, dbName, env.Password)
 	if err != nil {
 		return nil, err
 	}
@@ -53,10 +45,8 @@ func createContainer() (func(), error) {
 
 	port = res.GetPort("5432/tcp")
 
-	migPath := os.Getenv("STONEHENGE_MIGRATIONS")
-
 	if err := pool.Retry(func() error {
-		db, err = connect(testUser, testPassword, testHost, port, testDatabase, migPath)
+		db, err = connect(dbName, env)
 		return err
 	}); err != nil {
 		teardown()
@@ -67,7 +57,7 @@ func createContainer() (func(), error) {
 
 }
 
-func createResource(userName, databaseName, userPassword string) (*dockertest.Pool, *dockertest.Resource, error) {
+func createResource(userName, dbName, userPassword string) (*dockertest.Pool, *dockertest.Resource, error) {
 	pool, err := dockertest.NewPool("")
 	if err != nil {
 		return pool, nil, errors.Wrap(err, "the docker pool connection could not be established")
@@ -80,7 +70,7 @@ func createResource(userName, databaseName, userPassword string) (*dockertest.Po
 	resource, err := pool.Run("postgres", "latest", []string{
 		fmt.Sprintf("POSTGRES_USER=%s", userName),
 		fmt.Sprintf("POSTGRES_PASSWORD=%s", userPassword),
-		fmt.Sprintf("POSTGRES_DB=%s", databaseName),
+		fmt.Sprintf("POSTGRES_DB=%s", dbName),
 	})
 
 	if err != nil {

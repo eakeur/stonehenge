@@ -1,4 +1,4 @@
-package postgrestest
+package tests
 
 import (
 	"stonehenge/app/core/entities/account"
