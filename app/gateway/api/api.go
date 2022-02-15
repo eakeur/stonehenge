@@ -33,7 +33,7 @@ func (s *Server) AssignRoutes() {
 	s.Router.Use(s.middlewares.CORS, s.middlewares.RequestTracer)
 
 	s.Router.Route("/api/v1", func(r chi.Router) {
-		s.Router.Route("/accounts", func(r chi.Router) {
+		r.Route("/accounts", func(r chi.Router) {
 			r.Group(func(r chi.Router) {
 				r.Use(s.middlewares.Authorization)
 				r.Method("GET", "/", rest.Handler(s.accounts.List))
@@ -42,25 +42,26 @@ func (s *Server) AssignRoutes() {
 			r.Method("POST", "/", rest.Handler(s.accounts.Create))
 		})
 
-		s.Router.Route("/transfers", func(r chi.Router) {
+		r.Route("/transfers", func(r chi.Router) {
 			r.Use(s.middlewares.Authorization)
 			r.Method("POST", "/", rest.Handler(s.transfers.Create))
 			r.Method("GET", "/", rest.Handler(s.transfers.List))
 		})
 
-		s.Router.Method("POST", "/login", rest.Handler(s.authentication.Authenticate))
+		r.Method("POST", "/login", rest.Handler(s.authentication.Authenticate))
 
-		s.Router.Method("GET", "/swagger/{*}", httpSwagger.WrapHandler)
+	})
 
-		s.Router.Get("/swagger/swagger.json", func(rw http.ResponseWriter, _ *http.Request) {
-			rw.Header().Set("Content-Type", "application/json")
-			doc, _ := ioutil.ReadFile("docs/swagger.json")
-			rw.Write(doc)
-		})
+	s.Router.Method("GET", "/swagger/{*}", httpSwagger.WrapHandler)
 
-		s.Router.Get("/", func(writer http.ResponseWriter, request *http.Request) {
-			http.Redirect(writer, request, "/swagger/index.html", http.StatusSeeOther)
-		})
+	s.Router.Get("/swagger/swagger.json", func(rw http.ResponseWriter, _ *http.Request) {
+		rw.Header().Set("Content-Type", "application/json")
+		doc, _ := ioutil.ReadFile("docs/swagger.json")
+		rw.Write(doc)
+	})
+
+	s.Router.Get("/", func(writer http.ResponseWriter, request *http.Request) {
+		http.Redirect(writer, request, "/swagger/index.html", http.StatusSeeOther)
 	})
 
 }
