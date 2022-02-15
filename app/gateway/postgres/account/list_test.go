@@ -2,20 +2,18 @@ package account
 
 import (
 	"context"
-	"github.com/rs/zerolog"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"stonehenge/app/core/entities/account"
-	postgrestest2 "stonehenge/app/gateway/postgres/postgrestest"
+	"stonehenge/app/gateway/postgres/tests"
 	"testing"
+
+	"github.com/rs/zerolog"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestList(t *testing.T) {
 
-	db, err := postgrestest2.NewCleanDatabase()
-	if err != nil {
-		t.Fatalf("could not get database: %v", err)
-	}
+	t.Parallel()
 
 	log := zerolog.New(os.Stdout).Level(zerolog.InfoLevel)
 
@@ -27,49 +25,52 @@ func TestList(t *testing.T) {
 	type test struct {
 		name    string
 		args    args
-		before  func(test, account.Repository) ([]account.Account, error)
+		before  func(test, tests.Database) ([]account.Account, error)
 		want    []account.Account
 		wantErr error
 	}
 
-	tests := []test{
+	cases := []test{
 
 		// Should return the account expected
 		{
 			name: "return account expected",
-			before: func(test test, a account.Repository) ([]account.Account, error) {
-				return postgrestest2.PopulateAccounts(test.args.ctx, postgrestest2.GetFakeAccounts()...)
+			before: func(test test, db tests.Database) ([]account.Account, error) {
+				return db.PopulateAccounts(test.args.ctx, account.GetFakeAccounts()...)
 			},
 			args: args{ctx: context.Background(), filter: account.Filter{Name: "Reis"}},
 			want: []account.Account{
 				{
 					Document: "70830052062",
 					Name:     "John Reis",
-					Balance:  2500,
+					Balance:  105000,
 				},
 				{
 					Document: "24388516007",
 					Name:     "Wagner Reis",
-					Balance:  4500,
+					Balance:  450000,
 				},
 				{
 					Document: "05161964057",
 					Name:     "Spencer Reis",
-					Balance:  5000,
+					Balance:  502200,
 				},
 			},
 		},
 	}
 
-	for _, test := range tests {
+	for _, test := range cases {
 		test := test
 
 		t.Run(test.name, func(t *testing.T) {
-			defer postgrestest2.RecycleDatabase(test.args.ctx)
-			repo := NewRepository(db, log)
+			t.Parallel()
+			db := tests.NewTestDatabase(t)
+			defer db.Drop()
+
+			repo := NewRepository(db.Pool, log)
 
 			if test.before != nil {
-				_, err := test.before(test, repo)
+				_, err := test.before(test, db)
 				if err != nil {
 					t.Fatalf("error running routine before: %v", err)
 				}

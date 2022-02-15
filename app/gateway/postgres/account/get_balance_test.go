@@ -2,21 +2,19 @@ package account
 
 import (
 	"context"
-	"github.com/rs/zerolog"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/types/currency"
-	postgrestest2 "stonehenge/app/gateway/postgres/postgrestest"
+	"stonehenge/app/gateway/postgres/tests"
 	"testing"
+
+	"github.com/rs/zerolog"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetBalance(t *testing.T) {
 
-	db, err := postgrestest2.NewCleanDatabase()
-	if err != nil {
-		t.Fatalf("could not get database: %v", err)
-	}
+	t.Parallel()
 
 	log := zerolog.New(os.Stdout).Level(zerolog.InfoLevel)
 	type args struct {
@@ -26,28 +24,28 @@ func TestGetBalance(t *testing.T) {
 	type test struct {
 		name    string
 		args    args
-		before  func(test) (account.Account, error)
+		before  func(test, tests.Database) (account.Account, error)
 		want    currency.Currency
 		wantErr error
 	}
 
-	tests := []test{
+	cases := []test{
 
 		// Should return the balance expected for this account
 		{
 			name: "return balance expected",
-			before: func(test test) (account.Account, error) {
-				accounts, err := postgrestest2.PopulateAccounts(test.args.ctx, postgrestest2.GetFakeAccount())
+			before: func(test test, db tests.Database) (account.Account, error) {
+				accounts, err := db.PopulateAccounts(test.args.ctx, account.GetFakeAccount())
 				return accounts[0], err
 			},
 			args: args{ctx: context.Background()},
-			want: 4500,
+			want: 50000000,
 		},
 
 		// Should return ErrNotFound for nonexistent account on database
 		{
 			name: "return ErrNotFound for nonexistent account",
-			before: func(test test) (account.Account, error) {
+			before: func(test test, db tests.Database) (account.Account, error) {
 				return account.Account{}, nil
 			},
 			args:    args{ctx: context.Background()},
@@ -56,14 +54,17 @@ func TestGetBalance(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, test := range cases {
 		test := test
 
 		t.Run(test.name, func(t *testing.T) {
-			defer postgrestest2.RecycleDatabase(test.args.ctx)
-			repo := NewRepository(db, log)
+			t.Parallel()
+			db := tests.NewTestDatabase(t)
+			defer db.Drop()
 
-			acc, err := test.before(test)
+			repo := NewRepository(db.Pool, log)
+
+			acc, err := test.before(test, db)
 			if err != nil {
 				t.Fatalf("error running routine before: %v", err)
 			}
