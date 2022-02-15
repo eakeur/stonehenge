@@ -109,7 +109,7 @@ paths:
       parameters:
       - description: Account owner name
         in: query
-        name: accountName
+        name: owner_name
         type: string
       produces:
       - application/json
