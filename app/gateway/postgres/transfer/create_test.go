@@ -5,20 +5,15 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"os"
+	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/entities/transfer"
-	postgrestest2 "stonehenge/app/gateway/postgres/postgrestest"
+	"stonehenge/app/gateway/postgres/tests"
 	"stonehenge/app/gateway/postgres/transaction"
 	"testing"
 	"time"
 )
 
 func TestCreate(t *testing.T) {
-	db, err := postgrestest2.NewCleanDatabase()
-	if err != nil {
-		t.Fatalf("could not get database: %v", err)
-	}
-
-	tx := transaction.NewManager(db)
 
 	log := zerolog.New(os.Stdout).Level(zerolog.InfoLevel)
 
@@ -30,18 +25,18 @@ func TestCreate(t *testing.T) {
 	type test struct {
 		name    string
 		args    args
-		before  func(test) error
+		before  func(test test, db tests.Database) error
 		want    transfer.Transfer
 		wantErr error
 	}
 
-	tests := []test{
+	cases := []test{
 
 		// Should return Transfer with generated fields
 		{
 			name: "return Transfer with generated fields",
-			before: func(test test) error {
-				_, err := postgrestest2.PopulateAccounts(test.args.ctx, postgrestest2.GetFakeAccounts()...)
+			before: func(test test, db tests.Database) error {
+				_, err := db.PopulateAccounts(test.args.ctx, account.GetFakeAccounts()...)
 				return err
 			},
 			args: args{ctx: context.Background(), transfer: transfer.Transfer{
@@ -67,8 +62,8 @@ func TestCreate(t *testing.T) {
 		// Should return ErrNonexistentOrigin for unknown origin id
 		{
 			name: "return ErrNonexistentOrigin ",
-			before: func(test test) error {
-				_, err := postgrestest2.PopulateAccounts(test.args.ctx, postgrestest2.GetFakeAccount())
+			before: func(test test, db tests.Database) error {
+				_, err := db.PopulateAccounts(test.args.ctx, account.GetFakeAccount())
 				return err
 			},
 			args: args{ctx: context.Background(), transfer: transfer.Transfer{
@@ -82,8 +77,8 @@ func TestCreate(t *testing.T) {
 		// Should return ErrNonexistentOrigin for unknown origin id
 		{
 			name: "return ErrNonexistentDestination",
-			before: func(test test) error {
-				_, err := postgrestest2.PopulateAccounts(test.args.ctx, postgrestest2.GetFakeAccount())
+			before: func(test test, db tests.Database) error {
+				_, err := db.PopulateAccounts(test.args.ctx, account.GetFakeAccount())
 				return err
 			},
 			args: args{ctx: context.Background(), transfer: transfer.Transfer{
@@ -95,15 +90,17 @@ func TestCreate(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, test := range cases {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
-			defer postgrestest2.RecycleDatabase(test.args.ctx)
+			db := tests.NewTestDatabase(t)
+			defer db.Drop()
 
-			repo := NewRepository(db, log)
+			repo := NewRepository(db.Pool, log)
+			tx := transaction.NewManager(db.Pool)
 
 			if test.before != nil {
-				err := test.before(test)
+				err := test.before(test, db)
 				if err != nil {
 					t.Fatalf("error running routine before: %v", err)
 				}
