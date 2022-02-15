@@ -14,7 +14,7 @@ import (
 // @Summary      List accounts
 // @Description  List all accounts that match the given filter
 // @Tags         Accounts
-// @Param       accountName  query string  false  "Account owner name"
+// @Param        owner_name  query string  false  "Account owner name"
 // @Produce      json
 // @Success      200  {object}  []schema.AccountListResponse
 // @Failure      400  {object}  rest.Error
@@ -46,7 +46,7 @@ func (c *controller) List(r *http.Request) rest.Response {
 func filter(values url.Values) account.Filter {
 	f := account.Filter{}
 
-	if name := values.Get("name"); name != "" {
+	if name := values.Get("owner_name"); name != "" {
 		f.Name = name
 	}
 
