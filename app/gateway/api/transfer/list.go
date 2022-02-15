@@ -54,11 +54,11 @@ func (c *controller) List(r *http.Request) rest.Response {
 func filter(values url.Values) transfer.Filter {
 	f := transfer.Filter{}
 
-	if ori := id.ExternalFrom(values.Get("origin")); ori != id.Zero {
+	if ori := id.ExternalFrom(values.Get("originID")); ori != id.Zero {
 		f.OriginID = ori
 	}
 
-	if dest := id.ExternalFrom(values.Get("destination")); dest != id.Zero {
+	if dest := id.ExternalFrom(values.Get("destinationID")); dest != id.Zero {
 		f.DestinationID = dest
 	}
 
