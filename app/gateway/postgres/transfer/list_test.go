@@ -5,17 +5,14 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"os"
+	"stonehenge/app/core/entities/account"
 	"stonehenge/app/core/entities/transfer"
-	postgrestest2 "stonehenge/app/gateway/postgres/postgrestest"
+	"stonehenge/app/gateway/postgres/tests"
 	"testing"
 )
 
 func TestList(t *testing.T) {
-
-	db, err := postgrestest2.NewCleanDatabase()
-	if err != nil {
-		t.Fatalf("could not get database: %v", err)
-	}
+	t.Parallel()
 	log := zerolog.New(os.Stdout).Level(zerolog.InfoLevel)
 
 	type args struct {
@@ -25,23 +22,23 @@ func TestList(t *testing.T) {
 	type test struct {
 		name    string
 		args    args
-		before  func(test) (transfer.Filter, error)
+		before  func(test test, db tests.Database) (transfer.Filter, error)
 		want    []transfer.Transfer
 		wantErr error
 	}
 
-	tests := []test{
+	cases := []test{
 
 		// Should return the account expected
 		{
 			name: "return account expected",
-			before: func(test test) (transfer.Filter, error) {
-				accounts, err := postgrestest2.PopulateAccounts(test.args.ctx, postgrestest2.GetFakeAccounts()...)
+			before: func(test test, db tests.Database) (transfer.Filter, error) {
+				accounts, err := db.PopulateAccounts(test.args.ctx, account.GetFakeAccounts()...)
 				if err != nil {
 					return transfer.Filter{}, err
 				}
 
-				_, err = postgrestest2.PopulateTransfers(test.args.ctx, postgrestest2.GetFakeTransfers()...)
+				_, err = db.PopulateTransfers(test.args.ctx, transfer.GetFakeTransfers()...)
 
 				if err != nil {
 					return transfer.Filter{}, err
@@ -72,14 +69,18 @@ func TestList(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, test := range cases {
 		test := test
 
 		t.Run(test.name, func(t *testing.T) {
-			defer postgrestest2.RecycleDatabase(test.args.ctx)
-			repo := NewRepository(db, log)
+			t.Parallel()
 
-			filter, err := test.before(test)
+			db := tests.NewTestDatabase(t)
+			defer db.Drop()
+
+			repo := NewRepository(db.Pool, log)
+
+			filter, err := test.before(test, db)
 			if err != nil {
 				t.Fatalf("error running routine before: %v", err)
 			}
