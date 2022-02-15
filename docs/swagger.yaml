@@ -244,11 +244,11 @@ paths:
         type: string
       - description: Initial date
         in: query
-        name: initialDate
+        name: made_since
         type: string
       - description: Final date
         in: query
-        name: finalDate
+        name: made_until
         type: string
       produces:
       - application/json

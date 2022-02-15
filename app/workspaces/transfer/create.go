@@ -67,7 +67,7 @@ func (u *workspace) Create(ctx context.Context, req CreateInput) (CreateOutput, 
 
 	return CreateOutput{
 		RemainingBalance: remaining,
-		TransferId:       t.ExternalID,
+		TransferID:       t.ExternalID,
 		CreatedAt:        t.CreatedAt,
 	}, nil
 }

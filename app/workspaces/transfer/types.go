@@ -21,6 +21,6 @@ type CreateInput struct {
 
 type CreateOutput struct {
 	RemainingBalance currency.Currency
-	TransferId       id.External
+	TransferID       id.External
 	CreatedAt        time.Time
 }

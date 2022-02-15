@@ -1,13 +1,12 @@
 package rest
 
 import (
-	"github.com/rs/zerolog"
 	"net/http"
-	"stonehenge/app/core/entities/access"
+
+	"github.com/rs/zerolog"
 )
 
 type ResponseBuilder struct {
-	Access access.Manager
 	Logger zerolog.Logger
 }
 
@@ -16,7 +15,7 @@ func (b ResponseBuilder) BuildResult(status int, content interface{}, err error)
 		HTTPStatus: status,
 		Error:      err,
 		Content:    content,
-		logger: b.Logger,
+		logger:     b.Logger,
 	}
 }
 

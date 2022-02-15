@@ -79,7 +79,7 @@ func TestCreate(t *testing.T) {
 				DestID: destinationID,
 				Amount: 2500,
 			}},
-			want: CreateOutput{RemainingBalance: 2500, TransferId: transferID},
+			want: CreateOutput{RemainingBalance: 2500, TransferID: transferID},
 		},
 
 		// Should return ErrNoMoney because origin account had no money to complete the operation

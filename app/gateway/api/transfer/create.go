@@ -42,6 +42,6 @@ func (c *controller) Create(r *http.Request) rest.Response {
 	}
 	return c.builder.BuildCreatedResult(schema.CreateTransferResponse{
 		RemainingBalance: result.Output.RemainingBalance.ToStandardCurrency(),
-		TransferID:       result.Output.TransferId.String(),
+		TransferID:       result.Output.TransferID.String(),
 	}).WithSuccessLog(ctx, "transfer created successfully")
 }
