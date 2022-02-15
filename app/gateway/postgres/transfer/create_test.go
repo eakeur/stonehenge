@@ -14,7 +14,7 @@ import (
 )
 
 func TestCreate(t *testing.T) {
-
+	t.Parallel()
 	log := zerolog.New(os.Stdout).Level(zerolog.InfoLevel)
 
 	type args struct {
@@ -93,6 +93,7 @@ func TestCreate(t *testing.T) {
 	for _, test := range cases {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
 			db := tests.NewTestDatabase(t)
 			defer db.Drop()
 
