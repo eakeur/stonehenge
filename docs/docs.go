@@ -45,7 +45,7 @@ var doc = `{
                     {
                         "type": "string",
                         "description": "Account owner name",
-                        "name": "accountName",
+                        "name": "owner_name",
                         "in": "query"
                     }
                 ],

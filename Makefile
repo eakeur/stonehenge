@@ -3,5 +3,5 @@ document:
 	swag init --parseDependency -g  ./cmd/api/main.go
 
 run-api:
-	docker-compose up -d
+	docker-compose up
 	go run cmd/api/main.go

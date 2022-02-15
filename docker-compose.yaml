@@ -1,7 +1,7 @@
 version: '3'
 services:
   stone_postgres:
-    image: postgres:13-alpine
+    image: postgres:14-alpine
     container_name: full_db_postgres
     environment:
       - POSTGRES_USER=postgres
