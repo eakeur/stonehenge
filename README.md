@@ -2,6 +2,7 @@
 
 # Stonehenge
 Stonehenge is a go app for you to send and receive money to and from your friends. It is easy to use and has a public and simple API that you can run directly on your computer through Docker
+* [Challenge requirements](https://gist.github.com/guilhermebr/fb0d5896d76634703d385a4c68b730d8)
 
 # Dependencies
 This application uses the following packages:
